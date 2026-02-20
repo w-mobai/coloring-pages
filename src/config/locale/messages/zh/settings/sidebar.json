@@ -1,0 +1,21 @@
+{
+  "title": "设置",
+  "nav": {
+    "items": [
+      {
+        "title": "个人资料",
+        "url": "/settings/profile",
+        "icon": "User"
+      }
+    ]
+  },
+  "top_nav": {
+    "items": [
+      {
+        "title": "设置",
+        "url": "/settings",
+        "icon": "Settings"
+      }
+    ]
+  }
+}

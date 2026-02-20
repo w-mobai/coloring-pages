@@ -1,0 +1,21 @@
+{
+  "title": "Settings",
+  "nav": {
+    "items": [
+      {
+        "title": "Profile",
+        "url": "/settings/profile",
+        "icon": "User"
+      }
+    ]
+  },
+  "top_nav": {
+    "items": [
+      {
+        "title": "Settings",
+        "url": "/settings",
+        "icon": "Settings"
+      }
+    ]
+  }
+}

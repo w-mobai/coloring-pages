@@ -1,0 +1,454 @@
+{
+  "metadata": {
+    "title": "What Generation Am I? Generation Names & Year Ranges",
+    "description": "Find your generation in seconds. Explore generation names by birth year, clear year ranges, and boundary-year explanations with our free AI tool."
+  },
+  "page": {
+    "title": "What Generation Am I",
+    "show_sections": [
+      "hero",
+      "logos",
+      "introduce",
+      "benefits",
+      "usage",
+      "features",
+      "stats",
+      "testimonials",
+      "faq",
+      "cta",
+      "subscribe"
+    ],
+    "sections": {
+      "hero": {
+        "disabled": false,
+        "id": "hero",
+        "title": "What Generation Am I?",
+        "highlight_text": "Generation",
+        "description": "",
+        "announcement": {
+          "badge": "New",
+          "title": "🎉 AI-Powered Generation Analysis",
+          "url": "#hero"
+        },
+        "tip": "Birth year <span class='text-foreground'>required</span> • Birth month <span class='text-foreground'>optional</span> for more accurate results",
+        "buttons": [
+          {
+            "title": "Get Started",
+            "icon": "Zap",
+            "url": "#hero",
+            "target": "_self",
+            "variant": "default"
+          },
+          {
+            "title": "Read Document",
+            "icon": "BookOpenText",
+            "url": "/how-to-find-your-generation",
+            "target": "_blank",
+            "variant": "outline"
+          }
+        ],
+        "show_avatars": true,
+        "avatars_tip": "999+ users discovering their generation",
+        "show_award": false,
+        "show_generation_finder": true,
+        "generation_finder": {
+          "yearLabel": "Birth Year",
+          "yearPlaceholder": "Select your birth year",
+          "monthLabel": "Birth Month",
+          "monthPlaceholder": "Select month (optional)",
+          "analyzeButton": "Analyze with AI",
+          "analyzing": "Analyzing...",
+          "errorTitle": "Analysis Error",
+          "retryButton": "Retry"
+        },
+        "image": {
+          "src": "/imgs/features/admin.png",
+          "alt": "AI generation finder interface for birth year analysis",
+          "width": 1200,
+          "height": 800
+        },
+        "image_invert": {
+          "src": "/imgs/features/admin-dark.png",
+          "alt": "AI generation finder interface for birth year analysis",
+          "width": 1200,
+          "height": 800
+        },
+        "background_image": {
+          "src": "/imgs/bg/family.webp",
+          "alt": ""
+        }
+      },
+      "generation-finder": {
+        "disabled": false,
+        "id": "generation-finder",
+        "title": "Discover Your Generation",
+        "description": "Find out which generation you belong to based on your birth year. Our AI analyzes multiple authoritative sources to give you a clear, trustworthy classification.",
+        "yearLabel": "Birth Year",
+        "yearPlaceholder": "Select your birth year",
+        "monthLabel": "Birth Month",
+        "monthPlaceholder": "Select month (optional)",
+        "analyzeButton": "Analyze with AI",
+        "analyzing": "Analyzing...",
+        "errorTitle": "Analysis Error",
+        "retryButton": "Retry",
+        "className": "bg-muted"
+      },
+      "logos": {
+        "disabled": false,
+        "id": "logos",
+        "title": "All Generation Names and Years",
+        "description": "Discover all the generation names by year. From Baby Boomers to Gen Z, explore different generation names and their defining years. Understanding generation names and ages helps you identify which generation you belong to.",
+        "generations": {
+          "Greatest Generation": {
+            "description": "Those who lived through the Great Depression and World War II, known for their resilience, sense of duty, and sacrifice. They built the foundation of the modern world."
+          },
+          "Silent Generation": {
+            "description": "Growing up in the post-war era, they witnessed the Civil Rights Movement and the Cold War. Known for hard work, traditional values, and respect for authority."
+          },
+          "Baby Boomers": {
+            "description": "The post-war baby boom generation experienced economic prosperity, cultural revolution, and technological advancement. They reshaped social norms and pursued personal freedom."
+          },
+          "Gen X": {
+            "description": "Coming of age during the end of the Cold War and the rise of the internet, this generation is independent and adaptable, bridging the analog and digital worlds."
+          },
+          "Millennials": {
+            "description": "Growing up with the internet and globalization, Millennials value work-life balance, social justice, and technological innovation. They pioneered the digital native lifestyle."
+          },
+          "Gen Z": {
+            "description": "True digital natives who grew up with smartphones and social media. This generation champions diversity, mental health awareness, and social change through technology."
+          },
+          "Gen Alpha": {
+            "description": "Growing up in an AI and smart device environment, they will be the most tech-literate generation. Their education and upbringing are experiencing unprecedented digital transformation."
+          },
+          "Gen Beta": {
+            "description": "The upcoming generation that will grow up in an even more intelligent and connected world. They will face global challenges like climate change and AI ubiquity while shaping the future."
+          }
+        },
+        "items": [
+          {
+            "title": "Next.js",
+            "image": {
+              "src": "/imgs/logos/nextjs.svg",
+              "alt": "Next.js"
+            }
+          },
+          {
+            "title": "React",
+            "image": {
+              "src": "/imgs/logos/react.svg",
+              "alt": "React"
+            }
+          },
+          {
+            "title": "TailwindCSS",
+            "image": {
+              "src": "/imgs/logos/tailwindcss.svg",
+              "alt": "TailwindCSS"
+            }
+          },
+          {
+            "title": "Shadcn/UI",
+            "image": {
+              "src": "/imgs/logos/shadcn.svg",
+              "alt": "Shadcn/UI"
+            }
+          },
+          {
+            "title": "Vercel",
+            "image": {
+              "src": "/imgs/logos/vercel.svg",
+              "alt": "Vercel"
+            }
+          }
+        ]
+      },
+      "introduce": {
+        "disabled": true,
+        "block": "features-list",
+        "id": "introduce",
+        "title": "What Is What Generation Am I?",
+        "label": "Introduce",
+        "description": "What Generation Am I is an AI-powered generation finder that helps you identify your generation by birth year and understand generational traits.",
+        "image": {
+          "src": "/imgs/features/3.webp",
+          "alt": "Generation finder product overview illustration"
+        },
+        "items": [
+          {
+            "title": "Comprehensive Year Ranges",
+            "description": "Explore clear generation year ranges from Silent Generation to Gen Alpha in one place.",
+            "icon": "RiNextjsFill"
+          },
+          {
+            "title": "Boundary-Year Clarity",
+            "description": "Understand tricky cusp years with contextual hints and transparent reasoning.",
+            "icon": "RiDatabase2Line"
+          },
+          {
+            "title": "Fast AI Analysis",
+            "description": "Get an instant generation result with concise, readable explanations.",
+            "icon": "RiCloudyFill"
+          },
+          {
+            "title": "Insightful Context",
+            "description": "Learn what your generation means through practical characteristics and examples.",
+            "icon": "RiRobot2Line"
+          }
+        ],
+        "className": "bg-muted"
+      },
+      "benefits": {
+        "disabled": false,
+        "block": "features-accordion",
+        "id": "benefits",
+        "title": "Understanding What Generation Am I",
+        "label": "Benefits",
+        "description": "Learn about all generation names and what makes each generation unique. Our tool helps you discover generation names by year and understand generational characteristics.",
+        "items": [
+          {
+            "title": "Complete Generation Names List",
+            "description": "Access all the generation names from Silent Generation to Gen Alpha. Our comprehensive database includes generation names and years, helping you answer 'What generation am I?' with confidence.",
+            "icon": "RiListCheck",
+            "image": {
+              "src": "/imgs/features/1.webp",
+              "alt": "Complete generation names list illustration"
+            }
+          },
+          {
+            "title": "Years and Generation Names",
+            "description": "Explore the relationship between years and generation names. Understand how different generation names correspond to specific birth year ranges and historical periods.",
+            "icon": "RiCalendarLine",
+            "image": {
+              "src": "/imgs/features/2.webp",
+              "alt": "Years and generation names timeline illustration"
+            }
+          },
+          {
+            "title": "AI-Powered Analysis",
+            "description": "Get accurate answers to 'What generation am I?' using AI technology. Our system analyzes generation names and ages to provide personalized insights about your generational identity.",
+            "icon": "RiRobot2Line",
+            "image": {
+              "src": "/imgs/features/3.webp",
+              "alt": "AI-powered generation analysis illustration"
+            }
+          }
+        ]
+      },
+      "usage": {
+        "disabled": false,
+        "block": "features-step",
+        "id": "usage",
+        "title": "Find Your Generation in 3 Steps",
+        "description": "Discover your generation in three simple steps using our generation names finder:",
+        "image_position": "left",
+        "text_align": "center",
+        "items": [
+          {
+            "title": "Enter Your Birth Year",
+            "description": "Start by entering your birth year. Our system uses generation names by year to identify which generation you belong to."
+          },
+          {
+            "title": "Get AI Analysis",
+            "description": "Receive detailed insights about your generation. Learn about generation names and ages, characteristics, and what makes your generation unique."
+          },
+          {
+            "title": "Share Your Results",
+            "description": "Share your generation discovery with friends. Help others answer 'What generation am I?' and explore names of generations together."
+          }
+        ],
+        "className": "bg-muted"
+      },
+      "features": {
+        "disabled": false,
+        "id": "features",
+        "title": "Key Features for Finding What Generation Am I",
+        "description": "Everything you need to discover generation names and understand generational differences.",
+        "items": [
+          {
+            "title": "All Generation Names Database",
+            "description": "Access complete list of all the generation names from 1901 to present. Includes generation names and years for accurate identification.",
+            "icon": "RiDatabase2Line"
+          },
+          {
+            "title": "Generation Names by Year",
+            "description": "Search generation names by year to find your exact generation. Our database covers years and generation names comprehensively.",
+            "icon": "RiCalendarLine"
+          },
+          {
+            "title": "Different Generation Names",
+            "description": "Explore different generation names and their variations. Understand how generational names evolved across different sources.",
+            "icon": "RiGroupLine"
+          },
+          {
+            "title": "Years and Names of Generations",
+            "description": "View detailed mapping of years and names of generations. See how birth years correspond to specific generation names.",
+            "icon": "RiMapPinLine"
+          },
+          {
+            "title": "Generation Names and Ages",
+            "description": "Calculate generation names and ages automatically. Find out what generation am I based on current age and birth year.",
+            "icon": "RiCalculatorLine"
+          },
+          {
+            "title": "AI-Powered Generation Analysis",
+            "description": "Get intelligent answers to 'What generation am I?' using AI. Analyzes multiple sources of generation names for accuracy.",
+            "icon": "RiRobot2Line"
+          }
+        ]
+      },
+      "stats": {
+        "disabled": false,
+        "id": "stats",
+        "title": "People Love Finding What Generation Am I",
+        "description": "Join thousands discovering their generation names and years",
+        "items": [
+          {
+            "title": "10,000+",
+            "description": "Users Found Their Generation"
+          },
+          {
+            "title": "12",
+            "description": "Generation Names Covered"
+          },
+          {
+            "title": "120+",
+            "description": "Years of Generations"
+          }
+        ],
+        "className": "bg-muted"
+      },
+      "testimonials": {
+        "disabled": false,
+        "id": "testimonials",
+        "title": "What Users Say About Finding Their Generation",
+        "description": "Real stories from people who discovered what generation am I using our tool",
+        "items": [
+          {
+            "name": "Sarah Johnson",
+            "role": "Millennial",
+            "quote": "I always wondered 'what generation am I?' This tool gave me clear answers with all generation names and years. Now I understand my generational identity!",
+            "image": {
+              "src": "/imgs/avatars/1.png",
+              "alt": "sarah"
+            }
+          },
+          {
+            "name": "Michael Chen",
+            "role": "Gen X",
+            "quote": "The generation names by year feature is amazing! I learned about different generation names and found exactly where I fit in the generational timeline.",
+            "image": {
+              "src": "/imgs/avatars/2.png",
+              "alt": "michael"
+            }
+          },
+          {
+            "name": "Emma Davis",
+            "role": "Gen Z",
+            "quote": "Finally got the answer to 'what generation am I!' The tool shows all the generation names clearly and explains generation names and ages perfectly.",
+            "image": {
+              "src": "/imgs/avatars/3.png",
+              "alt": "emma"
+            }
+          },
+          {
+            "name": "Robert Martinez",
+            "role": "Baby Boomer",
+            "quote": "Excellent resource for understanding years and generation names. The AI analysis helped me learn about different generation names and their characteristics.",
+            "image": {
+              "src": "/imgs/avatars/4.png",
+              "alt": "robert"
+            }
+          },
+          {
+            "name": "Lisa Anderson",
+            "role": "Millennial",
+            "quote": "Best tool for finding what generation am I! The database of all generation names and years is comprehensive and easy to understand.",
+            "image": {
+              "src": "/imgs/avatars/5.png",
+              "alt": "lisa"
+            }
+          },
+          {
+            "name": "David Kim",
+            "role": "Gen Alpha Parent",
+            "quote": "Used this to understand my kids' generation. The names of generations and their years are clearly explained. Great for learning about generational names!",
+            "image": {
+              "src": "/imgs/avatars/6.png",
+              "alt": "david"
+            }
+          }
+        ]
+      },
+      "faq": {
+        "disabled": false,
+        "id": "faq",
+        "title": "Frequently Asked Questions About What Generation Am I",
+        "description": "Common questions about generation names and how to find your generation",
+        "items": [
+          {
+            "question": "What generation am I if I was born in 1995?",
+            "answer": "If you were born in 1995, you are a Millennial (also called Gen Y). Our tool analyzes all generation names and years to give you accurate results. Generation names by year help identify your exact generational cohort based on multiple authoritative sources."
+          },
+          {
+            "question": "What are all the generation names and years?",
+            "answer": "All the generation names include: Silent Generation (1928-1945), Baby Boomers (1946-1964), Gen X (1965-1980), Millennials/Gen Y (1981-1996), Gen Z (1997-2012), and Gen Alpha (2013-present). These generation names and years are based on widely accepted definitions from demographic researchers."
+          },
+          {
+            "question": "How do I find what generation am I?",
+            "answer": "Simply enter your birth year in our tool to find what generation am I. Our AI analyzes different generation names and compares your birth year against years and generation names from multiple sources to provide accurate generational identification."
+          },
+          {
+            "question": "What are the different generation names?",
+            "answer": "Different generation names include traditional names like Baby Boomers, Gen X, Millennials, Gen Z, and newer names like Gen Alpha. Some generations also have alternative names - for example, Millennials are sometimes called Gen Y. Our database covers all generational names and their variations."
+          },
+          {
+            "question": "How are generation names and ages calculated?",
+            "answer": "Generation names and ages are calculated based on birth year ranges. Each generation spans approximately 15-20 years. Our tool uses your birth year to determine which generation you belong to and calculates your current age within that generational cohort using years and names of generations data."
+          },
+          {
+            "question": "Why are there different generation names for the same years?",
+            "answer": "Different sources may use slightly different generation names and year ranges. For example, some sources define Millennials as 1981-1996, while others use 1980-1995. Our tool analyzes multiple authoritative sources to show you all generation names that might apply to your birth year, helping you understand the variations in generational names."
+          }
+        ]
+      },
+      "cta": {
+        "disabled": true,
+        "id": "cta",
+        "title": "Discover What Generation Am I Today",
+        "description": "Find your generation using our AI-powered tool. Explore all generation names and years now.",
+        "buttons": [
+          {
+            "title": "Find My Generation",
+            "url": "#hero",
+            "target": "_self",
+            "icon": "Zap"
+          },
+          {
+            "title": "Learn About Generations",
+            "url": "/how-to-find-your-generation",
+            "target": "_blank",
+            "variant": "outline",
+            "icon": "BookOpenText"
+          }
+        ],
+        "className": "bg-muted"
+      },
+      "subscribe": {
+        "disabled": true,
+        "id": "subscribe",
+        "title": "Subscribe to our newsletter",
+        "description": "Get the latest news and updates from What Generation Am I.",
+        "submit": {
+          "input": {
+            "placeholder": "Enter your email"
+          },
+          "button": {
+            "title": "Subscribe"
+          },
+          "action": "/api/subscribe"
+        },
+        "className": "bg-muted"
+      }
+    }
+  }
+}

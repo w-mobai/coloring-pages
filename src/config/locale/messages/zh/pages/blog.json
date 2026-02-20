@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "title": "世代博客 | What Generation Am I",
+    "description": "阅读世代名称、出生年份区间与代际趋势相关文章。"
+  },
+  "page": {
+    "title": "What Generation Am I 博客",
+    "sections": {
+      "blog": {
+        "id": "blog",
+        "title": "博客",
+        "description": "阅读关于世代名称、年份区间和代际趋势的内容。"
+      }
+    }
+  },
+  "messages": {
+    "all": "全部",
+    "no_content": "暂无内容",
+    "crumb": "博客",
+    "toc": "目录"
+  }
+}

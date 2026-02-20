@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "title": "产品更新日志 | What Generation Am I",
+    "description": "查看 What Generation Am I 最新功能、修复和优化记录。"
+  },
+  "page": {
+    "sections": {
+      "updates": {
+        "id": "updates",
+        "title": "更新日志",
+        "description": "查看产品更新日志，了解产品最新功能和改进。"
+      }
+    }
+  }
+}

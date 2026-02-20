@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "title": "Generation Blog | What Generation Am I",
+    "description": "Read guides on generation names, birth-year ranges, and trends to better understand generational cohorts."
+  },
+  "page": {
+    "title": "What Generation Am I Blog",
+    "sections": {
+      "blog": {
+        "id": "blog",
+        "title": "Blog",
+        "description": "Read guides on generation names, year ranges, and generational insights."
+      }
+    }
+  },
+  "messages": {
+    "all": "All",
+    "no_content": "No Content",
+    "crumb": "Blog",
+    "toc": "Table of Contents"
+  }
+}

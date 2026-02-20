@@ -1,0 +1,168 @@
+{
+  "header": {
+    "id": "header",
+    "brand": {
+      "title": "GenFinder",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "GenFinder",
+        "width": 100,
+        "height": 100
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "Home",
+          "url": "/",
+          "icon": "Home"
+        },
+        {
+          "title": "AI Tools",
+          "icon": "Sparkles",
+          "hidden": true,
+          "children": [
+            {
+              "title": "AI Chat",
+              "description": "Chat with AI Assistant",
+              "url": "/chat",
+              "icon": "MessageCircle"
+            },
+            {
+              "title": "Music Generator",
+              "description": "Create music with AI",
+              "url": "/ai-music-generator",
+              "icon": "Music"
+            },
+            {
+              "title": "Video Generator",
+              "description": "Generate videos with AI",
+              "url": "/ai-video-generator",
+              "icon": "Video"
+            }
+          ]
+        },
+        {
+          "title": "Content",
+          "icon": "FileText",
+          "children": [
+            {
+              "title": "Blog",
+              "description": "Read Blog Posts",
+              "url": "/blog",
+              "icon": "Newspaper"
+            },
+            {
+              "title": "Updates",
+              "description": "Read Update Logs",
+              "url": "/updates",
+              "icon": "Clock"
+            }
+          ]
+        },
+        {
+          "title": "Help",
+          "url": "/how-to-find-your-generation",
+          "icon": "BookOpen"
+        }
+      ]
+    },
+    "buttons": [],
+    "user_nav": {
+      "show_name": true,
+      "show_credits": false,
+      "show_sign_out": true,
+      "items": []
+    },
+    "show_sign": true,
+    "show_theme": true,
+    "show_locale": true
+  },
+  "footer": {
+    "id": "footer",
+    "brand": {
+      "title": "GenFinder",
+      "description": "Discover your generation with AI-powered analysis. Find out which generation you belong to based on your birth year and explore all generation names and years.",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "GenFinder",
+        "width": 1024,
+        "height": 1024
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "About",
+          "children": [
+            {
+              "title": "Features",
+              "url": "/#features",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "Resources",
+          "children": [
+            {
+              "title": "Blog",
+              "url": "/blog",
+              "target": "_self"
+            },
+            {
+              "title": "Chat",
+              "url": "/chat",
+              "target": "_self",
+              "hidden": true
+            }
+          ]
+        }
+      ]
+    },
+    "social": {
+      "items": [
+        {
+          "title": "X",
+          "icon": "RiTwitterXFill",
+          "url": "https://x.com/HL19930219",
+          "target": "_blank"
+        },
+        {
+          "title": "Github",
+          "icon": "Github",
+          "url": "https://github.com/w-mobai",
+          "target": "_blank"
+        },
+        {
+          "title": "Discord",
+          "icon": "RiDiscordFill",
+          "url": "https://discord.gg/FHqd57fa",
+          "target": "_blank"
+        },
+        {
+          "title": "Email",
+          "icon": "Mail",
+          "url": "mailto:whl774148248@gmail.com",
+          "target": "_self"
+        }
+      ]
+    },
+    "agreement": {
+      "items": [
+        {
+          "title": "Privacy Policy",
+          "url": "/privacy-policy"
+        },
+        {
+          "title": "Terms of Service",
+          "url": "/terms-of-service"
+        }
+      ]
+    },
+    "show_theme": true,
+    "show_locale": true
+  }
+}

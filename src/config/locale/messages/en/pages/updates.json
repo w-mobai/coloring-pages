@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "title": "Product Updates | What Generation Am I",
+    "description": "See the latest features, fixes, and improvements released for What Generation Am I."
+  },
+  "page": {
+    "sections": {
+      "updates": {
+        "id": "updates",
+        "title": "Update Logs",
+        "description": "View product update logs, including latest features and improvements."
+      }
+    }
+  }
+}
