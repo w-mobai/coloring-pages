@@ -7,6 +7,7 @@
     "title": "我是哪个世代？",
     "show_sections": [
       "hero",
+      "generated_gallery",
       "logos",
       "introduce",
       "benefits",
@@ -22,61 +23,25 @@
       "hero": {
         "disabled": false,
         "id": "hero",
-        "title": "我是哪个世代？",
-        "highlight_text": "世代",
-        "description": "",
-        "announcement": {
-          "badge": "全新",
-          "title": "🎉 AI 驱动的世代分析",
-          "url": "#hero"
-        },
-        "tip": "📝 出生年份<span class='text-foreground'>必填</span> • 出生月份<span class='text-foreground'>选填</span>，填写后结果更精准",
-        "buttons": [
-          {
-            "title": "立即开始",
-            "icon": "Zap",
-            "url": "#hero",
-            "target": "_self",
-            "variant": "default"
-          },
-          {
-            "title": "阅读文档",
-            "icon": "BookOpenText",
-            "url": "/how-to-find-your-generation",
-            "target": "_blank",
-            "variant": "outline"
-          }
-        ],
-        "show_avatars": true,
-        "avatars_tip": "999+ 用户正在发现他们的世代",
-        "show_award": false,
-        "show_generation_finder": true,
-        "generation_finder": {
-          "yearLabel": "出生年份",
-          "yearPlaceholder": "选择你的出生年份",
-          "monthLabel": "出生月份",
-          "monthPlaceholder": "选择月份（可选）",
-          "analyzeButton": "使用 AI 分析",
-          "analyzing": "分析中...",
-          "errorTitle": "分析错误",
-          "retryButton": "重试"
-        },
-        "image": {
-          "src": "/imgs/features/admin.png",
-          "alt": "按出生年份进行世代分析的 AI 查询界面",
-          "width": 1200,
-          "height": 800
-        },
-        "image_invert": {
-          "src": "/imgs/features/admin-dark.png",
-          "alt": "按出生年份进行世代分析的 AI 查询界面",
-          "width": 1200,
-          "height": 800
-        },
+        "title": "AI 涂色页生成器",
+        "highlight_text": "AI 涂色页",
+        "description": "使用 AI 生成可打印黑白涂色页。选择年龄段和比例后即可快速生成。",
+        "show_generation_finder": false,
+        "show_coloring_generator": true,
         "background_image": {
           "src": "/imgs/bg/tree.jpg",
-          "alt": ""
-        }
+          "alt": "背景装饰"
+        },
+        "className": ""
+      },
+      "generated_gallery": {
+        "disabled": false,
+        "block": "generated-gallery",
+        "id": "generated-gallery",
+        "title": "最新生成涂色页",
+        "description": "实时展示最近生成的涂色页作品。",
+        "limit": 24,
+        "className": ""
       },
       "generation-finder": {
         "disabled": false,
@@ -464,6 +429,18 @@
           "action": "/api/subscribe"
         },
         "className": "bg-muted"
+      },
+      "coloring-page-generator": {
+        "disabled": false,
+        "id": "coloring-page-generator",
+        "title": "AI 涂色页生成器",
+        "description": "使用 AI 生成可打印黑白涂色页。选择年龄段和比例后即可快速生成。",
+        "srOnlyTitle": "AI 涂色页生成工具",
+        "allowMultipleImages": true,
+        "maxImages": 9,
+        "maxSizeMB": 5,
+        "className": "bg-muted",
+        "block": "coloring-page-generator"
       }
     }
   }

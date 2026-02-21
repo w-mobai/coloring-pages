@@ -102,6 +102,7 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     console.error('upload image failed:', e);
-    return respErr('upload image failed');
+    const message = e instanceof Error ? e.message : 'upload image failed';
+    return respErr(message);
   }
 }

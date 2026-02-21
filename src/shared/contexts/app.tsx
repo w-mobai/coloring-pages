@@ -176,5 +176,33 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     ]
   );
 
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    const refreshCredits = () => {
+      void fetchUserCredits();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshCredits();
+      }
+    };
+
+    // Initial refresh after user is ready.
+    refreshCredits();
+
+    // Refresh when user comes back to the page/app.
+    window.addEventListener('focus', refreshCredits);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', refreshCredits);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user?.id, fetchUserCredits]);
+
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

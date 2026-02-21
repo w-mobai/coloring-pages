@@ -63,6 +63,7 @@ export function UploadImage({
       allowMultiple={allowMultiple}
       maxImages={maxImages}
       maxSizeMB={maxSizeMB}
+      allowDataUrlFallback={Boolean(metadata?.allowDataUrlFallback)}
       emptyHint={field.placeholder}
       defaultPreviews={previews}
       onChange={handleChange}

@@ -55,6 +55,10 @@ export default async function UserEditPage({
         name: 'image',
         type: 'upload_image',
         title: t('fields.avatar'),
+        metadata: {
+          max: 1,
+          allowDataUrlFallback: true,
+        },
       },
     ],
     passby: {

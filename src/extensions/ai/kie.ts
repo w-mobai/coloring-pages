@@ -1,7 +1,5 @@
 import { nanoid } from 'nanoid';
 
-import { getUuid } from '@/shared/lib/hash';
-
 import { saveFiles } from '.';
 import {
   AIConfigs,
@@ -348,17 +346,16 @@ export class KieProvider implements AIProvider {
       this.configs.customStorage
     ) {
       const filesToSave: AIFile[] = [];
-      images.forEach((image, index) => {
-        if (image.imageUrl) {
-          filesToSave.push({
-            url: image.imageUrl,
-            contentType: 'image/png',
-            key: `kie/image/${getUuid()}.png`,
-            index: index,
-            type: 'image',
-          });
-        }
-      });
+      const firstImageIndex = images.findIndex((image) => Boolean(image.imageUrl));
+      if (firstImageIndex >= 0 && images[firstImageIndex]?.imageUrl) {
+        filesToSave.push({
+          url: images[firstImageIndex].imageUrl as string,
+          contentType: 'image/png',
+          key: `kie/image/${taskId}-${firstImageIndex}.png`,
+          index: firstImageIndex,
+          type: 'image',
+        });
+      }
 
       if (filesToSave.length > 0) {
         const uploadedFiles = await saveFiles(filesToSave);
@@ -443,7 +440,7 @@ export class KieProvider implements AIProvider {
           filesToSave.push({
             url: video.videoUrl,
             contentType: 'video/mp4',
-            key: `kie/video/${getUuid()}.mp4`,
+            key: `kie/video/${taskId}-${index}.mp4`,
             index: index,
             type: 'video',
           });
@@ -551,7 +548,7 @@ export class KieProvider implements AIProvider {
           audioFilesToSave.push({
             url: song.audioUrl,
             contentType: 'audio/mpeg',
-            key: `kie/audio/${getUuid()}.mp3`,
+            key: `kie/audio/${taskId}-${index}.mp3`,
             index: index,
             type: 'audio',
           });
@@ -560,7 +557,7 @@ export class KieProvider implements AIProvider {
           imageFilesToSave.push({
             url: song.imageUrl,
             contentType: 'image/png',
-            key: `kie/image/${getUuid()}.png`,
+            key: `kie/image/${taskId}-${index}.png`,
             index: index,
             type: 'image',
           });

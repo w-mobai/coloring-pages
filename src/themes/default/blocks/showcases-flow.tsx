@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
 
 import { Link } from '@/core/i18n/navigation';
 import { LazyImage } from '@/shared/blocks/common';
@@ -19,6 +19,10 @@ export function ShowcasesFlow({
   className?: string;
 }) {
   const groups = (section as any).groups || [];
+  const showFullDescriptionInModal = Boolean(
+    (section as any).show_full_description_in_modal
+  );
+  const showDownloadInModal = Boolean((section as any).show_download_in_modal);
   const [selectedGroup, setSelectedGroup] = useState<string>(
     groups.length > 0 ? groups[0].name : ''
   );
@@ -61,6 +65,59 @@ export function ShowcasesFlow({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, handlePrevious, handleNext]);
+
+  const handleDownload = useCallback(async () => {
+    if (selectedIndex === null || !filteredItems[selectedIndex]?.image?.src) {
+      return;
+    }
+
+    const src = filteredItems[selectedIndex].image?.src as string;
+    const title = filteredItems[selectedIndex].title || 'image';
+    const safeTitle = title
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 60);
+    const filename = `${safeTitle || 'image'}-${Date.now()}.jpg`;
+
+    const triggerDownload = (href: string) => {
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    const fetchBlob = async (url: string) => {
+      try {
+        const resp = await fetch(url);
+        if (resp.ok) {
+          return await resp.blob();
+        }
+      } catch {
+        // ignore and try next source
+      }
+      return null;
+    };
+
+    const proxyUrl = `/api/proxy/file?url=${encodeURIComponent(src)}`;
+    let blob = await fetchBlob(proxyUrl);
+    if (!blob) {
+      blob = await fetchBlob(src);
+    }
+
+    if (blob) {
+      const blobUrl = URL.createObjectURL(blob);
+      triggerDownload(blobUrl);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      return;
+    }
+
+    triggerDownload(src);
+  }, [filteredItems, selectedIndex]);
 
   return (
     <section
@@ -125,10 +182,10 @@ export function ShowcasesFlow({
                   key={group.name}
                   onClick={() => setSelectedGroup(group.name)}
                   className={cn(
-                    'relative rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
+                    'relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                     isSelected
-                      ? ''
-                      : 'border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground border'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'ring-border bg-background text-foreground ring-1 ring-inset hover:bg-muted hover:text-foreground hover:ring-border/80'
                   )}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -138,21 +195,8 @@ export function ShowcasesFlow({
                     delay: 0.2 + index * 0.1,
                     ease: [0.22, 1, 0.36, 1] as const,
                   }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
-                  {isSelected ? (
-                    <>
-                      <span className="bg-primary absolute inset-0 rounded-lg p-[2px]">
-                        <span className="bg-background block h-full w-full rounded-[calc(0.5rem-2px)]" />
-                      </span>
-                      <span className="bg-primary relative z-10 bg-clip-text text-transparent">
-                        {group.title}
-                      </span>
-                    </>
-                  ) : (
-                    <span>{group.title}</span>
-                  )}
+                  <span>{group.title}</span>
                 </motion.button>
               );
             }
@@ -175,12 +219,11 @@ export function ShowcasesFlow({
                 delay: index * 0.1,
                 ease: [0.22, 1, 0.36, 1] as const,
               }}
-              whileHover={{ scale: 1.02 }}
             >
               <LazyImage
                 src={item.image?.src ?? ''}
                 alt={item.image?.alt ?? ''}
-                className="h-auto w-full transition-transform duration-300 group-hover:scale-105"
+                className="h-auto w-full"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
               />
               <div className="absolute inset-0 flex flex-col justify-end bg-black/60 p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -278,63 +321,90 @@ export function ShowcasesFlow({
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 className="relative flex h-full w-full items-center justify-center"
-                onClick={(e) => e.stopPropagation()}
               >
-                <div className="relative max-h-full max-w-full overflow-hidden rounded-lg">
-                  <LazyImage
-                    src={filteredItems[selectedIndex].image?.src ?? ''}
-                    alt={filteredItems[selectedIndex].image?.alt ?? ''}
-                    className="h-auto max-h-[90vh] w-auto max-w-full object-contain"
-                  />
-                  <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 text-white">
-                    <h3 className="mb-2 text-2xl font-bold">
-                      {filteredItems[selectedIndex].title}
-                    </h3>
-                    {filteredItems[selectedIndex].description && (
-                      <p className="line-clamp-3 text-base text-white/90">
-                        {filteredItems[selectedIndex].description}
-                      </p>
-                    )}
-                    {(filteredItems[selectedIndex] as any).button && (
-                      <div className="mt-4">
-                        <Button
-                          asChild
-                          variant={
-                            (filteredItems[selectedIndex] as any).button
-                              .variant || 'default'
-                          }
-                          size={
-                            (filteredItems[selectedIndex] as any).button.size ||
-                            'default'
-                          }
-                          className="bg-primary hover:bg-primary/90 h-8 border-0 px-3 py-1.5 text-sm font-medium text-white"
+                <div
+                  className="flex items-start gap-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="relative max-h-full max-w-full overflow-hidden rounded-lg">
+                    <LazyImage
+                      src={filteredItems[selectedIndex].image?.src ?? ''}
+                      alt={filteredItems[selectedIndex].image?.alt ?? ''}
+                      className="h-auto max-h-[90vh] w-auto max-w-full object-contain"
+                    />
+                    <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 text-white">
+                      <h3 className="mb-2 text-2xl font-bold">
+                        {filteredItems[selectedIndex].title}
+                      </h3>
+                      {filteredItems[selectedIndex].description && (
+                        <p
+                          className={cn(
+                            'text-base text-white/90',
+                            showFullDescriptionInModal
+                              ? 'max-h-56 overflow-y-auto whitespace-pre-line break-words'
+                              : 'line-clamp-3'
+                          )}
                         >
-                          <Link
-                            href={
+                          {filteredItems[selectedIndex].description}
+                        </p>
+                      )}
+                      {(filteredItems[selectedIndex] as any).button && (
+                        <div className="mt-4">
+                          <Button
+                            asChild
+                            variant={
                               (filteredItems[selectedIndex] as any).button
-                                .url || ''
+                                .variant || 'default'
                             }
-                            target={
-                              (filteredItems[selectedIndex] as any).button
-                                .target || '_self'
+                            size={
+                              (filteredItems[selectedIndex] as any).button.size ||
+                              'default'
                             }
+                            className="bg-primary hover:bg-primary/90 h-8 border-0 px-3 py-1.5 text-sm font-medium text-white"
                           >
-                            {(filteredItems[selectedIndex] as any).button
-                              .icon && (
-                              <SmartIcon
-                                name={
-                                  (filteredItems[selectedIndex] as any).button
-                                    .icon as string
-                                }
-                                className="text-white"
-                              />
-                            )}
-                            {(filteredItems[selectedIndex] as any).button.title}
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
+                            <Link
+                              href={
+                                (filteredItems[selectedIndex] as any).button
+                                  .url || ''
+                              }
+                              target={
+                                (filteredItems[selectedIndex] as any).button
+                                  .target || '_self'
+                              }
+                            >
+                              {(filteredItems[selectedIndex] as any).button
+                                .icon && (
+                                <SmartIcon
+                                  name={
+                                    (filteredItems[selectedIndex] as any).button
+                                      .icon as string
+                                  }
+                                  className="text-white"
+                                />
+                              )}
+                              {(filteredItems[selectedIndex] as any).button.title}
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  {showDownloadInModal && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="mt-1 bg-black/30 text-white hover:bg-black/50 hover:text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload();
+                      }}
+                      aria-label="Download image"
+                      title="Download image"
+                    >
+                      <Download className="size-4" />
+                    </Button>
+                  )}
                 </div>
               </motion.div>
             </motion.div>

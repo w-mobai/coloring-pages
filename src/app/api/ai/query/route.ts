@@ -1,3 +1,9 @@
+import { AITaskStatus } from '@/extensions/ai';
+import {
+  findGuestAITaskById,
+  getGuestOwnerKey,
+  updateGuestAITaskById,
+} from '@/shared/lib/guest-ai-task';
 import { respData, respErr } from '@/shared/lib/resp';
 import {
   findAITaskById,
@@ -15,6 +21,81 @@ export async function POST(req: Request) {
     }
 
     const user = await getUserInfo();
+    const isGuestTask =
+      typeof taskId === 'string' && taskId.startsWith('guest_');
+
+    if (!user && !isGuestTask) {
+      return respErr('no auth, please sign in');
+    }
+
+    if (!user && isGuestTask) {
+      const guestTask = findGuestAITaskById(taskId);
+      if (!guestTask) {
+        return respErr('task not found');
+      }
+
+      const ownerKey = getGuestOwnerKey(req);
+      if (guestTask.ownerKey !== ownerKey) {
+        return respErr('no permission');
+      }
+
+      if (
+        [AITaskStatus.SUCCESS, AITaskStatus.FAILED, AITaskStatus.CANCELED].includes(
+          guestTask.status
+        ) &&
+        guestTask.taskInfo
+      ) {
+        return respData({
+          id: guestTask.id,
+          status: guestTask.status,
+          provider: guestTask.provider,
+          model: guestTask.model,
+          prompt: guestTask.prompt,
+          options: guestTask.options,
+          taskInfo: guestTask.taskInfo,
+          taskResult: guestTask.taskResult,
+        });
+      }
+
+      const aiService = await getAIService();
+      const aiProvider = aiService.getProvider(guestTask.provider);
+      if (!aiProvider) {
+        return respErr('invalid ai provider');
+      }
+
+      const result = await aiProvider?.query?.({
+        taskId: guestTask.providerTaskId,
+        mediaType: guestTask.mediaType,
+        model: guestTask.model,
+      });
+
+      if (!result?.taskStatus) {
+        return respErr('query ai task failed');
+      }
+
+      const taskInfo = result.taskInfo ? JSON.stringify(result.taskInfo) : null;
+      const taskResult = result.taskResult
+        ? JSON.stringify(result.taskResult)
+        : null;
+
+      updateGuestAITaskById(guestTask.id, {
+        status: result.taskStatus,
+        taskInfo,
+        taskResult,
+      });
+
+      return respData({
+        id: guestTask.id,
+        status: result.taskStatus,
+        provider: guestTask.provider,
+        model: guestTask.model,
+        prompt: guestTask.prompt,
+        options: guestTask.options,
+        taskInfo,
+        taskResult,
+      });
+    }
+
     if (!user) {
       return respErr('no auth, please sign in');
     }
@@ -26,6 +107,15 @@ export async function POST(req: Request) {
 
     if (task.userId !== user.id) {
       return respErr('no permission');
+    }
+
+    if (
+      [AITaskStatus.SUCCESS, AITaskStatus.FAILED, AITaskStatus.CANCELED].includes(
+        task.status as AITaskStatus
+      ) &&
+      task.taskInfo
+    ) {
+      return respData(task);
     }
 
     const aiService = await getAIService();

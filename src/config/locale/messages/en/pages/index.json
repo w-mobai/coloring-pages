@@ -7,6 +7,7 @@
     "title": "What Generation Am I",
     "show_sections": [
       "hero",
+      "generated_gallery",
       "logos",
       "introduce",
       "benefits",
@@ -22,61 +23,25 @@
       "hero": {
         "disabled": false,
         "id": "hero",
-        "title": "What Generation Am I?",
-        "highlight_text": "Generation",
-        "description": "",
-        "announcement": {
-          "badge": "New",
-          "title": "🎉 AI-Powered Generation Analysis",
-          "url": "#hero"
-        },
-        "tip": "Birth year <span class='text-foreground'>required</span> • Birth month <span class='text-foreground'>optional</span> for more accurate results",
-        "buttons": [
-          {
-            "title": "Get Started",
-            "icon": "Zap",
-            "url": "#hero",
-            "target": "_self",
-            "variant": "default"
-          },
-          {
-            "title": "Read Document",
-            "icon": "BookOpenText",
-            "url": "/how-to-find-your-generation",
-            "target": "_blank",
-            "variant": "outline"
-          }
-        ],
-        "show_avatars": true,
-        "avatars_tip": "999+ users discovering their generation",
-        "show_award": false,
-        "show_generation_finder": true,
-        "generation_finder": {
-          "yearLabel": "Birth Year",
-          "yearPlaceholder": "Select your birth year",
-          "monthLabel": "Birth Month",
-          "monthPlaceholder": "Select month (optional)",
-          "analyzeButton": "Analyze with AI",
-          "analyzing": "Analyzing...",
-          "errorTitle": "Analysis Error",
-          "retryButton": "Retry"
-        },
-        "image": {
-          "src": "/imgs/features/admin.png",
-          "alt": "AI generation finder interface for birth year analysis",
-          "width": 1200,
-          "height": 800
-        },
-        "image_invert": {
-          "src": "/imgs/features/admin-dark.png",
-          "alt": "AI generation finder interface for birth year analysis",
-          "width": 1200,
-          "height": 800
-        },
+        "title": "AI Coloring Page",
+        "highlight_text": "AI Coloring Page",
+        "description": "Create printable black-and-white coloring pages with AI. Choose age group and aspect ratio, then generate in seconds.",
+        "show_generation_finder": false,
+        "show_coloring_generator": true,
         "background_image": {
-          "src": "/imgs/bg/family.webp",
-          "alt": ""
-        }
+          "src": "/imgs/bg/color.webp",
+          "alt": "Background decoration"
+        },
+        "className": ""
+      },
+      "generated_gallery": {
+        "disabled": false,
+        "block": "generated-gallery",
+        "id": "generated-gallery",
+        "title": "Latest Generated Coloring Pages",
+        "description": "A live gallery of recently generated coloring pages.",
+        "limit": 24,
+        "className": ""
       },
       "generation-finder": {
         "disabled": false,
@@ -448,6 +413,18 @@
           "action": "/api/subscribe"
         },
         "className": "bg-muted"
+      },
+      "coloring-page-generator": {
+        "disabled": false,
+        "id": "coloring-page-generator",
+        "title": "AI Coloring Page Generator",
+        "description": "Create printable black-and-white coloring pages with AI. Choose age group and aspect ratio, then generate in seconds.",
+        "srOnlyTitle": "AI Coloring Page Generator Tool",
+        "allowMultipleImages": true,
+        "maxImages": 9,
+        "maxSizeMB": 5,
+        "className": "bg-muted",
+        "block": "coloring-page-generator"
       }
     }
   }

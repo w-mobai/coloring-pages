@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, Calendar, Loader2, Sparkles, X } from 'lucide-react';
 
-import { SmartIcon } from '@/shared/blocks/common';
 import { ResultDisplay } from '@/shared/blocks/generation-finder/result-display';
+import { ColoringPageGenerator } from '@/shared/blocks/generator/coloring-page';
 import { Button } from '@/shared/components/ui/button';
 import {
   Select,
@@ -28,13 +28,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/shared/components/ui/tooltip';
-import { Progress } from '@/shared/components/ui/progress';
 import { Highlighter } from '@/shared/components/ui/highlighter';
 import { cn } from '@/shared/lib/utils';
 import { Section } from '@/shared/types/blocks/landing';
 import type { AIGenerationResponse } from '@/lib/ai/generation-synthesizer';
-
-import { SocialAvatars } from './social-avatars';
 
 export function Hero({
   section,
@@ -168,11 +165,28 @@ export function Hero({
     <section
       id={section.id}
       className={cn(
-        `pt-24 pb-8 md:pt-36 md:pb-8`,
+        `pt-18 pb-8 md:pt-27 md:pb-8`,
         section.className,
         className
       )}
     >
+      {section.background_image?.src && (
+        <div className="absolute top-0 left-0 right-0 h-[80%] -z-10 hidden w-full overflow-hidden md:block">
+          <div className="from-background/80 via-background/60 to-background absolute inset-0 z-10 bg-gradient-to-b" />
+          <Image
+            src={section.background_image.src}
+            alt={section.background_image.alt || 'Background decoration'}
+            className="object-cover opacity-10 blur-[0px]"
+            style={{ filter: 'grayscale(50%)' }}
+            fill
+            loading="lazy"
+            sizes="(max-width: 768px) 0vw, 100vw"
+            quality={70}
+            unoptimized={section.background_image.src.startsWith('http')}
+          />
+        </div>
+      )}
+
       {section.announcement && announcementHref && (
         <Link
           href={announcementHref}
@@ -199,24 +213,54 @@ export function Hero({
       )}
 
       <div className="relative mx-auto max-w-full px-4 text-center md:max-w-5xl">
-        {texts && texts.length > 0 ? (
-          <h1 className="text-foreground text-4xl font-semibold text-balance sm:text-6xl">
-            {texts[0]}
-            <Highlighter action="underline" color="#FF9800">
-              {highlightText}
-            </Highlighter>
-            {texts[1]}
-          </h1>
-        ) : (
-          <h1 className="text-foreground text-4xl font-semibold text-balance sm:text-6xl">
-            {section.title}
-          </h1>
-        )}
+        {/* Logo + Title */}
+        <div className="flex items-center justify-center gap-3">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="h-16 w-auto md:h-20"
+          />
+          {texts && texts.length > 0 ? (
+            <h1 className="text-foreground text-2xl font-semibold text-balance sm:text-4xl">
+              {texts[0]}
+              <Highlighter action="underline" color="#FE8A9D">
+                {highlightText}
+              </Highlighter>
+              {texts[1]}
+            </h1>
+          ) : (
+            <h1 className="text-foreground text-2xl font-semibold text-balance sm:text-4xl">
+              {section.title}
+            </h1>
+          )}
+        </div>
 
         <p
-          className="text-muted-foreground mt-8 mb-8 text-lg text-balance"
+          className="text-muted-foreground mt-3 mb-6 text-base text-balance"
           dangerouslySetInnerHTML={{ __html: section.description ?? '' }}
         />
+
+        {/* Feature Tags */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+          <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#fbbf24' }}>
+            Nano Banana Pro
+          </span>
+          <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#f97316' }}>
+            Free
+          </span>
+          <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#14b8a6' }}>
+            AI Powered
+          </span>
+          <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#3b82f6' }}>
+            No Login
+          </span>
+        </div>
+
+        {section.show_coloring_generator && (
+          <div className="mt-12 max-w-5xl mx-auto">
+            <ColoringPageGenerator />
+          </div>
+        )}
 
         {section.show_generation_finder && (
           <div className="mt-12 max-w-3xl mx-auto space-y-8">
@@ -383,22 +427,6 @@ export function Hero({
           />
         )}
       </div>
-
-      {section.background_image?.src && (
-        <div className="absolute top-0 left-0 right-0 -z-10 hidden w-full overflow-hidden md:block" style={{ height: '60%' }}>
-          <div className="from-background/80 via-background/80 to-background absolute inset-0 z-10 bg-gradient-to-b" />
-          <Image
-            src={section.background_image.src}
-            alt={section.background_image.alt || 'Background decoration'}
-            className="object-cover opacity-90 blur-[0px]"
-            fill
-            loading="lazy"
-            sizes="(max-width: 768px) 0vw, 100vw"
-            quality={70}
-            unoptimized={section.background_image.src.startsWith('http')}
-          />
-        </div>
-      )}
     </section>
   );
 }

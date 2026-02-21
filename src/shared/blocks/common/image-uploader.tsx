@@ -26,6 +26,7 @@ interface ImageUploaderProps {
   emptyHint?: string;
   className?: string;
   defaultPreviews?: string[];
+  allowDataUrlFallback?: boolean;
   onChange?: (items: ImageUploaderValue[]) => void;
 }
 
@@ -43,25 +44,50 @@ const formatBytes = (bytes?: number) => {
   return `${mb.toFixed(2)} MB`;
 };
 
-const uploadImageFile = async (file: File) => {
-  const formData = new FormData();
-  formData.append('files', file);
-
-  const response = await fetch('/api/storage/upload-image', {
-    method: 'POST',
-    body: formData,
+const fileToDataUrl = async (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () =>
+      reject(reader.error || new Error('Failed to read file'));
+    reader.readAsDataURL(file);
   });
 
-  if (!response.ok) {
-    throw new Error(`Upload failed with status ${response.status}`);
-  }
+const uploadImageFile = async ({
+  file,
+  allowDataUrlFallback,
+}: {
+  file: File;
+  allowDataUrlFallback: boolean;
+}) => {
+  try {
+    const formData = new FormData();
+    formData.append('files', file);
 
-  const result = await response.json();
-  if (result.code !== 0 || !result.data?.urls?.length) {
-    throw new Error(result.message || 'Upload failed');
-  }
+    const response = await fetch('/api/storage/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
 
-  return result.data.urls[0] as string;
+    if (!response.ok) {
+      throw new Error(`Upload failed with status ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.code !== 0 || !result.data?.urls?.length) {
+      throw new Error(result.message || 'Upload failed');
+    }
+
+    return result.data.urls[0] as string;
+  } catch (error) {
+    if (allowDataUrlFallback && process.env.NODE_ENV !== 'production') {
+      toast.warning(
+        'Storage upload unavailable in dev. Using inline avatar data temporarily.'
+      );
+      return fileToDataUrl(file);
+    }
+    throw error;
+  }
 };
 
 export function ImageUploader({
@@ -72,6 +98,7 @@ export function ImageUploader({
   emptyHint,
   className,
   defaultPreviews,
+  allowDataUrlFallback = false,
   onChange,
 }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -198,7 +225,7 @@ export function ImageUploader({
         })
       );
 
-      uploadImageFile(file)
+      uploadImageFile({ file, allowDataUrlFallback })
         .then((url) => {
           setItems((prev) =>
             prev.map((item) => {
@@ -321,7 +348,10 @@ export function ImageUploader({
     Promise.all(
       newItems.map(async (item) => {
         try {
-          const url = await uploadImageFile(item.file as File);
+          const url = await uploadImageFile({
+            file: item.file as File,
+            allowDataUrlFallback,
+          });
           setItems((prev) => {
             const next = prev.map((current) => {
               if (current.id === item.id) {

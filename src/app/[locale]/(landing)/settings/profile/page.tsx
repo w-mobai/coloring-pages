@@ -28,6 +28,7 @@ export default async function ProfilePage() {
         type: 'upload_image',
         metadata: {
           max: 1,
+          allowDataUrlFallback: true,
         },
       },
     ],

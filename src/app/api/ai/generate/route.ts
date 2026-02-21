@@ -1,5 +1,6 @@
 import { envConfigs } from '@/config';
 import { AIMediaType } from '@/extensions/ai';
+import { getGuestOwnerKey, saveGuestAITask } from '@/shared/lib/guest-ai-task';
 import { getUuid } from '@/shared/lib/hash';
 import { respData, respErr } from '@/shared/lib/resp';
 import { createAITask, NewAITask } from '@/shared/models/ai_task';
@@ -35,9 +36,7 @@ export async function POST(request: Request) {
 
     // get current user
     const user = await getUserInfo();
-    if (!user) {
-      throw new Error('no auth, please sign in');
-    }
+    const isGuest = !user;
 
     // todo: get cost credits from settings
     let costCredits = 2;
@@ -70,10 +69,22 @@ export async function POST(request: Request) {
       throw new Error('invalid mediaType');
     }
 
-    // check credits
-    const remainingCredits = await getRemainingCredits(user.id);
-    if (remainingCredits < costCredits) {
-      throw new Error('insufficient credits');
+    if (isGuest) {
+      const guestAllowed =
+        mediaType === AIMediaType.IMAGE &&
+        scene === 'text-to-image' &&
+        provider === 'kie' &&
+        model === 'nano-banana-pro';
+      if (!guestAllowed) {
+        throw new Error('no auth, please sign in');
+      }
+      costCredits = 0;
+    } else {
+      // check credits
+      const remainingCredits = await getRemainingCredits(user.id);
+      if (remainingCredits < costCredits) {
+        throw new Error('insufficient credits');
+      }
     }
 
     const callbackUrl = `${envConfigs.app_url}/api/ai/notify/${provider}`;
@@ -92,6 +103,41 @@ export async function POST(request: Request) {
       throw new Error(
         `ai generate failed, mediaType: ${mediaType}, provider: ${provider}, model: ${model}`
       );
+    }
+
+    if (isGuest) {
+      const guestTaskId = `guest_${getUuid()}`;
+      const taskInfo = result.taskInfo ? JSON.stringify(result.taskInfo) : null;
+      const taskResult = result.taskResult
+        ? JSON.stringify(result.taskResult)
+        : null;
+      saveGuestAITask({
+        id: guestTaskId,
+        ownerKey: getGuestOwnerKey(request),
+        providerTaskId: result.taskId,
+        mediaType,
+        provider,
+        model,
+        scene,
+        prompt,
+        options: options ? JSON.stringify(options) : null,
+        status: result.taskStatus,
+        taskInfo,
+        taskResult,
+        createdAt: Date.now(),
+      });
+
+      return respData({
+        id: guestTaskId,
+        status: result.taskStatus,
+        provider,
+        model,
+        prompt,
+        options: options ? JSON.stringify(options) : null,
+        taskInfo,
+        taskResult,
+        costCredits: 0,
+      });
     }
 
     // create ai task

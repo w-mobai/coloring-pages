@@ -21,7 +21,7 @@
         {
           "title": "AI 工具",
           "icon": "Sparkles",
-          "hidden": true,
+          "hidden": false,
           "children": [
             {
               "title": "AI 对话",
