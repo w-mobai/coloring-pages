@@ -71,7 +71,7 @@
     "buttons": [],
     "user_nav": {
       "show_name": true,
-      "show_credits": false,
+      "show_credits": true,
       "show_sign_out": true,
       "items": []
     },

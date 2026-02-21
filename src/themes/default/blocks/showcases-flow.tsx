@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Link } from '@/core/i18n/navigation';
 import { LazyImage } from '@/shared/blocks/common';
@@ -71,6 +72,7 @@ export function ShowcasesFlow({
       return;
     }
 
+    const toastId = toast.loading('Downloading...');
     const src = filteredItems[selectedIndex].image?.src as string;
     const title = filteredItems[selectedIndex].title || 'image';
     const safeTitle = title
@@ -103,20 +105,26 @@ export function ShowcasesFlow({
       return null;
     };
 
-    const proxyUrl = `/api/proxy/file?url=${encodeURIComponent(src)}`;
-    let blob = await fetchBlob(proxyUrl);
-    if (!blob) {
-      blob = await fetchBlob(src);
-    }
+    try {
+      const proxyUrl = `/api/proxy/file?url=${encodeURIComponent(src)}`;
+      let blob = await fetchBlob(proxyUrl);
+      if (!blob) {
+        blob = await fetchBlob(src);
+      }
 
-    if (blob) {
-      const blobUrl = URL.createObjectURL(blob);
-      triggerDownload(blobUrl);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-      return;
-    }
+      if (blob) {
+        const blobUrl = URL.createObjectURL(blob);
+        triggerDownload(blobUrl);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+        toast.success('Image downloaded', { id: toastId });
+        return;
+      }
 
-    triggerDownload(src);
+      triggerDownload(src);
+      toast.success('Image downloaded', { id: toastId });
+    } catch {
+      toast.error('Download failed', { id: toastId });
+    }
   }, [filteredItems, selectedIndex]);
 
   return (
@@ -323,7 +331,7 @@ export function ShowcasesFlow({
                 className="relative flex h-full w-full items-center justify-center"
               >
                 <div
-                  className="flex items-start gap-3"
+                  className="flex flex-col items-center gap-3 md:flex-row md:items-start"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="relative max-h-full max-w-full overflow-hidden rounded-lg">
@@ -394,7 +402,7 @@ export function ShowcasesFlow({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="mt-1 bg-black/30 text-white hover:bg-black/50 hover:text-white"
+                      className="self-center bg-black/30 text-white hover:bg-black/50 hover:text-white md:mt-1 md:self-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDownload();

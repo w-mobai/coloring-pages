@@ -151,19 +151,20 @@ pre {
   0%,
   100% {
     box-shadow:
-      0 0 5px 1px rgba(244, 114, 182, 0.05),
-      0 0 10px 2px rgba(244, 114, 182, 0.03);
+      0 0 6px 1px oklch(0.75 0.15 10 / 0.16),
+      0 0 12px 3px oklch(0.75 0.15 10 / 0.1);
   }
   50% {
     box-shadow:
-      0 0 10px 2px rgba(244, 114, 182, 0.3),
-      0 0 18px 5px rgba(244, 114, 182, 0.16),
-      0 0 28px 8px rgba(244, 114, 182, 0.08);
+      0 0 10px 2px oklch(0.75 0.15 10 / 0.34),
+      0 0 18px 5px oklch(0.75 0.15 10 / 0.22),
+      0 0 26px 8px oklch(0.75 0.15 10 / 0.12);
   }
 }
 
 .generate-glow {
-  animation: generate-glow 2.2s ease-in-out infinite;
+  animation: generate-glow 2s ease-in-out infinite;
+  will-change: box-shadow;
 }
 
 ::view-transition-old(root),

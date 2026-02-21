@@ -11,6 +11,7 @@ import {
 } from 'react';
 import {
   Baby,
+  Coins,
   CreditCard,
   Download,
   ImageIcon,
@@ -1028,6 +1029,8 @@ export function ColoringPageGenerator({
       return;
     }
 
+    const toastId = toast.loading(t('downloading'));
+
     try {
       setIsDownloading(true);
       const themePrefix = buildThemePrefix(theme.trim() || image.prompt || '');
@@ -1088,16 +1091,16 @@ export function ColoringPageGenerator({
         const blobUrl = URL.createObjectURL(blob);
         triggerDownload(blobUrl);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-        toast.success(t('success_downloaded'));
+        toast.success(t('success_downloaded'), { id: toastId });
         return;
       }
 
       // Final fallback: open source URL directly.
       triggerDownload(image.url);
-      toast.success(t('success_downloaded'));
+      toast.success(t('success_downloaded'), { id: toastId });
     } catch (error) {
       console.error('Failed to download image:', error);
-      toast.error(t('error_download_failed'));
+      toast.error(t('error_download_failed'), { id: toastId });
     } finally {
       setIsDownloading(false);
     }
@@ -1161,7 +1164,7 @@ export function ColoringPageGenerator({
                     ? t('form.uploading_image')
                     : t('form.add_image')
                 }
-                className="h-10 w-10 p-0"
+                className="h-10 w-10 p-0 hover:bg-background hover:text-foreground"
               >
                 {isReferenceUploading ? (
                   <Loader2 className="size-5 animate-spin" />
@@ -1447,9 +1450,13 @@ export function ColoringPageGenerator({
             {/* Credits/Trials Info - Left Side */}
             {user ? (
               remainingCredits > 0 ? (
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-muted-foreground">
-                    {t('credits_remaining', { credits: remainingCredits })}
+                <div className="flex items-center gap-2 text-sm">
+                  <Coins className="text-primary h-4 w-4" />
+                  <span className="text-primary font-medium tabular-nums">
+                    {remainingCredits}
+                  </span>
+                  <span className="text-muted-foreground/70">
+                    {t('credits_unit')}
                   </span>
                 </div>
               ) : (
@@ -1630,14 +1637,14 @@ export function ColoringPageGenerator({
 
                 {isDownloading ? (
                   <div
-                    className="mx-auto flex h-9 w-1/2 items-center justify-center overflow-hidden"
+                    className="mx-auto flex h-8 items-center justify-center overflow-hidden"
                     data-testid="download-animation"
                   >
-                    <div className="h-6 w-16 overflow-hidden leading-none">
+                    <div className="h-full w-auto overflow-hidden leading-none">
                       {createElement('dotlottie-wc', {
                         src: 'https://lottie.host/e4210039-94a2-4ff7-9401-2d7fa9b51468/gNQwldGPzW.lottie',
                         style: {
-                          width: '100%',
+                          width: 'auto',
                           height: '100%',
                           maxHeight: '100%',
                           display: 'block',
@@ -1684,7 +1691,7 @@ export function ColoringPageGenerator({
                 className="relative flex h-full w-full items-center justify-center"
               >
                 <div
-                  className="flex items-start gap-3"
+                  className="flex flex-col items-center gap-3 md:flex-row md:items-start"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="relative max-h-full max-w-full overflow-hidden rounded-lg">
@@ -1699,7 +1706,7 @@ export function ColoringPageGenerator({
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="mt-1 bg-black/30 text-white hover:bg-black/50 hover:text-white"
+                    className="self-center bg-black/30 text-white hover:bg-black/50 hover:text-white md:mt-1 md:self-auto"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDownloadImage(generatedImage);
