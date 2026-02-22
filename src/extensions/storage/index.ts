@@ -59,6 +59,12 @@ export interface StorageProvider {
   // get public url for key (optional)
   getPublicUrl?: (options: { key: string; bucket?: string }) => string;
 
+  // resolve object key from a public URL (optional)
+  getKeyFromUrl?: (url: string) => string | null;
+
+  // delete object (optional)
+  deleteFile?: (options: { key: string; bucket?: string }) => Promise<boolean>;
+
   // upload file
   uploadFile(options: StorageUploadOptions): Promise<StorageUploadResult>;
 
@@ -140,6 +146,31 @@ export class StorageManager {
     const provider = this.ensureDefaultProvider();
     if (!provider.getPublicUrl) return undefined;
     return provider.getPublicUrl(options);
+  }
+
+  // delete object by key using default provider (if supported)
+  async deleteFile(options: { key: string; bucket?: string }): Promise<boolean> {
+    const provider = this.ensureDefaultProvider();
+    if (!provider.deleteFile) return false;
+    return provider.deleteFile(options);
+  }
+
+  // resolve key by url and delete via matched provider
+  async deleteFileByUrl(url: string): Promise<boolean> {
+    for (const provider of this.providers) {
+      if (!provider.getKeyFromUrl || !provider.deleteFile) {
+        continue;
+      }
+
+      const key = provider.getKeyFromUrl(url);
+      if (!key) {
+        continue;
+      }
+
+      return provider.deleteFile({ key });
+    }
+
+    return false;
   }
 
   // download and upload using specific provider

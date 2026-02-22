@@ -31,9 +31,11 @@
   --sidebar-accent-foreground: oklch(0.2 0 0);
   --sidebar-border: oklch(0.8717 0.0093 258.3382);
   --sidebar-ring: oklch(0.75 0.15 10);
-  --font-sans: Noto Sans Mono, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
   --font-serif: Merriweather, serif;
   --font-mono: JetBrains Mono, monospace;
+  --font-heading: Fredoka, ui-sans-serif, system-ui, sans-serif;
+  --font-heading-cjk: ZCOOL KuaiLe, var(--font-sans);
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -91,9 +93,11 @@
   --sidebar-accent-foreground: oklch(0.8717 0.0093 258.3382);
   --sidebar-border: oklch(0.4461 0.0263 256.8018);
   --sidebar-ring: oklch(0.78 0.15 10);
-  --font-sans: Noto Sans Mono, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
   --font-serif: Merriweather, serif;
   --font-mono: JetBrains Mono, monospace;
+  --font-heading: Fredoka, ui-sans-serif, system-ui, sans-serif;
+  --font-heading-cjk: ZCOOL KuaiLe, var(--font-sans);
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -153,6 +157,8 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+  --font-heading: var(--font-heading);
+  --font-heading-cjk: var(--font-heading-cjk);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

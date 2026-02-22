@@ -53,6 +53,8 @@ export interface AIGenerateParams {
   mediaType: AIMediaType;
   prompt: string;
   model?: string;
+  // storage key prefix, e.g. users/<userId>
+  storageKeyPrefix?: string;
   // custom options
   options?: any;
   // receive notify result
@@ -120,9 +122,11 @@ export interface AIProvider {
     taskId,
     mediaType,
     model,
+    storageKeyPrefix,
   }: {
     taskId: string;
     mediaType?: string;
     model?: string;
+    storageKeyPrefix?: string;
   }): Promise<AITaskResult>;
 }

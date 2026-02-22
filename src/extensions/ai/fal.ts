@@ -115,10 +115,12 @@ export class FalProvider implements AIProvider {
     taskId,
     model,
     mediaType,
+    storageKeyPrefix,
   }: {
     taskId: string;
     model?: string;
     mediaType?: AIMediaType;
+    storageKeyPrefix?: string;
   }): Promise<AITaskResult> {
     // extract first two parts of model name for query url
     // e.g. fal-ai/bytedance/seedream/v4/edit -> fal-ai/bytedance
@@ -219,7 +221,9 @@ export class FalProvider implements AIProvider {
         });
 
         if (filesToSave.length > 0) {
-          const uploadedFiles = await saveFiles(filesToSave);
+          const uploadedFiles = await saveFiles(filesToSave, {
+            keyPrefix: storageKeyPrefix,
+          });
           if (uploadedFiles) {
             uploadedFiles.forEach((file: AIFile) => {
               if (file && file.url && images && file.index !== undefined) {
@@ -249,7 +253,9 @@ export class FalProvider implements AIProvider {
         });
 
         if (filesToSave.length > 0) {
-          const uploadedFiles = await saveFiles(filesToSave);
+          const uploadedFiles = await saveFiles(filesToSave, {
+            keyPrefix: storageKeyPrefix,
+          });
           if (uploadedFiles) {
             uploadedFiles.forEach((file: AIFile) => {
               if (file && file.url && videos && file.index !== undefined) {

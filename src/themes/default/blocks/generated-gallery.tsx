@@ -177,12 +177,12 @@ export function GeneratedGallery({
     return (
       <section
         id={section.id}
-        className={cn('py-24 md:py-36', section.className, className)}
+        className={cn('py-20', section.className, className)}
       >
         <div className="container">
           <div className="mx-auto mb-12 max-w-5xl text-center">
             {section.title && (
-              <h2 className="mb-6 text-3xl font-bold text-pretty lg:text-4xl">
+              <h2 className="text-foreground mb-4 text-2xl font-medium tracking-tight md:text-3xl">
                 {section.title}
               </h2>
             )}
@@ -203,12 +203,12 @@ export function GeneratedGallery({
     return (
       <section
         id={section.id}
-        className={cn('py-24 md:py-36', section.className, className)}
+        className={cn('py-20', section.className, className)}
       >
         <div className="container">
           <div className="mx-auto mb-12 max-w-5xl text-center">
             {section.title && (
-              <h2 className="mb-6 text-3xl font-bold text-pretty lg:text-4xl">
+              <h2 className="text-foreground mb-4 text-2xl font-medium tracking-tight md:text-3xl">
                 {section.title}
               </h2>
             )}

@@ -3,6 +3,7 @@ import { AIMediaType } from '@/extensions/ai';
 import { getGuestOwnerKey, saveGuestAITask } from '@/shared/lib/guest-ai-task';
 import { getUuid } from '@/shared/lib/hash';
 import { respData, respErr } from '@/shared/lib/resp';
+import { buildUserStorageKeyPrefix } from '@/shared/lib/storage-key-prefix';
 import { createAITask, NewAITask } from '@/shared/models/ai_task';
 import { getRemainingCredits } from '@/shared/models/credit';
 import { getUserInfo } from '@/shared/models/user';
@@ -88,6 +89,10 @@ export async function POST(request: Request) {
     }
 
     const callbackUrl = `${envConfigs.app_url}/api/ai/notify/${provider}`;
+    const storageKeyPrefix = buildUserStorageKeyPrefix({
+      email: user?.email,
+      fallbackId: user?.id,
+    });
 
     const params: any = {
       mediaType,
@@ -95,6 +100,7 @@ export async function POST(request: Request) {
       prompt,
       callbackUrl,
       options,
+      ...(storageKeyPrefix ? { storageKeyPrefix } : {}),
     };
 
     // generate content

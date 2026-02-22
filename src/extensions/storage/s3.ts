@@ -31,12 +31,84 @@ export class S3Provider implements StorageProvider {
     this.configs = configs;
   }
 
+  private trimSlashes(value: string) {
+    return value.replace(/^\/+|\/+$/g, '');
+  }
+
+  private joinPathParts(...parts: Array<string | undefined | null>) {
+    return parts
+      .map((part) => (part ? this.trimSlashes(part) : ''))
+      .filter(Boolean)
+      .join('/');
+  }
+
+  private resolveKeyFromPathname({
+    pathname,
+    basePathname,
+    bucket,
+  }: {
+    pathname: string;
+    basePathname: string;
+    bucket: string;
+  }): string | null {
+    const normalizedPath = this.trimSlashes(pathname);
+    const normalizedBase = this.trimSlashes(basePathname);
+    const prefixWithBucket = this.joinPathParts(normalizedBase, bucket);
+    const prefixWithoutBucket = normalizedBase;
+
+    for (const prefix of [prefixWithBucket, prefixWithoutBucket]) {
+      if (!prefix) {
+        continue;
+      }
+      const fullPrefix = `${prefix}/`;
+      if (normalizedPath.startsWith(fullPrefix)) {
+        return normalizedPath.slice(fullPrefix.length);
+      }
+    }
+
+    return null;
+  }
+
   getPublicUrl = (options: { key: string; bucket?: string }) => {
     const uploadBucket = options.bucket || this.configs.bucket;
     const url = `${this.configs.endpoint}/${uploadBucket}/${options.key}`;
     return this.configs.publicDomain
       ? `${this.configs.publicDomain}/${options.key}`
       : url;
+  };
+
+  getKeyFromUrl = (url: string): string | null => {
+    try {
+      const parsedUrl = new URL(url);
+      const uploadBucket = this.configs.bucket;
+
+      const endpoint = new URL(this.configs.endpoint);
+      if (parsedUrl.origin === endpoint.origin) {
+        const key = this.resolveKeyFromPathname({
+          pathname: parsedUrl.pathname,
+          basePathname: endpoint.pathname,
+          bucket: uploadBucket,
+        });
+        if (key) {
+          return key;
+        }
+      }
+
+      if (this.configs.publicDomain) {
+        const publicDomain = new URL(this.configs.publicDomain);
+        if (parsedUrl.origin === publicDomain.origin) {
+          return this.resolveKeyFromPathname({
+            pathname: parsedUrl.pathname,
+            basePathname: publicDomain.pathname,
+            bucket: uploadBucket,
+          });
+        }
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
   };
 
   exists = async (options: { key: string; bucket?: string }) => {
@@ -132,6 +204,33 @@ export class S3Provider implements StorageProvider {
         error: error instanceof Error ? error.message : 'Unknown error',
         provider: this.name,
       };
+    }
+  }
+
+  async deleteFile(options: { key: string; bucket?: string }): Promise<boolean> {
+    try {
+      const uploadBucket = options.bucket || this.configs.bucket;
+      if (!uploadBucket) {
+        return false;
+      }
+
+      const url = `${this.configs.endpoint}/${uploadBucket}/${options.key}`;
+      const { AwsClient } = await import('aws4fetch');
+      const client = new AwsClient({
+        accessKeyId: this.configs.accessKeyId,
+        secretAccessKey: this.configs.secretAccessKey,
+        region: this.configs.region,
+      });
+
+      const response = await client.fetch(
+        new Request(url, {
+          method: 'DELETE',
+        })
+      );
+
+      return response.ok || response.status === 404;
+    } catch {
+      return false;
     }
   }
 

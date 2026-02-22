@@ -2,7 +2,7 @@ import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { aiTask, credit } from '@/config/db/schema';
-import { AITaskStatus } from '@/extensions/ai';
+import { AIMediaType, AITaskStatus } from '@/extensions/ai';
 import { appendUserToResult, User } from '@/shared/models/user';
 
 import { consumeCredits, CreditStatus } from './credit';
@@ -168,4 +168,33 @@ export async function getAITasks({
   }
 
   return result;
+}
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/[%_\\]/g, '\\$&');
+}
+
+export async function countAITaskImageUrlReferences(
+  normalizedImageUrl: string
+): Promise<number> {
+  const target = normalizedImageUrl.trim();
+  if (!target) {
+    return 0;
+  }
+
+  const pattern = `%${escapeLikePattern(target)}%`;
+  const [result] = await db()
+    .select({ count: count() })
+    .from(aiTask)
+    .where(
+      and(
+        eq(aiTask.mediaType, AIMediaType.IMAGE),
+        sql`(
+          ${aiTask.taskResult} LIKE ${pattern} ESCAPE '\\'
+          OR ${aiTask.taskInfo} LIKE ${pattern} ESCAPE '\\'
+        )`
+      )
+    );
+
+  return result?.count || 0;
 }

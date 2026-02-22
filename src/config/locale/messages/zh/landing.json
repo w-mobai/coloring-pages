@@ -73,7 +73,13 @@
       "show_name": true,
       "show_credits": true,
       "show_sign_out": true,
-      "items": []
+      "items": [
+        {
+          "title": "历史记录",
+          "url": "/history",
+          "icon": "History"
+        }
+      ]
     },
     "show_sign": true,
     "show_theme": true,

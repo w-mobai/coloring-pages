@@ -35,7 +35,7 @@ export function FeaturesFlow({ section }: { section: Section }) {
       className={cn('py-16 md:py-24', section.className)}
     >
       <motion.div
-        className="container mb-12 text-center"
+        className="container mb-8 text-center"
         {...createFadeInVariant(0)}
       >
         {section.sr_only_title && (

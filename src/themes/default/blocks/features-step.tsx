@@ -25,7 +25,7 @@ export function FeaturesStep({
           <ScrollAnimation>
             <div className="mx-auto max-w-2xl text-center">
               <span className="text-primary">{section.label}</span>
-              <h2 className="text-foreground mt-4 text-4xl font-semibold">
+              <h2 className="text-foreground mt-4 mb-4 text-3xl font-semibold tracking-tight md:text-4xl">
                 {section.title}
               </h2>
               <p className="text-muted-foreground mt-4 text-lg text-balance">

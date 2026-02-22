@@ -101,9 +101,11 @@ export class ReplicateProvider implements AIProvider {
   async query({
     taskId,
     mediaType,
+    storageKeyPrefix,
   }: {
     taskId: string;
     mediaType?: AIMediaType;
+    storageKeyPrefix?: string;
   }): Promise<AITaskResult> {
     const data = await this.client.predictions.get(taskId);
 
@@ -168,7 +170,9 @@ export class ReplicateProvider implements AIProvider {
         });
 
         if (filesToSave.length > 0) {
-          const uploadedFiles = await saveFiles(filesToSave);
+          const uploadedFiles = await saveFiles(filesToSave, {
+            keyPrefix: storageKeyPrefix,
+          });
           if (uploadedFiles) {
             uploadedFiles.forEach((file: AIFile) => {
               if (file && file.url && images && file.index !== undefined) {
@@ -198,7 +202,9 @@ export class ReplicateProvider implements AIProvider {
         });
 
         if (filesToSave.length > 0) {
-          const uploadedFiles = await saveFiles(filesToSave);
+          const uploadedFiles = await saveFiles(filesToSave, {
+            keyPrefix: storageKeyPrefix,
+          });
           if (uploadedFiles) {
             uploadedFiles.forEach((file: AIFile) => {
               if (file && file.url && videos && file.index !== undefined) {

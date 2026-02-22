@@ -1,6 +1,11 @@
 import '@/config/style/global.css';
 
-import { JetBrains_Mono, Merriweather, Noto_Sans_Mono } from 'next/font/google';
+import {
+  Fredoka,
+  JetBrains_Mono,
+  Merriweather,
+  ZCOOL_KuaiLe,
+} from 'next/font/google';
 import { getLocale, setRequestLocale } from 'next-intl/server';
 import NextTopLoader from 'nextjs-toploader';
 
@@ -14,13 +19,6 @@ import { getAffiliateService } from '@/shared/services/affiliate';
 import { getAnalyticsService } from '@/shared/services/analytics';
 import { getCustomerService } from '@/shared/services/customer_service';
 
-const notoSansMono = Noto_Sans_Mono({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-  preload: true,
-});
-
 const merriweather = Merriweather({
   subsets: ['latin'],
   weight: ['400', '700'],
@@ -32,6 +30,22 @@ const merriweather = Merriweather({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
+  display: 'swap',
+  preload: true,
+});
+
+const fredoka = Fredoka({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-heading',
+  display: 'swap',
+  preload: true,
+});
+
+const zcoolKuaiLe = ZCOOL_KuaiLe({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-heading-cjk',
   display: 'swap',
   preload: true,
 });
@@ -105,7 +119,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${notoSansMono.variable} ${merriweather.variable} ${jetbrainsMono.variable}`}
+      className={`${merriweather.variable} ${jetbrainsMono.variable} ${fredoka.variable} ${zcoolKuaiLe.variable}`}
       suppressHydrationWarning
     >
       <head>

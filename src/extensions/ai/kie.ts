@@ -297,7 +297,13 @@ export class KieProvider implements AIProvider {
     throw new Error(`mediaType not supported: ${params.mediaType}`);
   }
 
-  async queryImage({ taskId }: { taskId: string }): Promise<AITaskResult> {
+  async queryImage({
+    taskId,
+    storageKeyPrefix,
+  }: {
+    taskId: string;
+    storageKeyPrefix?: string;
+  }): Promise<AITaskResult> {
     const apiUrl = `${this.baseUrl}/jobs/recordInfo?taskId=${taskId}`;
     const headers = {
       'Content-Type': 'application/json',
@@ -358,7 +364,9 @@ export class KieProvider implements AIProvider {
       }
 
       if (filesToSave.length > 0) {
-        const uploadedFiles = await saveFiles(filesToSave);
+        const uploadedFiles = await saveFiles(filesToSave, {
+          keyPrefix: storageKeyPrefix,
+        });
         if (uploadedFiles) {
           uploadedFiles.forEach((file: AIFile) => {
             if (file && file.url && images && file.index !== undefined) {
@@ -386,7 +394,13 @@ export class KieProvider implements AIProvider {
     };
   }
 
-  async queryVideo({ taskId }: { taskId: string }): Promise<AITaskResult> {
+  async queryVideo({
+    taskId,
+    storageKeyPrefix,
+  }: {
+    taskId: string;
+    storageKeyPrefix?: string;
+  }): Promise<AITaskResult> {
     const apiUrl = `${this.baseUrl}/jobs/recordInfo?taskId=${taskId}`;
     const headers = {
       'Content-Type': 'application/json',
@@ -448,7 +462,9 @@ export class KieProvider implements AIProvider {
       });
 
       if (filesToSave.length > 0) {
-        const uploadedFiles = await saveFiles(filesToSave);
+        const uploadedFiles = await saveFiles(filesToSave, {
+          keyPrefix: storageKeyPrefix,
+        });
         if (uploadedFiles) {
           uploadedFiles.forEach((file: AIFile) => {
             if (file && file.url && videos && file.index !== undefined) {
@@ -480,16 +496,18 @@ export class KieProvider implements AIProvider {
   async query({
     taskId,
     mediaType,
+    storageKeyPrefix,
   }: {
     taskId: string;
     mediaType?: AIMediaType;
+    storageKeyPrefix?: string;
   }): Promise<AITaskResult> {
     if (mediaType === AIMediaType.IMAGE) {
-      return this.queryImage({ taskId });
+      return this.queryImage({ taskId, storageKeyPrefix });
     }
 
     if (mediaType === AIMediaType.VIDEO) {
-      return this.queryVideo({ taskId });
+      return this.queryVideo({ taskId, storageKeyPrefix });
     }
 
     const apiUrl = `${this.baseUrl}/generate/record-info?taskId=${taskId}`;
@@ -565,7 +583,9 @@ export class KieProvider implements AIProvider {
       });
 
       if (audioFilesToSave.length > 0) {
-        const uploadedFiles = await saveFiles(audioFilesToSave);
+        const uploadedFiles = await saveFiles(audioFilesToSave, {
+          keyPrefix: storageKeyPrefix,
+        });
         if (uploadedFiles) {
           uploadedFiles.forEach((file: AIFile) => {
             if (file && file.url && songs && file.index !== undefined) {
@@ -577,7 +597,9 @@ export class KieProvider implements AIProvider {
       }
 
       if (imageFilesToSave.length > 0) {
-        const uploadedFiles = await saveFiles(imageFilesToSave);
+        const uploadedFiles = await saveFiles(imageFilesToSave, {
+          keyPrefix: storageKeyPrefix,
+        });
         if (uploadedFiles) {
           uploadedFiles.forEach((file: AIFile) => {
             if (file && file.url && songs && file.index !== undefined) {

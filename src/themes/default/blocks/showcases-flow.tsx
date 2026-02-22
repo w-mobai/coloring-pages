@@ -19,6 +19,7 @@ export function ShowcasesFlow({
   section: Section;
   className?: string;
 }) {
+  const isGeneratedGallerySection = section.id === 'generated-gallery';
   const groups = (section as any).groups || [];
   const showFullDescriptionInModal = Boolean(
     (section as any).show_full_description_in_modal
@@ -130,10 +131,10 @@ export function ShowcasesFlow({
   return (
     <section
       id={section.id || section.name}
-      className={cn('py-24 md:py-36', section.className, className)}
+      className={cn('py-20', section.className, className)}
     >
       <motion.div
-        className="container mb-12 text-center"
+        className="container mb-4 text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -145,12 +146,21 @@ export function ShowcasesFlow({
         {section.sr_only_title && (
           <h1 className="sr-only">{section.sr_only_title}</h1>
         )}
-        <h2 className="mx-auto mb-6 max-w-full text-3xl font-bold text-pretty md:max-w-5xl lg:text-4xl">
+        <h2
+          className={cn(
+            'text-foreground mx-auto mb-4 max-w-full tracking-tight md:max-w-5xl',
+            isGeneratedGallerySection
+              ? 'text-2xl font-medium md:text-3xl'
+              : 'text-3xl font-semibold md:text-4xl'
+          )}
+        >
           {section.title}
         </h2>
-        <p className="text-muted-foreground text-md mx-auto mb-4 line-clamp-3 max-w-full md:max-w-5xl">
-          {section.description}
-        </p>
+        {section.description && (
+          <p className="text-muted-foreground text-md mx-auto mb-4 line-clamp-3 max-w-full md:max-w-5xl">
+            {section.description}
+          </p>
+        )}
         {section.buttons && section.buttons.length > 0 && (
           <div className="container mx-auto mt-8 mb-12 flex flex-wrap justify-center gap-4">
             {section.buttons.map((button) => (
@@ -172,7 +182,7 @@ export function ShowcasesFlow({
 
       {groups.length > 0 && (
         <motion.div
-          className="container mb-12 flex flex-wrap justify-center gap-4"
+          className="container mb-8 flex flex-wrap justify-center gap-4"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -292,7 +302,7 @@ export function ShowcasesFlow({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm md:p-8"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm md:p-8"
               onClick={() => setSelectedIndex(null)}
             >
               <button
@@ -334,13 +344,14 @@ export function ShowcasesFlow({
                   className="flex flex-col items-center gap-3 md:flex-row md:items-start"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="relative max-h-full max-w-full overflow-hidden rounded-lg">
-                    <LazyImage
+                  <div className="relative max-h-full max-w-full overflow-hidden rounded-lg bg-white leading-none">
+                    <img
                       src={filteredItems[selectedIndex].image?.src ?? ''}
                       alt={filteredItems[selectedIndex].image?.alt ?? ''}
-                      className="h-auto max-h-[90vh] w-auto max-w-full object-contain"
+                      className="block h-auto max-h-[90vh] w-auto max-w-full object-contain align-top"
+                      loading="eager"
                     />
-                    <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 text-white">
+                    <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-6 text-white">
                       <h3 className="mb-2 text-2xl font-bold">
                         {filteredItems[selectedIndex].title}
                       </h3>

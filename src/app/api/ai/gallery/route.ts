@@ -1,5 +1,10 @@
 import { AIMediaType, AITaskStatus } from '@/extensions/ai';
 import { respData, respErr } from '@/shared/lib/resp';
+import {
+  extractImageUrls,
+  normalizeImageUrlForDedup,
+  safeParseJSON,
+} from '@/shared/lib/ai-image-history';
 import { getAITasks } from '@/shared/models/ai_task';
 
 const DEFAULT_LIMIT = 24;
@@ -69,93 +74,12 @@ const CATEGORY_RULES: Array<{ key: string; keywords: string[] }> = [
   },
 ];
 
-function safeParseJSON(value: string | null): any {
-  if (!value) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
-
-function extractImageUrls(payload: any): string[] {
-  if (!payload) {
-    return [];
-  }
-
-  const output =
-    payload.output ??
-    payload.images ??
-    payload.data ??
-    payload.resultUrls ??
-    payload.urls;
-
-  if (!output && payload.resultJson) {
-    return extractImageUrls(safeParseJSON(payload.resultJson));
-  }
-
-  if (!output) {
-    return [];
-  }
-
-  if (typeof output === 'string') {
-    return [output];
-  }
-
-  if (Array.isArray(output)) {
-    return output
-      .flatMap((item) => {
-        if (!item) return [];
-        if (typeof item === 'string') return [item];
-        if (typeof item === 'object') {
-          const candidate =
-            item.url ??
-            item.uri ??
-            item.image ??
-            item.src ??
-            item.imageUrl ??
-            item.originalUrl;
-          return typeof candidate === 'string' ? [candidate] : [];
-        }
-        return [];
-      })
-      .filter(Boolean);
-  }
-
-  if (typeof output === 'object') {
-    const candidate =
-      output.url ??
-      output.uri ??
-      output.image ??
-      output.src ??
-      output.imageUrl ??
-      output.originalUrl;
-    if (typeof candidate === 'string') {
-      return [candidate];
-    }
-  }
-
-  return [];
-}
-
 function isLikelyHttpUrl(value: string): boolean {
   try {
     const url = new URL(value);
     return url.protocol === 'http:' || url.protocol === 'https:';
   } catch {
     return false;
-  }
-}
-
-function normalizeImageUrlForDedup(value: string): string {
-  try {
-    const parsed = new URL(value);
-    return `${parsed.origin}${parsed.pathname}`;
-  } catch {
-    return value.split('#')[0].split('?')[0] || value;
   }
 }
 
@@ -291,10 +215,6 @@ export async function GET(req: Request) {
         categoryKey: classifyPrompt(userPrompt || task.prompt),
         prompt: userPrompt,
       });
-
-      if (list.length >= limit) {
-        break;
-      }
 
       if (list.length >= limit) {
         break;

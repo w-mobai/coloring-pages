@@ -50,7 +50,9 @@ export function LocaleSelector({
         variant={type === 'icon' ? 'ghost' : 'outline'}
         size={type === 'icon' ? 'icon' : 'sm'}
         className={
-          type === 'icon' ? 'h-auto w-auto p-0' : 'hover:bg-primary/10'
+          type === 'icon'
+            ? 'h-auto w-auto p-0'
+            : 'text-foreground hover:bg-muted hover:text-foreground'
         }
         disabled
       >
@@ -74,7 +76,11 @@ export function LocaleSelector({
             <Languages size={18} />
           </Button>
         ) : (
-          <Button variant="outline" size="sm" className="hover:bg-primary/10">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-foreground hover:bg-muted hover:text-foreground"
+          >
             <Globe size={16} />
             {localeNames[currentLocale]}
           </Button>

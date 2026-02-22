@@ -150,10 +150,14 @@ export function Hero({
   };
 
   const highlightText = section.highlight_text ?? '';
-  let texts = null;
-  if (highlightText) {
-    texts = section.title?.split(highlightText, 2);
-  }
+  const rawTitle = section.title ?? '';
+  const [mainTitle, ...hintTitleParts] = rawTitle.split('\n');
+  const hintTitle = hintTitleParts.join('\n').trim();
+  const canHighlightMainTitle =
+    !!highlightText && !!mainTitle && mainTitle.includes(highlightText);
+  const highlightedMainTitleParts = canHighlightMainTitle
+    ? mainTitle.split(highlightText, 2)
+    : null;
 
   const translations = section.generation_finder || {};
   const announcementHref = section.announcement?.url;
@@ -165,7 +169,7 @@ export function Hero({
     <section
       id={section.id}
       className={cn(
-        `pt-18 pb-8 md:pt-27 md:pb-8`,
+        `pt-24 pb-8 md:pt-24 md:pb-8`,
         section.className,
         className
       )}
@@ -214,25 +218,30 @@ export function Hero({
 
       <div className="relative mx-auto max-w-full px-4 text-center md:max-w-5xl">
         {/* Logo + Title */}
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex flex-col items-center justify-center gap-0">
           <img
             src="/logo.png"
             alt="Logo"
-            className="h-16 w-auto md:h-20"
+            className="h-28 w-auto -mb-4"
           />
-          {texts && texts.length > 0 ? (
-            <h1 className="text-foreground text-2xl font-semibold text-balance sm:text-4xl">
-              {texts[0]}
-              <Highlighter action="underline" color="#FE8A9D">
-                {highlightText}
-              </Highlighter>
-              {texts[1]}
-            </h1>
-          ) : (
-            <h1 className="text-foreground text-2xl font-semibold text-balance sm:text-4xl">
-              {section.title}
-            </h1>
-          )}
+          <h1 className="text-foreground text-3xl font-semibold leading-none text-balance sm:text-5xl">
+            {highlightedMainTitleParts ? (
+              <>
+                {highlightedMainTitleParts[0]}
+                <Highlighter action="underline" color="#FE8A9D">
+                  {highlightText}
+                </Highlighter>
+                {highlightedMainTitleParts[1]}
+              </>
+            ) : (
+              mainTitle
+            )}
+            {hintTitle && (
+              <span className="text-muted-foreground/60 mt-1 block text-sm font-normal tracking-[0.12em] sm:text-base">
+                {hintTitle}
+              </span>
+            )}
+          </h1>
         </div>
 
         <p
@@ -243,16 +252,16 @@ export function Hero({
         {/* Feature Tags */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
           <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#fbbf24' }}>
-            Nano Banana Pro
+            Free to Use
           </span>
           <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#f97316' }}>
-            Free
+            Print-Ready
           </span>
           <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#14b8a6' }}>
-            AI Powered
+            Kid-Safe Styles
           </span>
           <span className="px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: '#3b82f6' }}>
-            No Login
+            Instant Download
           </span>
         </div>
 

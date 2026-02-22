@@ -5,6 +5,7 @@ import {
   updateGuestAITaskById,
 } from '@/shared/lib/guest-ai-task';
 import { respData, respErr } from '@/shared/lib/resp';
+import { buildUserStorageKeyPrefix } from '@/shared/lib/storage-key-prefix';
 import {
   findAITaskById,
   UpdateAITask,
@@ -123,11 +124,16 @@ export async function POST(req: Request) {
     if (!aiProvider) {
       return respErr('invalid ai provider');
     }
+    const storageKeyPrefix = buildUserStorageKeyPrefix({
+      email: user.email,
+      fallbackId: user.id,
+    });
 
     const result = await aiProvider?.query?.({
       taskId: task.taskId,
       mediaType: task.mediaType,
       model: task.model,
+      storageKeyPrefix: storageKeyPrefix || undefined,
     });
 
     if (!result?.taskStatus) {

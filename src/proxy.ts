@@ -23,7 +23,7 @@ export async function proxy(request: NextRequest) {
   if (
     pathWithoutLocale.startsWith('/admin') ||
     pathWithoutLocale.startsWith('/settings') ||
-    pathWithoutLocale.startsWith('/activity')
+    pathWithoutLocale.startsWith('/history')
   ) {
     // Check if session cookie exists
     const sessionCookie = getSessionCookie(request);
@@ -55,7 +55,7 @@ export async function proxy(request: NextRequest) {
   if (
     !pathWithoutLocale.startsWith('/admin') &&
     !pathWithoutLocale.startsWith('/settings') &&
-    !pathWithoutLocale.startsWith('/activity') &&
+    !pathWithoutLocale.startsWith('/history') &&
     !pathWithoutLocale.startsWith('/sign-') &&
     !pathWithoutLocale.startsWith('/auth')
   ) {

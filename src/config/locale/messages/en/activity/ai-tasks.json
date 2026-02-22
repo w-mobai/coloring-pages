@@ -27,5 +27,24 @@
       "refresh": "Refresh Task"
     },
     "empty_message": "No tasks found"
+  },
+  "history": {
+    "title": "History",
+    "tabs": {
+      "image": "Image"
+    },
+    "generate_label": "Generate: ",
+    "no_prompt": "(No prompt record)",
+    "empty": "No generated images yet",
+    "delete": "Delete",
+    "download": "Download",
+    "downloading": "Downloading...",
+    "cancel": "Cancel",
+    "delete_success": "Image deleted",
+    "delete_failed": "Delete failed, please retry",
+    "download_success": "Image downloaded",
+    "download_failed": "Download failed, please retry",
+    "delete_confirm_title": "Delete image?",
+    "delete_confirm": "Are you sure you want to delete this image?"
   }
 }

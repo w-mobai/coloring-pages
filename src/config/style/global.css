@@ -16,6 +16,19 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+
+  /* Rounded display face for section titles */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading), var(--font-sans);
+  }
+
+  html[lang^='zh'] h1,
+  html[lang^='zh'] h2,
+  html[lang^='zh'] h3 {
+    font-family: var(--font-heading-cjk), var(--font-sans);
+  }
 }
 
 .container {

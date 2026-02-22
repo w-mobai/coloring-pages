@@ -141,7 +141,13 @@ export class GeminiProvider implements AIProvider {
     const storageService = await getStorageService();
     const buffer = Buffer.from(base64Data, 'base64');
     const ext = mimeType.split('/')[1] || 'png';
-    const key = `gemini/image/${getUuid()}.${ext}`;
+    const normalizedPrefix = (params.storageKeyPrefix || '').replace(
+      /^\/+|\/+$/g,
+      ''
+    );
+    const key = normalizedPrefix
+      ? `${normalizedPrefix}/gemini/image/${getUuid()}.${ext}`
+      : `gemini/image/${getUuid()}.${ext}`;
 
     const uploadResult = await storageService.uploadFile({
       body: buffer,

@@ -13,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
         '/*?*q=',
         '/settings/*',
         '/activity/*',
+        '/history/*',
         '/admin/*',
         '/api/*',
       ],

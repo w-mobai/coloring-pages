@@ -36,7 +36,7 @@ export function Showcases({
       className={cn('py-24 md:py-36', section.className, className)}
     >
       <motion.div
-        className="container mb-12 text-center"
+        className="container mb-8 text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}

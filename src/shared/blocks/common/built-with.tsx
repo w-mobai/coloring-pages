@@ -7,7 +7,12 @@ export function BuiltWith() {
   const t = useTranslations('common');
   
   return (
-    <Button asChild variant="outline" size="sm" className="hover:bg-primary/10">
+    <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="text-foreground hover:bg-muted hover:text-foreground"
+    >
       <Link href="https://whatgenerationami.online" target="_blank">
         {t('built_with')}
       </Link>

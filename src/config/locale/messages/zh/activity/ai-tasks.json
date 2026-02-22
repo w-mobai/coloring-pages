@@ -27,5 +27,24 @@
       "refresh": "刷新任务"
     },
     "empty_message": "无任务"
+  },
+  "history": {
+    "title": "历史记录",
+    "tabs": {
+      "image": "图片"
+    },
+    "generate_label": "生成：",
+    "no_prompt": "（无提示词记录）",
+    "empty": "还没有生成图片",
+    "delete": "删除",
+    "download": "下载",
+    "downloading": "下载中...",
+    "cancel": "取消",
+    "delete_success": "图片已删除",
+    "delete_failed": "删除失败，请重试",
+    "download_success": "图片已下载",
+    "download_failed": "下载失败，请重试",
+    "delete_confirm_title": "删除图片",
+    "delete_confirm": "确认删除这张图片吗？"
   }
 }

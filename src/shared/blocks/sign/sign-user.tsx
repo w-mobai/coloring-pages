@@ -176,16 +176,13 @@ export function SignUser({
 
             {userNav?.show_credits && (
               <>
-                <DropdownMenuItem asChild>
-                  <Link
-                    className="w-full cursor-pointer"
-                    href="/settings/credits"
-                  >
+                <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                  <div className="w-full cursor-default">
                     <Coins />
                     {t('credits_title', {
                       credits: displayUser.credits?.remainingCredits || 0,
                     })}
-                  </Link>
+                  </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>

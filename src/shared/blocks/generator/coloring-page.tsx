@@ -32,6 +32,11 @@ import {
   Card,
   CardContent,
 } from '@/shared/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/shared/components/ui/tooltip';
 import { useAppContext } from '@/shared/contexts/app';
 import { cn } from '@/shared/lib/utils';
 
@@ -408,7 +413,7 @@ export function ColoringPageGenerator({
   const ageGroupDropdownRef = useRef<HTMLDivElement>(null);
   const referenceImageInputRef = useRef<HTMLInputElement>(null);
 
-  const { user, isCheckSign, setIsShowSignModal, fetchUserCredits } =
+  const { user, setIsShowSignModal, fetchUserCredits } =
     useAppContext();
   const resultCardWidthClass = 'mx-auto w-full md:max-w-[40%]';
 
@@ -1150,7 +1155,7 @@ export function ColoringPageGenerator({
         <div className="mx-auto max-w-5xl space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-medium">{t('title')}</h2>
+            <h2 className="text-primary text-4xl font-semibold">{t('title')}</h2>
             {srOnlyTitle && <span className="sr-only">{srOnlyTitle}</span>}
 
             {/* Add Image Button - Top Right outside card */}
@@ -1220,7 +1225,7 @@ export function ColoringPageGenerator({
                       onChange={(event) => setTheme(event.target.value)}
                       placeholder={t('form.theme_placeholder')}
                       maxLength={MAX_THEME_LENGTH}
-                      className="min-h-[120px] w-full resize-none border-0 bg-transparent p-0 text-xl placeholder:text-muted-foreground/40 placeholder:font-normal focus-visible:outline-none"
+                      className="min-h-[80px] w-full resize-none border-0 bg-transparent p-0 text-xl placeholder:text-muted-foreground/40 placeholder:font-normal focus-visible:outline-none"
                       style={{ backgroundColor: 'transparent' }}
                       data-testid="theme-input"
                     />
@@ -1408,26 +1413,42 @@ export function ColoringPageGenerator({
                           <div className="bg-popover absolute top-full left-0 z-50 mt-2 w-40 rounded-md border shadow-lg">
                             <div className="p-2">
                               {[
-                                { value: 'toddler', label: t('age.toddler_short'), icon: Baby },
-                                { value: 'child', label: t('age.child_short'), icon: Users },
+                                {
+                                  value: 'toddler',
+                                  label: t('age.toddler_short'),
+                                  icon: Baby,
+                                  desc: t('age.toddler_label'),
+                                },
+                                {
+                                  value: 'child',
+                                  label: t('age.child_short'),
+                                  icon: Users,
+                                  desc: t('age.child_label'),
+                                },
                               ].map((age) => (
-                                <button
-                                  key={age.value}
-                                  type="button"
-                                  onClick={() => {
-                                    setAgeGroup(age.value as AgeGroup);
-                                    setShowAgeGroupDropdown(false);
-                                  }}
-                                  className={cn(
-                                    'w-full rounded px-3 py-2 text-left transition-colors mb-1 last:mb-0',
-                                    ageGroup === age.value ? 'bg-accent text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                                  )}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <age.icon className="h-4 w-4 flex-shrink-0" />
-                                    <div className="text-sm font-medium">{age.label}</div>
-                                  </div>
-                                </button>
+                                <Tooltip key={age.value}>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setAgeGroup(age.value as AgeGroup);
+                                        setShowAgeGroupDropdown(false);
+                                      }}
+                                      className={cn(
+                                        'w-full rounded px-3 py-2 text-left transition-colors mb-1 last:mb-0',
+                                        ageGroup === age.value ? 'bg-accent text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                      )}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <age.icon className="h-4 w-4 flex-shrink-0" />
+                                        <div className="text-sm font-medium">{age.label}</div>
+                                      </div>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" sideOffset={8}>
+                                    {age.desc}
+                                  </TooltipContent>
+                                </Tooltip>
                               ))}
                             </div>
                           </div>
@@ -1511,15 +1532,6 @@ export function ColoringPageGenerator({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {t('loading')}
                 </Button>
-              ) : isCheckSign ? (
-                <Button
-                  disabled
-                  size="lg"
-                  className="generate-glow w-full sm:w-auto"
-                >
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('checking_account')}
-                </Button>
               ) : user ? (
                 <Button
                   size="lg"
@@ -1597,28 +1609,38 @@ export function ColoringPageGenerator({
           {isGenerating && (
             <Card className={cn(resultCardWidthClass, 'overflow-hidden border-transparent bg-card/95 py-0 shadow-none backdrop-blur-sm')}>
               <CardContent className="relative aspect-square p-0">
-                <div className="from-primary/5 to-primary/5 absolute inset-0 rounded-xl bg-gradient-to-b via-transparent" />
-                <div className="relative flex h-full flex-col items-center justify-center gap-6 text-center">
-                  <Loader2 className="text-primary h-10 w-10 animate-spin" />
-                  <p className="text-muted-foreground text-sm">
-                    {t('estimated_time', { seconds: estimatedSeconds })}
-                  </p>
+                <div className="relative flex h-full flex-col items-center justify-center gap-4 px-4 pb-6 text-center">
+                  {createElement('dotlottie-wc', {
+                    src: 'https://lottie.host/41ec068e-7286-4c0a-88a2-9c46e4f4aa07/qXdQDbosd6.lottie',
+                    style: {
+                      width: '300px',
+                      height: '300px',
+                      display: 'block',
+                      // Recolor lottie line art to match theme primary tone.
+                      filter:
+                        'invert(62%) sepia(58%) saturate(1850%) hue-rotate(304deg) brightness(99%) contrast(98%)',
+                    },
+                    autoplay: true,
+                    loop: true,
+                  })}
+                  <div className="space-y-1">
+                    <p className="text-muted-foreground text-sm">
+                      {t('estimated_time', { seconds: estimatedSeconds })}
+                    </p>
+                    {taskStatusLabel && (
+                      <p className="text-muted-foreground/80 text-xs">
+                        {taskStatusLabel}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                {taskStatusLabel && (
-                  <p className="text-muted-foreground/80 absolute right-5 bottom-4 left-5 text-center text-xs">
-                    {taskStatusLabel}
-                  </p>
-                )}
               </CardContent>
             </Card>
           )}
 
           {/* Generated Result */}
           {generatedImage && (
-            <Card className={cn(resultCardWidthClass, 'gap-2')}>
-              <div className="text-muted-foreground flex items-center justify-center px-6 text-center text-sm font-normal">
-                {t('result_title')}
-              </div>
+            <Card className={cn(resultCardWidthClass, 'gap-2 border-0 py-8')}>
               <CardContent className="space-y-4">
                 <button
                   type="button"
@@ -1675,7 +1697,7 @@ export function ColoringPageGenerator({
 
           {generatedImage && isPreviewOpen && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm md:p-8"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm md:p-8"
               onClick={() => setIsPreviewOpen(false)}
             >
               <button
@@ -1691,7 +1713,7 @@ export function ColoringPageGenerator({
                 className="relative flex h-full w-full items-center justify-center"
               >
                 <div
-                  className="flex flex-col items-center gap-3 md:flex-row md:items-start"
+                  className="flex flex-col items-center gap-3"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="relative max-h-full max-w-full overflow-hidden rounded-lg">
@@ -1706,7 +1728,7 @@ export function ColoringPageGenerator({
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="self-center bg-black/30 text-white hover:bg-black/50 hover:text-white md:mt-1 md:self-auto"
+                    className="self-center bg-black/30 text-white hover:bg-black/50 hover:text-white"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDownloadImage(generatedImage);

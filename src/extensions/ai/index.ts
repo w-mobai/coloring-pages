@@ -45,20 +45,48 @@ export class AIManager {
 }
 
 // save files to custom storage
-export async function saveFiles(files: AIFile[]) {
+function normalizeStorageKeyPrefix(prefix?: string): string {
+  if (!prefix) {
+    return '';
+  }
+
+  return prefix.replace(/^\/+|\/+$/g, '');
+}
+
+function applyStorageKeyPrefix(key: string, prefix?: string): string {
+  const normalizedPrefix = normalizeStorageKeyPrefix(prefix);
+  const normalizedKey = key.replace(/^\/+/, '');
+
+  if (!normalizedPrefix) {
+    return normalizedKey;
+  }
+
+  if (normalizedKey.startsWith(`${normalizedPrefix}/`)) {
+    return normalizedKey;
+  }
+
+  return `${normalizedPrefix}/${normalizedKey}`;
+}
+
+export async function saveFiles(
+  files: AIFile[],
+  options?: { keyPrefix?: string }
+) {
   try {
     const { getStorageService } = await import('@/shared/services/storage');
     const storageService = await getStorageService();
 
     const uploadedFiles = await Promise.all(
       files.map(async (file) => {
+        const key = applyStorageKeyPrefix(file.key, options?.keyPrefix);
         const result = await storageService.downloadAndUpload({
           url: file.url,
           contentType: file.contentType,
-          key: file.key,
+          key,
         });
         return {
           ...file,
+          key,
           url: result.url,
         } as AIFile;
       })
