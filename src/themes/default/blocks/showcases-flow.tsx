@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Link } from '@/core/i18n/navigation';
+import { Link, useRouter } from '@/core/i18n/navigation';
 import { LazyImage } from '@/shared/blocks/common';
 import { SmartIcon } from '@/shared/blocks/common/smart-icon';
 import { Button } from '@/shared/components/ui/button';
@@ -20,7 +20,13 @@ export function ShowcasesFlow({
   className?: string;
 }) {
   const isGeneratedGallerySection = section.id === 'generated-gallery';
+  const router = useRouter();
   const groups = (section as any).groups || [];
+  const useSidebarGroups =
+    isGeneratedGallerySection && (section as any).group_layout === 'sidebar-left';
+  const groupSidebarTitle = (section as any).group_sidebar_title as
+    | string
+    | undefined;
   const showFullDescriptionInModal = Boolean(
     (section as any).show_full_description_in_modal
   );
@@ -34,7 +40,12 @@ export function ShowcasesFlow({
     if (!section.items) return [];
     if (!selectedGroup || !groups.length) return section.items;
     if (selectedGroup === 'all') return section.items;
-    return section.items.filter((item) => item.group === selectedGroup);
+    return section.items.filter((item) => {
+      const itemGroups = Array.isArray((item as any).groups)
+        ? ((item as any).groups as string[])
+        : [item.group as string];
+      return itemGroups.includes(selectedGroup);
+    });
   }, [section.items, selectedGroup, groups.length]);
 
   const handlePrevious = useCallback(() => {
@@ -128,6 +139,157 @@ export function ShowcasesFlow({
     }
   }, [filteredItems, selectedIndex]);
 
+  const handleCardClick = useCallback(
+    (item: any, index: number) => {
+      if (isGeneratedGallerySection) {
+        const detailUrl = item?.detailUrl || item?.button?.url;
+        if (typeof detailUrl === 'string' && detailUrl) {
+          router.push(detailUrl);
+          return;
+        }
+      }
+
+      setSelectedIndex(index);
+    },
+    [isGeneratedGallerySection, router]
+  );
+
+  const groupButtons = groups.map(
+    (group: { name: string; title: string }, index: number) => {
+      const isSelected = selectedGroup === group.name;
+      return (
+        <motion.button
+          key={group.name}
+          onClick={() => setSelectedGroup(group.name)}
+          className={cn(
+            'transition-colors',
+            useSidebarGroups
+              ? cn(
+                'w-full bg-transparent px-0 py-1.5 text-left text-sm leading-snug hover:bg-transparent',
+                  isSelected
+                    ? 'text-foreground font-semibold'
+                    : 'text-foreground/85 font-medium hover:text-foreground'
+                )
+              : cn(
+                  'relative rounded-lg px-3 py-1.5 text-sm font-medium',
+                  isSelected
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'ring-border bg-background text-foreground ring-1 ring-inset hover:bg-muted hover:text-foreground hover:ring-border/80'
+                )
+          )}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{
+            duration: 0.4,
+            delay: 0.2 + index * 0.03,
+            ease: [0.22, 1, 0.36, 1] as const,
+          }}
+        >
+          <span>{group.title}</span>
+        </motion.button>
+      );
+    }
+  );
+
+  const itemsContent =
+    filteredItems.length > 0 ? (
+      <div
+        className={cn(
+          useSidebarGroups
+            ? 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:block lg:[column-count:4] lg:[column-gap:1rem] lg:space-y-4'
+            : 'columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3 xl:columns-4',
+          !useSidebarGroups && 'container mx-auto'
+        )}
+      >
+        {filteredItems.map((item, index) => (
+          <motion.div
+            key={index}
+            className={cn(
+              'group relative break-inside-avoid rounded-xl',
+              isGeneratedGallerySection
+                ? 'cursor-pointer overflow-hidden border bg-card transition-colors hover:border-primary/40'
+                : 'cursor-zoom-in overflow-hidden'
+            )}
+            onClick={() => handleCardClick(item, index)}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{
+              duration: 0.6,
+              delay: index * 0.1,
+              ease: [0.22, 1, 0.36, 1] as const,
+            }}
+          >
+            <LazyImage
+              src={item.image?.src ?? ''}
+              alt={item.image?.alt ?? ''}
+              className={cn(
+                'h-auto w-full',
+                isGeneratedGallerySection &&
+                  'transition-transform duration-300 group-hover:scale-[1.02]'
+              )}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            />
+            {isGeneratedGallerySection ? (
+              <div className="p-3">
+                <h3 className="text-foreground line-clamp-2 text-center text-sm font-medium">
+                  {item.title}
+                </h3>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex flex-col justify-end bg-black/60 p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <p className="mb-2 translate-y-4 text-sm font-medium text-white transition-transform duration-300 group-hover:translate-y-0">
+                  {item.title}
+                </p>
+                {/* {item.description && (
+                    <p className="line-clamp-2 translate-y-4 text-sm text-white/80 transition-transform delay-75 duration-300 group-hover:translate-y-0">
+                      {item.description}
+                    </p>
+                  )} */}
+                {(item as any).button && (
+                  <div
+                    className="mt-3 translate-y-4 transition-transform delay-100 duration-300 group-hover:translate-y-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      asChild
+                      variant={(item as any).button.variant || 'default'}
+                      size={(item as any).button.size || 'sm'}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-full border-0 px-1 py-1.5 text-sm font-medium"
+                    >
+                      <Link
+                        href={(item as any).button.url || ''}
+                        target={(item as any).button.target || '_self'}
+                      >
+                        {(item as any).button.icon && (
+                          <SmartIcon name={(item as any).button.icon as string} />
+                        )}
+                        {(item as any).button.title}
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        ))}
+      </div>
+    ) : (
+      <motion.div
+        className={cn(
+          'text-muted-foreground text-center',
+          !useSidebarGroups && 'container'
+        )}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.4 }}
+      >
+        No items found in this category.
+      </motion.div>
+    );
+
   return (
     <section
       id={section.id || section.name}
@@ -146,21 +308,34 @@ export function ShowcasesFlow({
         {section.sr_only_title && (
           <h1 className="sr-only">{section.sr_only_title}</h1>
         )}
-        <h2
+        <div
           className={cn(
-            'text-foreground mx-auto mb-4 max-w-full tracking-tight md:max-w-5xl',
             isGeneratedGallerySection
-              ? 'text-2xl font-medium md:text-3xl'
-              : 'text-3xl font-semibold md:text-4xl'
+              ? 'mx-auto mb-12 max-w-5xl'
+              : 'mx-auto max-w-full md:max-w-5xl'
           )}
         >
-          {section.title}
-        </h2>
-        {section.description && (
-          <p className="text-muted-foreground text-md mx-auto mb-4 line-clamp-3 max-w-full md:max-w-5xl">
-            {section.description}
-          </p>
-        )}
+          <h2
+            className={cn(
+              'text-foreground tracking-tight',
+              isGeneratedGallerySection
+                ? 'mb-4 text-2xl font-medium md:text-3xl'
+                : 'mb-12 text-3xl font-semibold md:text-4xl'
+            )}
+          >
+            {section.title}
+          </h2>
+          {section.description && (
+            <p
+              className={cn(
+                'text-muted-foreground text-md',
+                !isGeneratedGallerySection && 'mb-4 line-clamp-3'
+              )}
+            >
+              {section.description}
+            </p>
+          )}
+        </div>
         {section.buttons && section.buttons.length > 0 && (
           <div className="container mx-auto mt-8 mb-12 flex flex-wrap justify-center gap-4">
             {section.buttons.map((button) => (
@@ -180,7 +355,7 @@ export function ShowcasesFlow({
         )}
       </motion.div>
 
-      {groups.length > 0 && (
+      {groups.length > 0 && !useSidebarGroups && (
         <motion.div
           className="container mb-8 flex flex-wrap justify-center gap-4"
           initial={{ opacity: 0, y: 20 }}
@@ -192,106 +367,37 @@ export function ShowcasesFlow({
             ease: [0.22, 1, 0.36, 1] as const,
           }}
         >
-          {groups.map(
-            (group: { name: string; title: string }, index: number) => {
-              const isSelected = selectedGroup === group.name;
-              return (
-                <motion.button
-                  key={group.name}
-                  onClick={() => setSelectedGroup(group.name)}
-                  className={cn(
-                    'relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-                    isSelected
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'ring-border bg-background text-foreground ring-1 ring-inset hover:bg-muted hover:text-foreground hover:ring-border/80'
-                  )}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.4,
-                    delay: 0.2 + index * 0.1,
-                    ease: [0.22, 1, 0.36, 1] as const,
-                  }}
-                >
-                  <span>{group.title}</span>
-                </motion.button>
-              );
-            }
-          )}
+          {groupButtons}
         </motion.div>
       )}
 
-      {filteredItems.length > 0 ? (
-        <div className="container mx-auto columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3 xl:columns-4">
-          {filteredItems.map((item, index) => (
-            <motion.div
-              key={index}
-              className="group relative cursor-zoom-in break-inside-avoid overflow-hidden rounded-xl"
-              onClick={() => setSelectedIndex(index)}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: '-50px' }}
+      {useSidebarGroups ? (
+        <div className="container">
+          <div className="grid items-start gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+            <motion.aside
+              className="lg:sticky lg:top-24"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{
-                duration: 0.6,
-                delay: index * 0.1,
+                duration: 0.5,
                 ease: [0.22, 1, 0.36, 1] as const,
               }}
             >
-              <LazyImage
-                src={item.image?.src ?? ''}
-                alt={item.image?.alt ?? ''}
-                className="h-auto w-full"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-              />
-              <div className="absolute inset-0 flex flex-col justify-end bg-black/60 p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <h3 className="mb-2 translate-y-4 text-sm font-medium text-white transition-transform duration-300 group-hover:translate-y-0">
-                  {item.title}
+              {groupSidebarTitle && (
+                <h3 className="text-foreground/50 mb-3 text-sm font-normal leading-tight tracking-wide">
+                  {groupSidebarTitle}
                 </h3>
-                {/* {item.description && (
-                  <p className="line-clamp-2 translate-y-4 text-sm text-white/80 transition-transform delay-75 duration-300 group-hover:translate-y-0">
-                    {item.description}
-                  </p>
-                )} */}
-                {(item as any).button && (
-                  <div
-                    className="mt-3 translate-y-4 transition-transform delay-100 duration-300 group-hover:translate-y-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      asChild
-                      variant={(item as any).button.variant || 'default'}
-                      size={(item as any).button.size || 'sm'}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-full border-0 px-1 py-1.5 text-sm font-medium"
-                    >
-                      <Link
-                        href={(item as any).button.url || ''}
-                        target={(item as any).button.target || '_self'}
-                      >
-                        {(item as any).button.icon && (
-                          <SmartIcon
-                            name={(item as any).button.icon as string}
-                          />
-                        )}
-                        {(item as any).button.title}
-                      </Link>
-                    </Button>
-                  </div>
-                )}
+              )}
+              <div className="flex flex-col gap-1">
+                {groupButtons}
               </div>
-            </motion.div>
-          ))}
+            </motion.aside>
+            <div>{itemsContent}</div>
+          </div>
         </div>
       ) : (
-        <motion.div
-          className="text-muted-foreground container text-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-        >
-          No items found in this category.
-        </motion.div>
+        itemsContent
       )}
 
       <AnimatePresence>
@@ -302,7 +408,7 @@ export function ShowcasesFlow({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm md:p-8"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm md:p-8"
               onClick={() => setSelectedIndex(null)}
             >
               <button
@@ -341,7 +447,7 @@ export function ShowcasesFlow({
                 className="relative flex h-full w-full items-center justify-center"
               >
                 <div
-                  className="flex flex-col items-center gap-3 md:flex-row md:items-start"
+                  className="flex items-start gap-3"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="relative max-h-full max-w-full overflow-hidden rounded-lg bg-white leading-none">
@@ -413,7 +519,7 @@ export function ShowcasesFlow({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="self-center bg-black/30 text-white hover:bg-black/50 hover:text-white md:mt-1 md:self-auto"
+                      className="mt-1 self-auto bg-black/30 text-white hover:bg-black/50 hover:text-white"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDownload();

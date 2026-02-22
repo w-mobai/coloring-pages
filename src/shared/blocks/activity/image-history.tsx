@@ -326,7 +326,7 @@ export function ImageHistory({
 
           {previewImage && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm md:p-8"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm md:p-8"
               onClick={() => setPreviewIndex(null)}
             >
               <button
@@ -342,7 +342,7 @@ export function ImageHistory({
                 className="relative flex h-full w-full items-center justify-center"
               >
                 <div
-                  className="flex flex-col items-center gap-3"
+                  className="flex items-start gap-3"
                   onClick={(event) => event.stopPropagation()}
                 >
                   <div className="relative max-h-full max-w-full overflow-hidden rounded-lg">
@@ -383,7 +383,7 @@ export function ImageHistory({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="self-center bg-black/30 text-white hover:bg-black/50 hover:text-white"
+                    className="mt-1 self-auto bg-black/30 text-white hover:bg-black/50 hover:text-white"
                     onClick={(event) => {
                       event.stopPropagation();
                       handleDownloadImage(previewImage);

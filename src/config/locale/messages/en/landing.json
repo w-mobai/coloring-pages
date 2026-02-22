@@ -19,6 +19,11 @@
           "icon": "Home"
         },
         {
+          "title": "Coloring Pages",
+          "url": "/coloring-pages",
+          "icon": "Image"
+        },
+        {
           "title": "AI Tools",
           "icon": "Sparkles",
           "hidden": false,

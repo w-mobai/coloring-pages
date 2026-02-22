@@ -1,0 +1,140 @@
+const IMAGE_TO_IMAGE_PREFIX =
+  'convert the uploaded reference image into a printable black and white coloring page, keep the main subject and composition';
+
+const BUILTIN_COLORING_SUFFIXES = [
+  'simple coloring page for toddlers, very thick bold black outlines, minimal details, large simple shapes, lots of white space, black and white line art only, no shading, no colors, clean lines, plain white background only, keep full subject visible with margins, no black background, no gray background, no colored background, no page border, no frame, no rectangular border, no paper edges, no photo background, no table texture, no wood texture, no watermark, suitable for 3-5 year olds',
+  'coloring page for children, medium thickness black outlines, moderate details, clear defined areas, black and white line art only, no shading, no colors, clean lines, plain white background only, keep full subject visible with margins, no black background, no gray background, no colored background, no page border, no frame, no rectangular border, no paper edges, no photo background, no table texture, no wood texture, no watermark, suitable for 6-10 year olds',
+];
+
+const CATEGORY_RULES: Array<{ key: string; keywords: string[] }> = [
+  {
+    key: 'cat',
+    keywords: ['cat', 'cats', 'kitten', 'kitty', '猫', '小猫', '猫咪'],
+  },
+  {
+    key: 'dog',
+    keywords: ['dog', 'dogs', 'puppy', 'puppies', '狗', '小狗', '狗狗'],
+  },
+  {
+    key: 'bird',
+    keywords: ['bird', 'birds', 'owl', 'parrot', 'eagle', '鸟', '猫头鹰'],
+  },
+  {
+    key: 'dinosaur',
+    keywords: ['dinosaur', 'dinosaurs', 'dino', '恐龙'],
+  },
+  {
+    key: 'vehicle',
+    keywords: [
+      'car',
+      'cars',
+      'truck',
+      'bus',
+      'train',
+      'airplane',
+      'plane',
+      'rocket',
+      'ship',
+      'boat',
+      '汽车',
+      '卡车',
+      '公交',
+      '火车',
+      '飞机',
+      '火箭',
+      '轮船',
+    ],
+  },
+  {
+    key: 'princess',
+    keywords: ['princess', 'queen', 'fairy', '公主', '女王', '仙女'],
+  },
+  {
+    key: 'unicorn',
+    keywords: ['unicorn', 'unicorns', '独角兽'],
+  },
+  {
+    key: 'nature',
+    keywords: ['flower', 'flowers', 'tree', 'forest', 'garden', '花', '树', '森林'],
+  },
+  {
+    key: 'food',
+    keywords: ['cake', 'pizza', 'ice cream', 'burger', '水果', '蛋糕', '披萨', '汉堡'],
+  },
+];
+
+export function isLikelyHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export function isColoringTaskPrompt(prompt?: string | null): boolean {
+  if (!prompt) {
+    return false;
+  }
+
+  const text = prompt.toLowerCase();
+  return (
+    text.includes('coloring page') ||
+    text.includes('black and white line art') ||
+    text.includes('涂色')
+  );
+}
+
+export function classifyColoringPrompt(prompt?: string | null): string {
+  if (!prompt) {
+    return 'other';
+  }
+
+  const text = prompt.toLowerCase();
+  for (const rule of CATEGORY_RULES) {
+    if (rule.keywords.some((keyword) => text.includes(keyword.toLowerCase()))) {
+      return rule.key;
+    }
+  }
+
+  return 'other';
+}
+
+function stripTrailingComma(value: string): string {
+  return value.replace(/[,，]\s*$/, '').trim();
+}
+
+export function extractUserPrompt(prompt?: string | null): string | null {
+  if (!prompt) {
+    return null;
+  }
+
+  const raw = prompt.trim();
+  if (!raw) {
+    return null;
+  }
+
+  for (const suffix of BUILTIN_COLORING_SUFFIXES) {
+    if (!raw.endsWith(suffix)) {
+      continue;
+    }
+
+    let core = stripTrailingComma(raw.slice(0, raw.length - suffix.length));
+    if (!core) {
+      return null;
+    }
+
+    if (core.toLowerCase().startsWith(IMAGE_TO_IMAGE_PREFIX.toLowerCase())) {
+      core = stripTrailingComma(core.slice(IMAGE_TO_IMAGE_PREFIX.length));
+    }
+
+    return core || null;
+  }
+
+  if (raw.toLowerCase().startsWith(IMAGE_TO_IMAGE_PREFIX.toLowerCase())) {
+    const remainder = stripTrailingComma(raw.slice(IMAGE_TO_IMAGE_PREFIX.length));
+    return remainder || null;
+  }
+
+  return raw;
+}

@@ -140,8 +140,8 @@ export function Header({ header }: { header: HeaderType }) {
                         : ''
                     )}
                     onClick={(e) => {
-                      // 如果已经在当前页面，阻止导航
-                      if (isActive) {
+                      // Only block navigation when already on the exact same page.
+                      if (pathForMatch === itemUrl) {
                         e.preventDefault();
                       }
                     }}

@@ -19,6 +19,11 @@
           "icon": "Home"
         },
         {
+          "title": "涂色页",
+          "url": "/coloring-pages",
+          "icon": "Image"
+        },
+        {
           "title": "AI 工具",
           "icon": "Sparkles",
           "hidden": false,

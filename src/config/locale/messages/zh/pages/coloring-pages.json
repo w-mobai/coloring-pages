@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "title": "涂色页图库 | 免费可打印涂色页",
+    "description": "浏览由真实提示词生成的可打印涂色页图库，支持预览并进入详情页下载。"
+  },
+  "page": {
+    "title": "免费可打印涂色页",
+    "show_sections": [
+      "generated_gallery"
+    ],
+    "sections": {
+      "generated_gallery": {
+        "disabled": false,
+        "block": "generated-gallery",
+        "id": "generated-gallery",
+        "title": "涂色页",
+        "description": "浏览并筛选来自真实提示词的可打印涂色页。",
+        "limit": 48,
+        "className": "pt-12 md:pt-16"
+      }
+    }
+  }
+}

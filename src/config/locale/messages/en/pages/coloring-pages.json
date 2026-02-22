@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "title": "Coloring Pages Gallery | Free Printable Coloring Pages",
+    "description": "Browse a live gallery of free printable coloring pages generated from real prompts. Preview and open each page to download."
+  },
+  "page": {
+    "title": "Free Printable Coloring Pages",
+    "show_sections": [
+      "generated_gallery"
+    ],
+    "sections": {
+      "generated_gallery": {
+        "disabled": false,
+        "block": "generated-gallery",
+        "id": "generated-gallery",
+        "title": "Coloring Pages",
+        "description": "Browse and filter printable coloring pages from real prompts.",
+        "limit": 48,
+        "className": "pt-12 md:pt-16"
+      }
+    }
+  }
+}

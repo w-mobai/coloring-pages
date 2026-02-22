@@ -357,7 +357,7 @@ export class KieProvider implements AIProvider {
         filesToSave.push({
           url: images[firstImageIndex].imageUrl as string,
           contentType: 'image/png',
-          key: `kie/image/${taskId}-${firstImageIndex}.png`,
+          key: `k/image/${taskId}-${firstImageIndex}.png`,
           index: firstImageIndex,
           type: 'image',
         });
@@ -454,7 +454,7 @@ export class KieProvider implements AIProvider {
           filesToSave.push({
             url: video.videoUrl,
             contentType: 'video/mp4',
-            key: `kie/video/${taskId}-${index}.mp4`,
+            key: `k/video/${taskId}-${index}.mp4`,
             index: index,
             type: 'video',
           });
@@ -566,7 +566,7 @@ export class KieProvider implements AIProvider {
           audioFilesToSave.push({
             url: song.audioUrl,
             contentType: 'audio/mpeg',
-            key: `kie/audio/${taskId}-${index}.mp3`,
+            key: `k/audio/${taskId}-${index}.mp3`,
             index: index,
             type: 'audio',
           });
@@ -575,7 +575,7 @@ export class KieProvider implements AIProvider {
           imageFilesToSave.push({
             url: song.imageUrl,
             contentType: 'image/png',
-            key: `kie/image/${taskId}-${index}.png`,
+            key: `k/image/${taskId}-${index}.png`,
             index: index,
             type: 'image',
           });

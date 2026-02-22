@@ -1,77 +1,60 @@
-'use client';
-
-import { useEffect, useMemo, useState } from 'react';
-import { Loader2 } from 'lucide-react';
-
+import {
+  buildColoringPageDetailPath,
+  normalizePrompt,
+  truncateText,
+} from '@/shared/lib/coloring-page-seo';
+import { COLORING_KEYWORD_FILTER_RULES } from '@/shared/lib/coloring-keyword-filters';
+import {
+  type PublicColoringGalleryItem,
+  getPublicColoringGalleryItems,
+} from '@/shared/lib/public-coloring-gallery';
 import { cn } from '@/shared/lib/utils';
 import { Section } from '@/shared/types/blocks/landing';
 
 import { ShowcasesFlow } from './showcases-flow';
 
-interface GalleryImage {
-  id: string;
-  taskId: string;
-  url: string;
-  createdAt: string | null;
-  categoryKey?: string;
-  prompt?: string | null;
-}
-
 const DEFAULT_LIMIT = 24;
 const MAX_LIMIT = 120;
-const IMAGE_CHECK_TIMEOUT_MS = 6000;
 
-function canLoadImage(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    let settled = false;
+function normalizeFilterText(value?: string | null): string {
+  return (value || '').toLowerCase().trim();
+}
 
-    const finish = (ok: boolean) => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      img.onload = null;
-      img.onerror = null;
-      resolve(ok);
-    };
+function matchPromptKeywordGroups(prompt?: string | null): string[] {
+  const text = normalizeFilterText(prompt);
+  if (!text) {
+    return ['other'];
+  }
 
-    const timeout = setTimeout(() => {
-      finish(false);
-    }, IMAGE_CHECK_TIMEOUT_MS);
+  const groups = COLORING_KEYWORD_FILTER_RULES.filter((rule) =>
+    rule.keywords.some((keyword) => text.includes(keyword))
+  ).map((rule) => rule.name);
 
-    img.onload = () => {
-      clearTimeout(timeout);
-      finish(true);
-    };
-    img.onerror = () => {
-      clearTimeout(timeout);
-      finish(false);
-    };
-    img.src = url;
-  });
+  return groups.length > 0 ? groups : ['other'];
+}
+
+function buildGalleryCardTitle(prompt: string | null | undefined, locale?: string): string {
+  const cleaned = normalizePrompt(prompt);
+  if (cleaned) {
+    return truncateText(cleaned, 52);
+  }
+
+  if (locale?.startsWith('zh')) {
+    return '涂色页';
+  }
+  return 'Coloring Page';
 }
 
 function getUiText(locale?: string) {
   const isZh = locale?.startsWith('zh');
 
   return {
-    loading: isZh ? '正在加载生成图片...' : 'Loading generated images...',
     empty: isZh ? '暂时还没有可展示的生成图片。' : 'No generated images yet.',
     error: isZh ? '加载图片失败，请稍后重试。' : 'Failed to load images. Please try again.',
-    titlePrefix: isZh ? '涂色页 #' : 'Coloring Page #',
-    imageAlt: isZh ? '用户生成涂色页' : 'User generated coloring page',
+    imageAltPrefix: isZh ? '涂色页' : 'Coloring page',
     allGroup: isZh ? '全部' : 'All',
+    keywordFiltersTitle: isZh ? '筛选器' : 'Filters',
     groupLabels: {
-      cat: isZh ? '猫咪' : 'Cats',
-      dog: isZh ? '狗狗' : 'Dogs',
-      bird: isZh ? '鸟类' : 'Birds',
-      dinosaur: isZh ? '恐龙' : 'Dinosaurs',
-      vehicle: isZh ? '交通工具' : 'Vehicles',
-      princess: isZh ? '公主童话' : 'Princess',
-      unicorn: isZh ? '独角兽' : 'Unicorn',
-      nature: isZh ? '自然植物' : 'Nature',
-      food: isZh ? '食物' : 'Food',
       other: isZh ? '其他' : 'Other',
     } as Record<string, string>,
     promptLabel: isZh ? '提示词：' : 'Prompt: ',
@@ -97,7 +80,7 @@ function formatDate(value: string | null, locale?: string): string {
   }).format(date);
 }
 
-export function GeneratedGallery({
+export async function GeneratedGallery({
   section,
   locale,
   className,
@@ -106,100 +89,23 @@ export function GeneratedGallery({
   locale?: string;
   className?: string;
 }) {
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const uiText = useMemo(() => getUiText(locale), [locale]);
+  const uiText = getUiText(locale);
+  const rawLimit = Number((section as any).limit || DEFAULT_LIMIT);
+  const limit = Number.isFinite(rawLimit)
+    ? Math.min(Math.max(Math.floor(rawLimit), 1), MAX_LIMIT)
+    : DEFAULT_LIMIT;
 
-  const limit = useMemo(() => {
-    const value = Number((section as any).limit || DEFAULT_LIMIT);
-    if (!Number.isFinite(value)) {
-      return DEFAULT_LIMIT;
-    }
-    return Math.min(Math.max(Math.floor(value), 1), MAX_LIMIT);
-  }, [section]);
+  let images: PublicColoringGalleryItem[] = [];
+  let hasError = false;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchGallery = async () => {
-      setLoading(true);
-      setError(false);
-
-      try {
-        const resp = await fetch(`/api/ai/gallery?limit=${limit}`, {
-          method: 'GET',
-          cache: 'no-store',
-        });
-
-        if (!resp.ok) {
-          throw new Error(`request failed with status: ${resp.status}`);
-        }
-
-        const json = await resp.json();
-        if (json?.code !== 0) {
-          throw new Error(json?.message || 'fetch failed');
-        }
-
-        const rawImages = (json?.data?.list || []) as GalleryImage[];
-        const checks = await Promise.all(
-          rawImages.map(async (item) => ({
-            item,
-            ok: await canLoadImage(item.url),
-          }))
-        );
-        const validImages = checks.filter((entry) => entry.ok).map((entry) => entry.item);
-
-        if (!cancelled) {
-          setImages(validImages);
-        }
-      } catch (fetchError) {
-        console.error('fetch gallery failed:', fetchError);
-        if (!cancelled) {
-          setImages([]);
-          setError(true);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchGallery();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [limit]);
-
-  if (loading && images.length === 0) {
-    return (
-      <section
-        id={section.id}
-        className={cn('py-20', section.className, className)}
-      >
-        <div className="container">
-          <div className="mx-auto mb-12 max-w-5xl text-center">
-            {section.title && (
-              <h2 className="text-foreground mb-4 text-2xl font-medium tracking-tight md:text-3xl">
-                {section.title}
-              </h2>
-            )}
-            {section.description && (
-              <p className="text-muted-foreground text-md">{section.description}</p>
-            )}
-          </div>
-          <div className="text-muted-foreground flex items-center justify-center gap-2">
-            <Loader2 className="size-4 animate-spin" />
-            <span>{uiText.loading}</span>
-          </div>
-        </div>
-      </section>
-    );
+  try {
+    images = await getPublicColoringGalleryItems({ limit });
+  } catch (error) {
+    console.error('fetch gallery failed:', error);
+    hasError = true;
   }
 
-  if ((error || images.length === 0) && !loading) {
+  if (hasError || images.length === 0) {
     return (
       <section
         id={section.id}
@@ -217,7 +123,7 @@ export function GeneratedGallery({
             )}
           </div>
           <div className="text-muted-foreground text-center">
-            {error ? uiText.error : uiText.empty}
+            {hasError ? uiText.error : uiText.empty}
           </div>
         </div>
       </section>
@@ -228,33 +134,54 @@ export function GeneratedGallery({
     <ShowcasesFlow
       section={{
         ...section,
+        group_layout: 'sidebar-left',
+        group_sidebar_title: uiText.keywordFiltersTitle,
         groups: [
           { name: 'all', title: uiText.allGroup },
-          ...Array.from(
-            new Set(images.map((item) => item.categoryKey || 'other'))
-          ).map((key) => ({
-            name: key,
-            title: uiText.groupLabels[key] || uiText.groupLabels.other,
+          ...COLORING_KEYWORD_FILTER_RULES.map((rule) => ({
+            name: rule.name,
+            title: rule.title,
           })),
+          { name: 'other', title: uiText.groupLabels.other },
         ],
-        items: images.map((item, index) => {
-          const promptText = item.prompt?.trim()
-            ? `${uiText.promptLabel}${item.prompt}`
-            : `${uiText.promptLabel}${uiText.noPrompt}`;
-          const dateText = formatDate(item.createdAt, locale);
+        items: (() => {
+          const titleCounter = new Map<string, number>();
 
-          return {
-            title: `${uiText.titlePrefix}${index + 1}`,
-            description: dateText
-              ? `${promptText}\n${uiText.dateLabel}${dateText}`
-              : promptText,
-            group: item.categoryKey || 'other',
-            image: {
-              src: item.url,
-              alt: `${uiText.imageAlt} ${index + 1}`,
-            },
-          };
-        }),
+          return images.map((item, index) => {
+            const promptText = item.prompt?.trim()
+              ? `${uiText.promptLabel}${item.prompt}`
+              : `${uiText.promptLabel}${uiText.noPrompt}`;
+            const dateText = formatDate(item.createdAt, locale);
+            const detailPath = buildColoringPageDetailPath({
+              locale,
+              taskId: item.taskId,
+              prompt: item.prompt,
+            });
+            const keywordGroups = matchPromptKeywordGroups(item.prompt);
+
+            const baseTitle = buildGalleryCardTitle(item.prompt, locale);
+            const titleKey = baseTitle.toLowerCase();
+            const count = (titleCounter.get(titleKey) || 0) + 1;
+            titleCounter.set(titleKey, count);
+            const displayTitle = count > 1 ? `${baseTitle} (${count})` : baseTitle;
+
+            return {
+              title: displayTitle,
+              description: dateText
+                ? `${promptText}\n${uiText.dateLabel}${dateText}`
+                : promptText,
+              group: keywordGroups[0] || 'other',
+              groups: keywordGroups,
+              detailUrl: detailPath,
+              image: {
+                src: item.url,
+                alt: item.prompt?.trim()
+                  ? `${uiText.imageAltPrefix}: ${item.prompt}`
+                  : `${uiText.imageAltPrefix} ${index + 1}`,
+              },
+            };
+          });
+        })(),
         show_full_description_in_modal: true,
         show_download_in_modal: true,
       }}

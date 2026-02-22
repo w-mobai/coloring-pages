@@ -39,7 +39,7 @@
         "block": "generated-gallery",
         "id": "generated-gallery",
         "title": "最新生成涂色页",
-        "description": "实时展示最近生成的涂色页作品。",
+        "description": "浏览并筛选来自真实提示词的可打印涂色页。",
         "limit": 24,
         "className": ""
       },

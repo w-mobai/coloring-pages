@@ -35,7 +35,7 @@
         "block": "generated-gallery",
         "id": "generated-gallery",
         "title": "Coloring Pages",
-        "description": "",
+        "description": "Browse and filter printable coloring pages from real prompts.",
         "limit": 24,
         "className": ""
       },

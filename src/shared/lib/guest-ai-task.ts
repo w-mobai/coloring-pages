@@ -96,3 +96,9 @@ export function updateGuestAITaskById(
   store.set(id, nextTask);
   return nextTask;
 }
+
+export function listGuestAITasks(): GuestAITaskRecord[] {
+  cleanupExpiredTasks();
+  const store = getStore();
+  return Array.from(store.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+}

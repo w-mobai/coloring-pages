@@ -11,6 +11,7 @@ type SeoRoute = {
 
 const seoRoutes: SeoRoute[] = [
   { path: '/', changeFrequency: 'weekly', priority: 1.0 },
+  { path: '/coloring-pages', changeFrequency: 'daily', priority: 0.9 },
   {
     path: '/how-to-find-your-generation',
     changeFrequency: 'monthly',

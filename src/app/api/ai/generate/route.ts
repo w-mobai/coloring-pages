@@ -90,7 +90,6 @@ export async function POST(request: Request) {
 
     const callbackUrl = `${envConfigs.app_url}/api/ai/notify/${provider}`;
     const storageKeyPrefix = buildUserStorageKeyPrefix({
-      email: user?.email,
       fallbackId: user?.id,
     });
 

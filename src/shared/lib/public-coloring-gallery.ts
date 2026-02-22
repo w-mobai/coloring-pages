@@ -1,0 +1,146 @@
+import { AIMediaType, AITaskStatus } from '@/extensions/ai';
+import {
+  extractImageUrls,
+  normalizeImageUrlForDedup,
+  safeParseJSON,
+} from '@/shared/lib/ai-image-history';
+import {
+  classifyColoringPrompt,
+  extractUserPrompt,
+  isColoringTaskPrompt,
+  isLikelyHttpUrl,
+} from '@/shared/lib/coloring-gallery';
+import { listGuestAITasks } from '@/shared/lib/guest-ai-task';
+import {
+  buildR2AllowedUrlPrefixes,
+  isAllowedR2Url,
+} from '@/shared/lib/r2-url-filter';
+import { getAITasks } from '@/shared/models/ai_task';
+import { getAllConfigs } from '@/shared/models/config';
+
+export type PublicColoringGalleryItem = {
+  id: string;
+  taskId: string;
+  url: string;
+  createdAt: string | null;
+  categoryKey: string;
+  prompt: string | null;
+};
+
+type GalleryTaskItem = {
+  id: string;
+  taskId: string;
+  prompt: string | null;
+  taskInfo: string | null;
+  taskResult: string | null;
+  createdAtMs: number;
+};
+
+export const DEFAULT_GALLERY_LIMIT = 24;
+const MAX_GALLERY_LIMIT = 120;
+const MAX_SCAN_LIMIT = 360;
+
+export async function getPublicColoringGalleryItems({
+  limit = DEFAULT_GALLERY_LIMIT,
+}: {
+  limit?: number;
+} = {}): Promise<PublicColoringGalleryItem[]> {
+  const normalizedLimit = Number.isFinite(limit)
+    ? Math.min(Math.max(Math.floor(limit), 1), MAX_GALLERY_LIMIT)
+    : DEFAULT_GALLERY_LIMIT;
+  const scanLimit = Math.min(
+    Math.max(normalizedLimit * 4, 80),
+    MAX_SCAN_LIMIT
+  );
+
+  const configs = await getAllConfigs();
+  const r2UrlPrefixes = buildR2AllowedUrlPrefixes(configs);
+  if (r2UrlPrefixes.length === 0) {
+    return [];
+  }
+
+  const tasks = await getAITasks({
+    mediaType: AIMediaType.IMAGE,
+    status: AITaskStatus.SUCCESS,
+    page: 1,
+    limit: scanLimit,
+  });
+  const guestTasks = listGuestAITasks()
+    .filter(
+      (task) =>
+        task.mediaType === AIMediaType.IMAGE &&
+        task.status === AITaskStatus.SUCCESS
+    )
+    .slice(0, scanLimit);
+
+  const mergedTasks: GalleryTaskItem[] = [
+    ...tasks.map((task) => ({
+      id: task.id,
+      taskId: task.id,
+      prompt: task.prompt,
+      taskInfo: task.taskInfo,
+      taskResult: task.taskResult,
+      createdAtMs: task.createdAt ? new Date(task.createdAt).getTime() : 0,
+    })),
+    ...guestTasks.map((task) => ({
+      id: task.id,
+      taskId: task.id,
+      prompt: task.prompt,
+      taskInfo: task.taskInfo,
+      taskResult: task.taskResult,
+      createdAtMs: task.createdAt || 0,
+    })),
+  ].sort((a, b) => b.createdAtMs - a.createdAtMs);
+
+  const seen = new Set<string>();
+  const list: PublicColoringGalleryItem[] = [];
+
+  for (const task of mergedTasks) {
+    if (!isColoringTaskPrompt(task.prompt)) {
+      continue;
+    }
+
+    const userPrompt = extractUserPrompt(task.prompt);
+    const taskResult = safeParseJSON(task.taskResult);
+    const taskInfo = safeParseJSON(task.taskInfo);
+    const taskInfoImageUrls = extractImageUrls(taskInfo);
+    const resultImageUrls = extractImageUrls(taskResult);
+    const imageUrls = [...taskInfoImageUrls, ...resultImageUrls];
+
+    let selectedImageUrl: string | null = null;
+    for (const imageUrl of imageUrls) {
+      const dedupKey = normalizeImageUrlForDedup(imageUrl);
+      if (
+        !imageUrl ||
+        !isLikelyHttpUrl(imageUrl) ||
+        !isAllowedR2Url(imageUrl, r2UrlPrefixes) ||
+        seen.has(dedupKey)
+      ) {
+        continue;
+      }
+
+      seen.add(dedupKey);
+      selectedImageUrl = imageUrl;
+      break;
+    }
+
+    if (!selectedImageUrl) {
+      continue;
+    }
+
+    list.push({
+      id: `${task.id}-${list.length + 1}`,
+      taskId: task.taskId,
+      url: selectedImageUrl,
+      createdAt: task.createdAtMs ? new Date(task.createdAtMs).toISOString() : null,
+      categoryKey: classifyColoringPrompt(userPrompt || task.prompt),
+      prompt: userPrompt,
+    });
+
+    if (list.length >= normalizedLimit) {
+      break;
+    }
+  }
+
+  return list;
+}
