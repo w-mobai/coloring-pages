@@ -13,11 +13,11 @@ export function Testimonials({
 }) {
   const TestimonialCard = ({ item }: { item: SectionItem }) => {
     return (
-      <div className="bg-card/25 flex flex-col justify-end gap-6 rounded-(--radius) border border-transparent p-8">
-        <p className='text-foreground self-end text-balance before:mr-1 before:content-["\201C"] after:ml-1 after:content-["\201D"]'>
+      <div className="bg-card/25 flex h-full flex-col rounded-(--radius) border border-transparent p-8">
+        <p className='text-foreground text-balance before:mr-1 before:content-["\201C"] after:ml-1 after:content-["\201D"]'>
           {item.quote || item.description}
         </p>
-        <div className="flex items-center gap-3">
+        <div className="mt-auto flex items-center gap-3 pt-6">
           <div className="ring-foreground/10 aspect-square size-9 overflow-hidden rounded-full border border-transparent shadow-md ring-1 shadow-black/15">
             <LazyImage
               src={`${item.image?.src || item.avatar?.src || ''}?v=2`}

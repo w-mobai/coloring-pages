@@ -30,10 +30,12 @@
   },
   "history": {
     "title": "历史记录",
+    "subtitle": "浏览并管理你生成的图片。",
     "tabs": {
       "image": "图片"
     },
     "generate_label": "生成：",
+    "create_new_image": "生成图片",
     "no_prompt": "（无提示词记录）",
     "empty": "还没有生成图片",
     "delete": "删除",

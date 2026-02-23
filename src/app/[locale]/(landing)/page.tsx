@@ -4,7 +4,7 @@ import { getThemePage } from '@/core/theme';
 import { getMetadata } from '@/shared/lib/seo';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
-export const revalidate = 3600;
+export const revalidate = 120;
 export const generateMetadata = getMetadata({
   metadataKey: 'pages.index.metadata',
   canonicalUrl: '/',

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Download, Search, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Download, Loader2, Search, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/shared/components/ui/button';
 
@@ -15,7 +16,65 @@ export function DetailPreviewActions({
   locale: string;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const isZh = locale.startsWith('zh');
+
+  const handleDownload = useCallback(async () => {
+    if (!imageUrl || isDownloading) {
+      return;
+    }
+
+    setIsDownloading(true);
+
+    const baseName = (imageAlt || 'coloring-page')
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 30);
+    const filename = `${baseName || 'coloring-page'}-${Date.now()}.jpg`;
+
+    const triggerDownload = (href: string) => {
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    const fetchBlob = async (url: string) => {
+      try {
+        const resp = await fetch(url);
+        if (resp.ok) {
+          return await resp.blob();
+        }
+      } catch {
+        // ignore and fallback
+      }
+      return null;
+    };
+
+    try {
+      let blob =
+        (await fetchBlob(
+          `/api/proxy/file?url=${encodeURIComponent(imageUrl)}`
+        )) || (await fetchBlob(imageUrl));
+
+      if (!blob) {
+        throw new Error('download failed');
+      }
+
+      const blobUrl = URL.createObjectURL(blob);
+      triggerDownload(blobUrl);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    } catch {
+      toast.error(isZh ? '下载失败，请重试' : 'Download failed, please retry');
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [imageAlt, imageUrl, isDownloading, isZh]);
 
   useEffect(() => {
     if (!previewOpen) {
@@ -47,16 +106,21 @@ export function DetailPreviewActions({
           <Search className="size-5" />
         </Button>
 
-        <Button asChild size="icon" variant="outline" className="h-12 w-12">
-          <a
-            href={imageUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={isZh ? '下载图片' : 'Download Image'}
-            title={isZh ? '下载图片' : 'Download Image'}
-          >
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          className="h-12 w-12"
+          onClick={handleDownload}
+          disabled={isDownloading}
+          aria-label={isZh ? '下载图片' : 'Download Image'}
+          title={isZh ? '下载图片' : 'Download Image'}
+        >
+          {isDownloading ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
             <Download className="size-5" />
-          </a>
+          )}
         </Button>
       </div>
 
@@ -88,20 +152,20 @@ export function DetailPreviewActions({
                 />
               </div>
               <Button
-                asChild
+                type="button"
                 variant="outline"
                 size="icon"
                 className="mt-1 self-auto bg-black/30 text-white hover:bg-black/50 hover:text-white"
+                onClick={handleDownload}
+                disabled={isDownloading}
+                aria-label={isZh ? '下载图片' : 'Download Image'}
+                title={isZh ? '下载图片' : 'Download Image'}
               >
-                <a
-                  href={imageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={isZh ? '下载图片' : 'Download Image'}
-                  title={isZh ? '下载图片' : 'Download Image'}
-                >
+                {isDownloading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
                   <Download className="h-4 w-4" />
-                </a>
+                )}
               </Button>
             </div>
           </div>

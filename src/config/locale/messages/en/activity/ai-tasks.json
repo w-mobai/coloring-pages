@@ -30,10 +30,12 @@
   },
   "history": {
     "title": "History",
+    "subtitle": "Browse and manage your generated images.",
     "tabs": {
       "image": "Image"
     },
     "generate_label": "Generate: ",
+    "create_new_image": "Generate Image",
     "no_prompt": "(No prompt record)",
     "empty": "No generated images yet",
     "delete": "Delete",

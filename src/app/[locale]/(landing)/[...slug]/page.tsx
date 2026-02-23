@@ -3,9 +3,43 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
+import { defaultLocale, locales } from '@/config/locale';
 import { getLocalPage } from '@/shared/models/post';
 
 export const revalidate = 3600;
+
+function normalizePagePath(slug: string): string {
+  const trimmed = (slug || '').trim().replace(/^\/+|\/+$/g, '');
+  return trimmed ? `/${trimmed}` : '/';
+}
+
+function buildCanonical(locale: string, path: string): string {
+  const appUrl = envConfigs.app_url.replace(/\/+$/, '');
+  if (locale !== defaultLocale) {
+    return path === '/' ? `${appUrl}/${locale}` : `${appUrl}/${locale}${path}`;
+  }
+  return `${appUrl}${path}`;
+}
+
+function buildLanguageAlternates(path: string) {
+  const appUrl = envConfigs.app_url.replace(/\/+$/, '');
+  const languages = Object.fromEntries(
+    locales.map((locale) => {
+      if (locale !== defaultLocale) {
+        return [
+          locale,
+          path === '/' ? `${appUrl}/${locale}` : `${appUrl}/${locale}${path}`,
+        ];
+      }
+      return [locale, `${appUrl}${path}`];
+    })
+  );
+
+  return {
+    ...languages,
+    'x-default': `${appUrl}${path}`,
+  };
+}
 
 // dynamic page metadata
 export async function generateMetadata({
@@ -33,10 +67,9 @@ export async function generateMetadata({
   }
 
   // build canonical url
-  canonicalUrl =
-    locale !== envConfigs.locale
-      ? `${envConfigs.app_url}/${locale}/${staticPageSlug}`
-      : `${envConfigs.app_url}/${staticPageSlug}`;
+  const canonicalPath = normalizePagePath(staticPageSlug);
+  canonicalUrl = buildCanonical(locale, canonicalPath);
+  const languageAlternates = buildLanguageAlternates(canonicalPath);
 
   // get static page content
   const staticPage = await getLocalPage({ slug: staticPageSlug, locale });
@@ -51,6 +84,7 @@ export async function generateMetadata({
       description,
       alternates: {
         canonical: canonicalUrl,
+        languages: languageAlternates,
       },
     };
   }
@@ -63,20 +97,25 @@ export async function generateMetadata({
     typeof slug === 'string' ? slug : (slug as string[]).join('.') || '';
 
   const messageKey = `pages.${dynamicPageSlug}`;
-  const t = await getTranslations({ locale, namespace: messageKey });
+  try {
+    const t = await getTranslations({ locale, namespace: messageKey });
 
-  // return dynamic page metadata
-  if (t.has('metadata')) {
-    title = t.raw('metadata.title');
-    description = t.raw('metadata.description');
+    // return dynamic page metadata
+    if (t.has('metadata')) {
+      title = t.raw('metadata.title');
+      description = t.raw('metadata.description');
 
-    return {
-      title,
-      description,
-      alternates: {
-        canonical: canonicalUrl,
-      },
-    };
+      return {
+        title,
+        description,
+        alternates: {
+          canonical: canonicalUrl,
+          languages: languageAlternates,
+        },
+      };
+    }
+  } catch {
+    // ignore translation lookup failures and fallback to common metadata
   }
 
   // 3. return common metadata
@@ -90,6 +129,7 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: canonicalUrl,
+      languages: languageAlternates,
     },
   };
 }

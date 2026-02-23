@@ -16,7 +16,7 @@
         "title": "涂色页",
         "description": "浏览并筛选来自真实提示词的可打印涂色页。",
         "limit": 48,
-        "className": "pt-12 md:pt-16"
+        "className": "py-24 md:py-36"
       }
     }
   }

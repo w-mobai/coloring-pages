@@ -71,8 +71,8 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
   } = useAppContext();
 
   useEffect(() => {
-    fetchConfigs();
-  }, []);
+    void fetchConfigs();
+  }, [fetchConfigs]);
 
   // set is check sign
   useEffect(() => {
@@ -137,7 +137,7 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground focus-visible:ring-0"
+                className="transition-none hover:bg-transparent hover:text-inherit data-[state=open]:bg-transparent data-[state=open]:text-inherit focus-visible:ring-0"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={authUser.image || ''} alt={authUser.name} />

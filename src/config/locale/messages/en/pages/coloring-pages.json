@@ -16,7 +16,7 @@
         "title": "Coloring Pages",
         "description": "Browse and filter printable coloring pages from real prompts.",
         "limit": 48,
-        "className": "pt-12 md:pt-16"
+        "className": "py-24 md:py-36"
       }
     }
   }

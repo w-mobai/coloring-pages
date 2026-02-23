@@ -1,35 +1,31 @@
 {
   "metadata": {
-    "title": "我是哪个世代？按出生年份查询世代名称",
-    "description": "用我们的免费 AI 工具快速判断你属于哪个世代，查看世代名称、年份范围和边界年份解释。"
+    "title": "免费涂色页与可打印涂色页 | AI 涂色页生成器",
+    "description": "用 AI 在几秒内生成儿童可打印涂色页。可选择年龄段和画幅比例，并可立即下载。"
   },
   "page": {
-    "title": "我是哪个世代？",
+    "title": "AI 涂色页",
     "show_sections": [
       "hero",
       "generated_gallery",
-      "logos",
-      "introduce",
       "benefits",
       "usage",
       "features",
       "stats",
       "testimonials",
-      "faq",
-      "cta",
-      "subscribe"
+      "faq"
     ],
     "sections": {
       "hero": {
         "disabled": false,
         "id": "hero",
-        "title": "AI 涂色页生成器",
-        "highlight_text": "AI 涂色页",
-        "description": "使用 AI 生成可打印黑白涂色页。选择年龄段和比例后即可快速生成。",
+        "title": "涂色页生成器\n（AI、免费、可打印）",
+        "highlight_text": "涂色页",
+        "description": "免费生成 AI 涂色页。选择年龄段与比例，几秒即可下载。",
         "show_generation_finder": false,
         "show_coloring_generator": true,
         "background_image": {
-          "src": "/imgs/bg/tree.jpg",
+          "src": "/imgs/bg/color.webp",
           "alt": "背景装饰"
         },
         "className": ""
@@ -38,54 +34,58 @@
         "disabled": false,
         "block": "generated-gallery",
         "id": "generated-gallery",
-        "title": "最新生成涂色页",
+        "title": "涂色页",
         "description": "浏览并筛选来自真实提示词的可打印涂色页。",
         "limit": 24,
+        "show_view_more_card": true,
+        "max_visible_items": 19,
+        "view_more_path": "/coloring-pages",
         "className": ""
       },
       "generation-finder": {
         "disabled": false,
         "id": "generation-finder",
-        "title": "发现你的世代",
-        "description": "根据你的出生年份，找出你属于哪个世代。我们的 AI 分析多个权威来源，为你提供清晰、可信的分类。",
-        "yearLabel": "出生年份",
-        "yearPlaceholder": "选择你的出生年份",
-        "monthLabel": "出生月份",
-        "monthPlaceholder": "选择月份（可选）",
-        "analyzeButton": "使用 AI 分析",
-        "analyzing": "分析中...",
-        "errorTitle": "分析错误",
-        "retryButton": "重试",
+        "title": "Discover Your Generation",
+        "description": "Find out which generation you belong to based on your birth year. Our AI analyzes multiple authoritative sources to give you a clear, trustworthy classification.",
+        "yearLabel": "Birth Year",
+        "yearPlaceholder": "Select your birth year",
+        "monthLabel": "Birth Month",
+        "monthPlaceholder": "Select month (optional)",
+        "analyzeButton": "Analyze with AI",
+        "analyzing": "Analyzing...",
+        "errorTitle": "Analysis Error",
+        "retryButton": "Retry",
         "className": "bg-muted"
       },
       "logos": {
         "disabled": false,
-        "title": "世代时间线",
-        "description": "探索不同世代及其定义年份。每个世代都有由历史事件和文化变迁塑造的独特特征。",
+        "id": "logos",
+        "title": "All Generation Names and Years",
+        "description": "Discover all the generation names by year. From Baby Boomers to Gen Z, explore different generation names and their defining years. Understanding generation names and ages helps you identify which generation you belong to.",
         "generations": {
           "Greatest Generation": {
-            "description": "经历了大萧条和第二次世界大战的一代人，以坚韧、责任感和牺牲精神著称。他们塑造了现代世界的基础。"
+            "description": "Those who lived through the Great Depression and World War II, known for their resilience, sense of duty, and sacrifice. They built the foundation of the modern world."
           },
           "Silent Generation": {
-            "description": "在战后时期成长，见证了民权运动和冷战。这一代人以勤奋工作、传统价值观和对权威的尊重而闻名。"
+            "description": "Growing up in the post-war era, they witnessed the Civil Rights Movement and the Cold War. Known for hard work, traditional values, and respect for authority."
           },
           "Baby Boomers": {
-            "description": "战后婴儿潮一代，经历了经济繁荣、文化革命和技术进步。他们重塑了社会规范，追求个人自由和自我实现。"
+            "description": "The post-war baby boom generation experienced economic prosperity, cultural revolution, and technological advancement. They reshaped social norms and pursued personal freedom."
           },
           "Gen X": {
-            "description": "在冷战末期和互联网兴起时成长，这一代人独立、适应力强，见证了从模拟到数字时代的转变。"
+            "description": "Coming of age during the end of the Cold War and the rise of the internet, this generation is independent and adaptable, bridging the analog and digital worlds."
           },
           "Millennials": {
-            "description": "千禧一代在互联网和全球化中成长，重视工作与生活的平衡、社会正义和技术创新。他们是数字原住民的先驱。"
+            "description": "Growing up with the internet and globalization, Millennials value work-life balance, social justice, and technological innovation. They pioneered the digital native lifestyle."
           },
           "Gen Z": {
-            "description": "真正的数字原住民，从小就接触智能手机和社交媒体。这一代人关注多元化、心理健康和社会变革，善于利用技术表达自我。"
+            "description": "True digital natives who grew up with smartphones and social media. This generation champions diversity, mental health awareness, and social change through technology."
           },
           "Gen Alpha": {
-            "description": "在 AI 和智能设备环境中成长的一代，他们将成为最具技术素养的一代。教育方式和成长环境都在经历前所未有的数字化转型。"
+            "description": "Growing up in an AI and smart device environment, they will be the most tech-literate generation. Their education and upbringing are experiencing unprecedented digital transformation."
           },
           "Gen Beta": {
-            "description": "即将到来的一代，将在更加智能化和互联的世界中成长。他们将面对气候变化、AI 普及等全球性挑战，并塑造未来社会。"
+            "description": "The upcoming generation that will grow up in an even more intelligent and connected world. They will face global challenges like climate change and AI ubiquity while shaping the future."
           }
         },
         "items": [
@@ -124,56 +124,39 @@
               "alt": "Vercel"
             }
           }
-        ],
-        "id": "logos"
+        ]
       },
       "introduce": {
         "disabled": true,
         "block": "features-list",
         "id": "introduce",
-        "title": "What Generation Am I 是什么？",
-        "label": "产品简介",
-        "description": "What Generation Am I 是一个 AI 驱动的世代查询工具，帮助你按出生年份快速判断所属世代并理解代际特征。",
+        "title": "What Is ColorFun?",
+        "label": "Introduce",
+        "description": "ColorFun is an AI-powered generation finder that helps you identify your generation by birth year and understand generational traits.",
         "image": {
-          "src": "/imgs/features/landing-page.png",
-          "alt": "世代查询产品介绍插图"
+          "src": "/imgs/features/3.webp",
+          "alt": "Generation finder product overview illustration"
         },
         "items": [
           {
-            "title": "完整年份范围",
-            "description": "一站查看从沉默的一代到 Alpha 世代的清晰年份区间。",
-            "icon": "RiNextjsFill",
-            "image": {
-              "src": "/imgs/features/1.png",
-              "alt": "世代查询模板示意图"
-            }
+            "title": "Comprehensive Year Ranges",
+            "description": "Explore clear generation year ranges from Silent Generation to Gen Alpha in one place.",
+            "icon": "RiNextjsFill"
           },
           {
-            "title": "边界年份解析",
-            "description": "针对临界年份提供更清晰的判断依据与解释。",
-            "icon": "RiDatabase2Line",
-            "image": {
-              "src": "/imgs/features/2.png",
-              "alt": "世代查询基础设施示意图"
-            }
+            "title": "Boundary-Year Clarity",
+            "description": "Understand tricky cusp years with contextual hints and transparent reasoning.",
+            "icon": "RiDatabase2Line"
           },
           {
-            "title": "AI 快速分析",
-            "description": "输入出生年份后快速得到世代结果与核心说明。",
-            "icon": "RiCloudyFill",
-            "image": {
-              "src": "/imgs/features/3.png",
-              "alt": "世代查询部署流程示意图"
-            }
+            "title": "Fast AI Analysis",
+            "description": "Get an instant generation result with concise, readable explanations.",
+            "icon": "RiCloudyFill"
           },
           {
-            "title": "代际背景洞察",
-            "description": "结合世代特征与时代背景，帮助你更好理解结果。",
-            "icon": "RiRobot2Line",
-            "image": {
-              "src": "/imgs/features/4.png",
-              "alt": "世代查询 AI 集成示意图"
-            }
+            "title": "Insightful Context",
+            "description": "Learn what your generation means through practical characteristics and examples.",
+            "icon": "RiRobot2Line"
           }
         ],
         "className": "bg-muted"
@@ -182,35 +165,35 @@
         "disabled": false,
         "block": "features-accordion",
         "id": "benefits",
-        "title": "了解“我属于哪个世代？”",
+        "title": "你可以创建的热门涂色页",
         "label": "优势",
-        "description": "了解所有世代名称以及每个世代的独特之处。我们的工具帮助你按出生年份查找世代名称，并理解不同世代特征。",
+        "description": "几秒生成高需求涂色页，覆盖儿童热门题材与课堂常用可打印线稿。",
         "items": [
           {
-            "title": "完整世代名称列表",
-            "description": "从沉默的一代到 Alpha 世代，查看完整世代名称。我们的数据库覆盖世代名称与年份，帮助你更有把握地回答“我属于哪个世代？”。",
-            "icon": "RiListCheck",
+            "title": "儿童热门与角色灵感主题",
+            "description": "可生成儿童涂色页，常见提示词包括 hello kitty coloring pages、bluey coloring pages、pokemon coloring pages、spiderman coloring pages、sonic coloring pages、paw patrol coloring pages、elsa coloring pages、barbie coloring pages、spongebob coloring pages、stitch coloring pages、minecraft coloring pages。",
+            "icon": "RiGamepadLine",
             "image": {
               "src": "/imgs/features/1.webp",
-              "alt": "完整世代名称列表示意图"
+              "alt": "儿童热门涂色页主题"
             }
           },
           {
-            "title": "年份与世代名称对应",
-            "description": "探索年份与世代名称之间的关系，了解不同世代名称如何对应特定出生年份区间与历史时期。",
-            "icon": "RiCalendarLine",
+            "title": "可爱、动物与幻想主题涂色页",
+            "description": "可生成 cute coloring pages，以及 unicorn、princess、dragon、mermaid、dinosaur、cat、dog、horse、flower 等经典主题。",
+            "icon": "RiBearSmileLine",
             "image": {
               "src": "/imgs/features/2.webp",
-              "alt": "年份与世代名称关系示意图"
+              "alt": "可爱与幻想涂色页"
             }
           },
           {
-            "title": "AI 驱动分析",
-            "description": "借助 AI 技术，准确回答“我属于哪个世代？”。系统会分析世代名称与年龄关系，为你提供个性化的世代身份洞察。",
-            "icon": "RiRobot2Line",
+            "title": "节日、趋势与进阶提示词",
+            "description": "可生成 valentines day coloring pages、valentine's day coloring pages、winter coloring pages、football coloring pages、car coloring pages、stranger things coloring pages、kpop demon hunters coloring pages、labubu coloring pages，以及 crayola 风格提示词。",
+            "icon": "RiSparklingLine",
             "image": {
               "src": "/imgs/features/3.webp",
-              "alt": "AI 世代分析示意图"
+              "alt": "节日与趋势涂色页"
             }
           }
         ]
@@ -219,22 +202,22 @@
         "disabled": false,
         "block": "features-step",
         "id": "usage",
-        "title": "3 步找到你的世代",
-        "description": "使用我们的世代名称查询工具，三步快速发现你的世代：",
+        "title": "3 步创建可打印涂色页",
+        "description": "从提示词到可打印成品，快速生成适配年龄与场景的清晰线稿。",
         "image_position": "left",
         "text_align": "center",
         "items": [
           {
-            "title": "输入出生年份",
-            "description": "先输入你的出生年份。系统会根据“按年份划分的世代名称”识别你所属的世代。"
+            "title": "描述主题",
+            "description": "输入提示词，例如 free coloring pages、printable coloring pages、unicorn coloring pages 或 pokemon coloring pages。"
           },
           {
-            "title": "获取 AI 分析",
-            "description": "获得关于你所属世代的详细解读，包括世代名称与年龄、核心特征，以及你这一代的独特性。"
+            "title": "设置年龄与比例",
+            "description": "选择年龄段和画幅比例，即可匹配家庭打印或课堂练习场景。"
           },
           {
-            "title": "分享结果",
-            "description": "把你的世代结果分享给朋友，帮助更多人回答“我属于哪个世代？”，一起探索不同世代名称。"
+            "title": "生成、预览与下载",
+            "description": "几秒得到高对比黑白线稿，并下载用于家庭、学校或课堂场景。"
           }
         ],
         "className": "bg-muted"
@@ -242,58 +225,58 @@
       "features": {
         "disabled": false,
         "id": "features",
-        "title": "查找“我属于哪个世代”的核心功能",
-        "description": "你需要的世代名称查询与代际差异理解能力都在这里。",
+        "title": "为什么这个 AI 涂色页工具好用",
+        "description": "几秒生成可打印黑白线稿，适配儿童、家庭与课堂等真实使用场景。",
         "items": [
           {
-            "title": "完整世代名称数据库",
-            "description": "覆盖 1901 年至今的全部世代名称，包含世代名称与年份信息，帮助你准确定位。",
-            "icon": "RiDatabase2Line"
+            "title": "免费涂色页工作流",
+            "description": "从免费提示词开始，快速生成并持续微调，直到达到可打印效果。",
+            "icon": "RiRouteLine"
           },
           {
-            "title": "按年份查询世代名称",
-            "description": "按出生年份快速查找你的精确世代。数据库完整覆盖“年份与世代名称”映射。",
-            "icon": "RiCalendarLine"
+            "title": "可打印输出优化",
+            "description": "结果默认面向打印优化，适合标准家用打印场景。",
+            "icon": "RiPrinterLine"
           },
           {
-            "title": "不同世代名称对比",
-            "description": "探索不同世代名称及其变体，了解不同来源下世代命名的演变。",
-            "icon": "RiGroupLine"
+            "title": "年龄分级细节控制",
+            "description": "可一键调整为更适合儿童上色的线稿细节。",
+            "icon": "RiUserStarLine"
           },
           {
-            "title": "世代年份与名称映射",
-            "description": "查看详细的“世代年份-名称”对应关系，了解出生年份如何落入具体世代。",
-            "icon": "RiMapPinLine"
+            "title": "热门细分题材覆盖",
+            "description": "覆盖 kpop demon hunters coloring pages、labubu coloring pages、stranger things coloring pages 等趋势题材。",
+            "icon": "RiSearchLine"
           },
           {
-            "title": "世代名称与年龄计算",
-            "description": "自动计算世代名称与年龄，基于当前年龄和出生年份回答“我属于哪个世代？”。",
-            "icon": "RiCalculatorLine"
+            "title": "校园与节日主题",
+            "description": "支持 football、winter、valentines day、valentine's day 等课堂和节日常用主题。",
+            "icon": "RiGraduationCapLine"
           },
           {
-            "title": "AI 世代分析",
-            "description": "通过 AI 智能回答“我属于哪个世代？”，综合多个世代来源提升准确性。",
-            "icon": "RiRobot2Line"
+            "title": "历史记录与再次下载",
+            "description": "可在历史记录中查看过往生成、预览完整图片并随时再次下载。",
+            "icon": "RiHistoryLine"
           }
         ]
       },
       "stats": {
         "disabled": false,
         "id": "stats",
-        "title": "很多人都在用它找到自己的世代",
-        "description": "加入数千名用户，一起发现你的世代名称与年份范围",
+        "title": "为真实涂色页需求而打造",
+        "description": "家长、老师与内容创作者每天都在使用，快速获得可打印结果。",
         "items": [
           {
             "title": "10,000+",
-            "description": "已找到自己世代的用户"
+            "description": "已生成涂色页"
           },
           {
-            "title": "12",
-            "description": "覆盖的世代名称"
+            "title": "40+",
+            "description": "热门提示词主题"
           },
           {
-            "title": "120+",
-            "description": "覆盖的世代年份跨度"
+            "title": "3",
+            "description": "完成打印所需步骤"
           }
         ],
         "className": "bg-muted"
@@ -301,13 +284,13 @@
       "testimonials": {
         "disabled": false,
         "id": "testimonials",
-        "title": "用户如何评价世代查询结果",
-        "description": "来自真实用户的反馈：他们如何通过我们的工具发现自己属于哪个世代",
+        "title": "用户如何评价我们的涂色页",
+        "description": "来自家庭、教师与创作者的真实反馈。",
         "items": [
           {
             "name": "Sarah Johnson",
-            "role": "千禧一代",
-            "quote": "我一直想知道“我属于哪个世代？”。这个工具给了我清晰答案，还展示了完整的世代名称与年份。现在我终于更了解自己的代际身份了！",
+            "role": "家长",
+            "quote": "我每周都会给孩子做涂色页。Bluey 和 Paw Patrol 相关主题在家里特别受欢迎。",
             "image": {
               "src": "/imgs/avatars/1.png",
               "alt": "sarah"
@@ -315,8 +298,8 @@
           },
           {
             "name": "Michael Chen",
-            "role": "X 世代",
-            "quote": "按年份查询世代名称的功能非常棒！我了解了不同世代名称，也准确找到了自己在代际时间线中的位置。",
+            "role": "老师",
+            "quote": "可打印质量很好。我会为课堂活动生成 dinosaur、car、football 等主题。",
             "image": {
               "src": "/imgs/avatars/2.png",
               "alt": "michael"
@@ -324,8 +307,8 @@
           },
           {
             "name": "Emma Davis",
-            "role": "Z 世代",
-            "quote": "终于得到“我属于哪个世代？”的答案了！工具清晰展示了所有世代名称，对“世代名称与年龄”的解释也很到位。",
+            "role": "设计师",
+            "quote": "我想要可爱风格涂色页，出图很快。Unicorn、mermaid、flower 等主题都很干净、适合打印。",
             "image": {
               "src": "/imgs/avatars/3.png",
               "alt": "emma"
@@ -333,8 +316,8 @@
           },
           {
             "name": "Robert Martinez",
-            "role": "婴儿潮一代",
-            "quote": "这是理解“年份与世代名称”的优秀工具。AI 分析帮助我了解不同世代名称及其特征。",
+            "role": "业余画师",
+            "quote": "儿童细节设置很实用。我做 dragon 和 horse 主题时，线稿清晰、容易上色。",
             "image": {
               "src": "/imgs/avatars/4.png",
               "alt": "robert"
@@ -342,8 +325,8 @@
           },
           {
             "name": "Lisa Anderson",
-            "role": "千禧一代",
-            "quote": "这是我用过最好的“我属于哪个世代”工具！世代名称与年份数据库完整，而且非常易懂。",
+            "role": "内容创作者",
+            "quote": "趋势提示词效果很稳定。Stranger Things、kpop demon hunters、labubu 相关页面几分钟就能做完。",
             "image": {
               "src": "/imgs/avatars/5.png",
               "alt": "lisa"
@@ -351,8 +334,8 @@
           },
           {
             "name": "David Kim",
-            "role": "Alpha 世代家长",
-            "quote": "我用它来了解孩子属于哪个世代。各世代名称与年份解释得非常清楚，特别适合学习代际分类。",
+            "role": "家庭博主",
+            "quote": "观众最喜欢角色灵感页面：hello kitty、pokemon、spiderman、sonic 这些主题都很受欢迎。",
             "image": {
               "src": "/imgs/avatars/6.png",
               "alt": "david"
@@ -363,49 +346,57 @@
       "faq": {
         "disabled": false,
         "id": "faq",
-        "title": "关于“我属于哪个世代”的常见问题",
-        "description": "关于世代名称以及如何查找你所属世代的常见问题",
+        "title": "涂色页常见问题",
+        "description": "关于免费生成、可打印输出和热门提示词的常见问题汇总。",
         "items": [
           {
-            "question": "如果我是 1995 年出生，我属于哪个世代？",
-            "answer": "如果你出生于 1995 年，通常属于千禧一代（也称 Gen Y）。我们的工具会综合分析世代名称与年份，给出更准确的结果。按年份划分的世代名称可帮助你基于多个权威来源定位更精确的代际归属。"
+            "question": "这里可以免费生成并下载可打印涂色页吗？",
+            "answer": "可以。你可以在几秒内生成免费涂色页，并下载可打印文件，适用于家庭或课堂打印。"
           },
           {
-            "question": "所有世代名称和年份分别是什么？",
-            "answer": "常见世代名称包括：沉默的一代（1928-1945）、婴儿潮一代（1946-1964）、X 世代（1965-1980）、千禧一代/Gen Y（1981-1996）、Z 世代（1997-2012）和 Alpha 世代（2013-至今）。这些世代名称与年份基于人口研究领域的广泛定义。"
+            "question": "这个生成器主要面向儿童涂色页吗？",
+            "answer": "是的。生成器以儿童涂色页为主，线条清晰、易于上色。你仍可在儿童友好范围内调整年龄段和线条复杂度。"
           },
           {
-            "question": "我该如何查询“我属于哪个世代”？",
-            "answer": "只需输入你的出生年份即可。我们的 AI 会分析不同世代名称，并将你的出生年份与多个来源的“年份-世代名称”范围进行比对，给出更准确的代际识别结果。"
+            "question": "能做 hello kitty、bluey、pokemon、spiderman 这类角色灵感页面吗？",
+            "answer": "可以。常见可生成主题包括 hello kitty、bluey、pokemon、spiderman、sonic、elsa、paw patrol、barbie、spongebob、stitch、minecraft 等。"
           },
           {
-            "question": "不同的世代名称都有哪些？",
-            "answer": "常见世代名称包括婴儿潮一代、X 世代、千禧一代、Z 世代，以及较新的 Alpha 世代等。有些世代还存在别称，例如千禧一代也常被称为 Gen Y。我们的数据库覆盖了主要世代名称及其变体。"
+            "question": "可以做幻想、动物和可爱风格吗？",
+            "answer": "当然。常见提示词有 cute、unicorn、princess、dragon、mermaid、dinosaur、cat、dog、horse、flower 等。"
           },
           {
-            "question": "世代名称和年龄是如何计算的？",
-            "answer": "世代名称和年龄通常基于出生年份区间计算。每个世代跨度大约为 15-20 年。我们的工具会根据你的出生年份判断你所属世代，并结合“世代年份与名称”数据计算你在该世代中的当前年龄位置。"
+            "question": "情人节、冬季这类节日主题效果好吗？",
+            "answer": "效果很好。你可以生成 valentines day、valentine's day、winter 等主题，并保持清晰黑白线稿。"
           },
           {
-            "question": "为什么同一年份会出现不同世代名称？",
-            "answer": "不同来源对世代名称与年份范围的划分可能略有差异。例如有些来源将千禧一代定义为 1981-1996，另一些可能采用 1980-1995。我们的工具会综合多个权威来源，展示可能适用于你出生年份的世代名称，帮助你理解这些差异。"
+            "question": "可以生成 stranger things、labubu 这类趋势主题吗？",
+            "answer": "可以。可尝试 stranger things、kpop demon hunters、labubu 等提示词，并按受众调整风格和细节。"
+          },
+          {
+            "question": "能做 car、football 这类课堂活动主题吗？",
+            "answer": "可以。生成器适合教育和活动场景，包括 car coloring pages、football coloring pages 等。"
+          },
+          {
+            "question": "可以做类似 crayola 风格的线稿吗？",
+            "answer": "可以。你可以在提示词中加入风格关键词，生成更粗线条、更活泼的可打印效果。"
           }
         ]
       },
       "cta": {
         "disabled": true,
         "id": "cta",
-        "title": "今天就发现你属于哪个世代",
-        "description": "使用 AI 工具快速找到你的世代，立即探索完整的世代名称与年份。",
+        "title": "立即开始生成你的涂色页",
+        "description": "用 AI 快速创建可打印涂色页，覆盖儿童与课堂场景。",
         "buttons": [
           {
-            "title": "查找我的世代",
+            "title": "开始生成",
             "url": "#hero",
             "target": "_self",
             "icon": "Zap"
           },
           {
-            "title": "了解世代知识",
+            "title": "查看使用指南",
             "url": "/how-to-find-your-generation",
             "target": "_blank",
             "variant": "outline",
@@ -417,11 +408,11 @@
       "subscribe": {
         "disabled": true,
         "id": "subscribe",
-        "title": "订阅我们的邮件通讯",
-        "description": "获取 What Generation Am I 的最新新闻与更新。",
+        "title": "订阅最新更新",
+        "description": "获取涂色页生成器的新功能、提示词和更新。",
         "submit": {
           "input": {
-            "placeholder": "输入邮箱"
+            "placeholder": "输入你的邮箱"
           },
           "button": {
             "title": "订阅"
@@ -434,7 +425,7 @@
         "disabled": false,
         "id": "coloring-page-generator",
         "title": "AI 涂色页生成器",
-        "description": "使用 AI 生成可打印黑白涂色页。选择年龄段和比例后即可快速生成。",
+        "description": "使用 AI 免费创建可打印涂色页。可选择年龄段与画幅比例，几秒出图。",
         "srOnlyTitle": "AI 涂色页生成工具",
         "allowMultipleImages": true,
         "maxImages": 9,

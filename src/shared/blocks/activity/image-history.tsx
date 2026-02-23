@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,12 +10,14 @@ import {
   X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 
+import { Link } from '@/core/i18n/navigation';
 import { LazyImage } from '@/shared/blocks/common';
 import { Pagination } from '@/shared/blocks/common/pagination';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
+import { getLocalizedColoringPromptTitle } from '@/shared/lib/coloring-prompt-display';
 import {
   Dialog,
   DialogContent,
@@ -44,6 +46,51 @@ interface HistoryPagination {
   limit: number;
 }
 
+function buildHistoryCardTitle(
+  prompt: string | null,
+  fallback: string,
+  locale: string
+): string {
+  const raw = getLocalizedColoringPromptTitle({
+    prompt,
+    locale,
+    fallbackZh: fallback,
+    fallbackEn: fallback,
+  }).trim();
+  if (!raw) {
+    return fallback;
+  }
+
+  const firstSegment = raw.split(',')[0]?.trim() || raw;
+  const normalized = firstSegment.replace(/\s+/g, ' ');
+  const maxLength = 34;
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
+function formatHistoryCreatedAt(value: string | null, locale: string): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
 export function ImageHistory({
   initialGroups,
   pagination,
@@ -52,21 +99,29 @@ export function ImageHistory({
   pagination: HistoryPagination;
 }) {
   const t = useTranslations('activity.ai-tasks');
+  const locale = useLocale();
   const [groups, setGroups] = useState<HistoryTaskGroup[]>(initialGroups);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{
     taskId: string;
     image: HistoryImageItem;
   } | null>(null);
-  const images = groups.flatMap((group) =>
-    group.images.map((image) => ({
-      ...image,
-      prompt: group.prompt,
-    }))
+  const images = useMemo(
+    () =>
+      groups.flatMap((group) =>
+        group.images.map((image) => ({
+          ...image,
+          prompt: group.prompt,
+          createdAt: group.createdAt,
+        }))
+      ),
+    [groups]
   );
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-  const previewImage =
-    previewIndex !== null ? (images[previewIndex] ?? null) : null;
+  const previewImage = useMemo(
+    () => (previewIndex !== null ? (images[previewIndex] ?? null) : null),
+    [images, previewIndex]
+  );
 
   useEffect(() => {
     if (previewIndex === null) {
@@ -131,6 +186,7 @@ export function ImageHistory({
     }
 
     const { taskId, image } = pendingDelete;
+    const shouldClosePreview = previewImage?.id === image.id;
     setDeletingImageId(image.id);
 
     try {
@@ -167,6 +223,9 @@ export function ImageHistory({
 
       toast.success(t('history.delete_success'));
       setPendingDelete(null);
+      if (shouldClosePreview) {
+        setPreviewIndex(null);
+      }
     } catch (error: any) {
       toast.error(error?.message || t('history.delete_failed'));
     } finally {
@@ -260,58 +319,77 @@ export function ImageHistory({
   };
 
   return (
-    <section className="pt-24 pb-10 md:pt-28 md:pb-12">
+    <section className="py-24 md:py-36">
       <div className="container mx-auto">
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold md:text-3xl">
-              {t('history.title')}
-            </h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold md:text-3xl">
+                {t('history.title')}
+              </h2>
+              <p className="text-muted-foreground text-sm md:text-base">
+                {t('history.subtitle')}
+              </p>
+            </div>
+            <Button asChild variant="outline" size="sm" className="w-fit self-center sm:self-auto">
+              <Link href="/#coloring-page-generator">
+                {t('history.create_new_image')}
+              </Link>
+            </Button>
           </div>
 
           {images.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-sm text-muted-foreground">
-                {t('history.empty')}
-              </CardContent>
-            </Card>
+            <div className="py-10 text-center text-sm text-muted-foreground">
+              {t('history.empty')}
+            </div>
           ) : (
             <>
               <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3 xl:columns-4">
                 {images.map((image, index) => (
                   <div
                     key={image.id}
-                    className="group relative cursor-zoom-in break-inside-avoid overflow-hidden rounded-xl ring-1 ring-black/5"
+                    className="group relative cursor-zoom-in break-inside-avoid"
                   >
-                    <button
-                      type="button"
-                      className="block w-full cursor-zoom-in bg-card"
-                      onClick={() => setPreviewIndex(index)}
-                    >
-                      <LazyImage
-                        src={image.imageUrl}
-                        alt={image.prompt?.trim() || 'History image'}
-                        className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.01]"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                      />
-                    </button>
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    <div className="absolute top-2 right-2 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100">
-                      <Button
-                        size="icon"
-                        variant="destructive"
-                        className="h-8 w-8"
-                        onClick={() => requestDeleteImage(image.taskId, image)}
-                        disabled={deletingImageId === image.id}
-                        aria-label={t('history.delete')}
-                      >
-                        {deletingImageId === image.id ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="size-4" />
-                        )}
-                      </Button>
-                    </div>
+                    {(() => {
+                      const createdAtLabel = formatHistoryCreatedAt(image.createdAt, locale);
+                      const createdAtText = createdAtLabel
+                        ? `${t('fields.created_at')}: ${createdAtLabel}`
+                        : null;
+
+                      return (
+                        <>
+                          <div className="relative overflow-hidden rounded-xl ring-1 ring-black/5">
+                            <button
+                              type="button"
+                              className="block w-full cursor-zoom-in bg-card"
+                              onClick={() => setPreviewIndex(index)}
+                            >
+                              <LazyImage
+                                src={image.imageUrl}
+                                alt={image.prompt?.trim() || 'History image'}
+                                className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.01]"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                              />
+                            </button>
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                          </div>
+                          <div className="px-2 pt-2 pb-1 text-center">
+                              <p className="text-foreground line-clamp-2 text-xs font-medium">
+                              {buildHistoryCardTitle(
+                                image.prompt,
+                                t('history.no_prompt'),
+                                locale
+                              )}
+                              </p>
+                            {createdAtText && (
+                              <p className="text-muted-foreground text-[11px]">
+                                {createdAtText}
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
@@ -380,19 +458,39 @@ export function ImageHistory({
                       </>
                     )}
                   </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="mt-1 self-auto bg-black/30 text-white hover:bg-black/50 hover:text-white"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleDownloadImage(previewImage);
-                    }}
-                    aria-label={t('history.download')}
-                    title={t('history.download')}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
+                  <div className="mt-1 flex flex-col gap-2 self-auto">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-black/30 text-white hover:bg-black/50 hover:text-white"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDownloadImage(previewImage);
+                      }}
+                      aria-label={t('history.download')}
+                      title={t('history.download')}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-black/30 text-white hover:bg-black/50 hover:text-white"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        requestDeleteImage(previewImage.taskId, previewImage);
+                      }}
+                      disabled={deletingImageId === previewImage.id}
+                      aria-label={t('history.delete')}
+                      title={t('history.delete')}
+                    >
+                      {deletingImageId === previewImage.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -414,6 +512,7 @@ export function ImageHistory({
               <DialogFooter>
                 <Button
                   variant="outline"
+                  className="transition-none hover:bg-background hover:text-current dark:hover:bg-input/30"
                   onClick={() => setPendingDelete(null)}
                   disabled={Boolean(deletingImageId)}
                 >

@@ -54,7 +54,7 @@
     "status_failed": "Generation failed, please retry",
     "error_empty_theme": "Please enter a theme",
     "error_theme_too_long": "Theme cannot exceed 30 characters",
-    "error_insufficient_credits": "Insufficient credits, please top up",
+    "error_insufficient_credits": "Top up credits",
     "error_not_logged_in": "Please sign in first",
     "error_generation_failed": "Generation failed, please retry",
     "error_timeout": "Generation timeout, please retry",

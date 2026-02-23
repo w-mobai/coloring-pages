@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "Free Coloring Pages & Printable Coloring Pages | AI Coloring Page Generator",
-    "description": "Create free coloring pages printable in seconds with AI. Generate coloring pages for kids and adult coloring pages, choose age group and aspect ratio, and download printable coloring pages instantly."
+    "description": "Create free printable coloring pages for kids in seconds with AI. Choose age group and aspect ratio, and download instantly."
   },
   "page": {
     "title": "AI Coloring Pages",
@@ -37,6 +37,9 @@
         "title": "Coloring Pages",
         "description": "Browse and filter printable coloring pages from real prompts.",
         "limit": 24,
+        "show_view_more_card": true,
+        "max_visible_items": 19,
+        "view_more_path": "/coloring-pages",
         "className": ""
       },
       "generation-finder": {
@@ -127,9 +130,9 @@
         "disabled": true,
         "block": "features-list",
         "id": "introduce",
-        "title": "What Is What Generation Am I?",
+        "title": "What Is ColorFun?",
         "label": "Introduce",
-        "description": "What Generation Am I is an AI-powered generation finder that helps you identify your generation by birth year and understand generational traits.",
+        "description": "ColorFun is an AI-powered generation finder that helps you identify your generation by birth year and understand generational traits.",
         "image": {
           "src": "/imgs/features/3.webp",
           "alt": "Generation finder product overview illustration"
@@ -164,12 +167,12 @@
         "id": "benefits",
         "title": "Popular Coloring Pages You Can Create",
         "label": "Benefits",
-        "description": "Generate high-demand coloring pages in seconds, from kids favorites to detailed printable designs for adults.",
+        "description": "Generate high-demand coloring pages in seconds, from kids favorites to classroom-ready printable designs.",
         "items": [
           {
             "title": "Kids Favorites and Character-Inspired Themes",
             "description": "Create coloring pages for kids and kids coloring pages with prompts like hello kitty coloring pages, bluey coloring pages, pokemon coloring pages, spiderman coloring pages, sonic coloring pages, paw patrol coloring pages, elsa coloring pages, barbie coloring pages, spongebob coloring pages, stitch coloring pages, and minecraft coloring pages.",
-            "icon": "RiListCheck",
+            "icon": "RiGamepadLine",
             "image": {
               "src": "/imgs/features/1.webp",
               "alt": "Kids coloring pages themes"
@@ -178,7 +181,7 @@
           {
             "title": "Cute, Animal, and Fantasy Coloring Pages",
             "description": "Generate cute coloring pages and timeless themes such as unicorn coloring pages, princess coloring pages, dragon coloring pages, mermaid coloring pages, dinosaur coloring pages, cat coloring pages, dog coloring pages, horse coloring pages, and flower coloring pages.",
-            "icon": "RiCalendarLine",
+            "icon": "RiBearSmileLine",
             "image": {
               "src": "/imgs/features/2.webp",
               "alt": "Cute and fantasy coloring pages"
@@ -186,8 +189,8 @@
           },
           {
             "title": "Seasonal, Trend, and Advanced Prompt Ideas",
-            "description": "Make valentines day coloring pages, valentine's day coloring pages, valentines coloring pages, valentine coloring pages, winter coloring pages, football coloring pages, car coloring pages, stranger things coloring pages, kpop demon hunters coloring pages, labubu coloring pages, plus detailed adult coloring pages and crayola coloring pages style prompts.",
-            "icon": "RiRobot2Line",
+            "description": "Make valentines day coloring pages, valentine's day coloring pages, valentines coloring pages, valentine coloring pages, winter coloring pages, football coloring pages, car coloring pages, stranger things coloring pages, kpop demon hunters coloring pages, labubu coloring pages, plus crayola coloring pages style prompts.",
+            "icon": "RiSparklingLine",
             "image": {
               "src": "/imgs/features/3.webp",
               "alt": "Seasonal and trending coloring pages"
@@ -209,8 +212,8 @@
             "description": "Enter a prompt like free coloring pages, printable coloring pages, unicorn coloring pages, or pokemon coloring pages."
           },
           {
-            "title": "Choose Age Group and Aspect Ratio",
-            "description": "Pick a child-friendly or detailed mode for adult coloring pages, then choose the best ratio for your printer or worksheet."
+            "title": "Set Age & Ratio",
+            "description": "Pick an age group and ratio, then choose the best layout for your printer or worksheet."
           },
           {
             "title": "Generate, Preview, and Download",
@@ -223,37 +226,37 @@
         "disabled": false,
         "id": "features",
         "title": "Why This AI Coloring Page Tool Works",
-        "description": "Built for fast generation, clear outlines, and SEO-friendly demand around coloring pages and printable coloring pages.",
+        "description": "Create printable coloring pages in seconds with clean black-and-white outlines that are ready for kids, home, and classroom use.",
         "items": [
           {
             "title": "Free Coloring Pages Workflow",
             "description": "Start with free coloring pages prompts, generate instantly, and refine until your design is ready to print.",
-            "icon": "RiDatabase2Line"
+            "icon": "RiRouteLine"
           },
           {
             "title": "Coloring Pages Printable Output",
             "description": "Every result is optimized as coloring pages printable and printable coloring pages for standard home printing.",
-            "icon": "RiCalendarLine"
+            "icon": "RiPrinterLine"
           },
           {
             "title": "Age-Aware Detail Control",
-            "description": "Generate simple coloring pages for kids or more intricate adult coloring pages with one setting change.",
-            "icon": "RiGroupLine"
+            "description": "Generate kid-friendly coloring pages with one setting change.",
+            "icon": "RiUserStarLine"
           },
           {
             "title": "Popular Niche Coverage",
             "description": "Support trending searches like kpop demon hunters coloring pages, labubu coloring pages, and stranger things coloring pages.",
-            "icon": "RiMapPinLine"
+            "icon": "RiSearchLine"
           },
           {
             "title": "School and Seasonal Themes",
             "description": "Create football coloring pages, winter coloring pages, valentines day coloring pages, and valentine's day coloring pages.",
-            "icon": "RiCalculatorLine"
+            "icon": "RiGraduationCapLine"
           },
           {
             "title": "History and Re-Download",
             "description": "Open History to view past creations, preview full images, and download again anytime.",
-            "icon": "RiRobot2Line"
+            "icon": "RiHistoryLine"
           }
         ]
       },
@@ -314,7 +317,7 @@
           {
             "name": "Robert Martinez",
             "role": "Hobby Artist",
-            "quote": "The detail setting for adult coloring pages is perfect. I can generate dragon coloring pages and horse coloring pages with richer line work.",
+            "quote": "The kid-friendly detail setting works great. I can generate dragon coloring pages and horse coloring pages with clean line work.",
             "image": {
               "src": "/imgs/avatars/4.png",
               "alt": "robert"
@@ -351,8 +354,8 @@
             "answer": "Yes. You can generate free coloring pages in seconds, then download coloring pages printable files. The output is designed for printable coloring pages at home or in class."
           },
           {
-            "question": "Do you support both coloring pages for kids and adult coloring pages?",
-            "answer": "Yes. Choose the age group to control line complexity, whether you need simple kids coloring pages or more detailed adult coloring pages."
+            "question": "Is this generator mainly for kids coloring pages?",
+            "answer": "Yes. The generator is designed for kids coloring pages with clean, easy-to-color outlines. You can still choose age group and line complexity within kid-friendly ranges."
           },
           {
             "question": "Can I generate character-inspired pages like hello kitty, bluey, pokemon, and spiderman?",
@@ -383,7 +386,7 @@
       "cta": {
         "disabled": true,
         "id": "cta",
-        "title": "Discover What Generation Am I Today",
+        "title": "Discover ColorFun Today",
         "description": "Find your generation using our AI-powered tool. Explore all generation names and years now.",
         "buttons": [
           {
@@ -406,7 +409,7 @@
         "disabled": true,
         "id": "subscribe",
         "title": "Subscribe to our newsletter",
-        "description": "Get the latest news and updates from What Generation Am I.",
+        "description": "Get the latest news and updates from ColorFun.",
         "submit": {
           "input": {
             "placeholder": "Enter your email"

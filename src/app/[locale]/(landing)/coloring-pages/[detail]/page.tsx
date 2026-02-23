@@ -1,8 +1,10 @@
 import { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
 import { envConfigs } from '@/config';
+import { defaultLocale, locales } from '@/config/locale';
 import { Link } from '@/core/i18n/navigation';
 import { AIMediaType, AITaskStatus } from '@/extensions/ai/types';
 import {
@@ -25,11 +27,13 @@ import {
   slugifyPrompt,
   truncateText,
 } from '@/shared/lib/coloring-page-seo';
+import { getLocalizedColoringPromptTitle } from '@/shared/lib/coloring-prompt-display';
 import {
   buildR2AllowedUrlPrefixes,
   isAllowedR2Url,
 } from '@/shared/lib/r2-url-filter';
 import { findGuestAITaskById } from '@/shared/lib/guest-ai-task';
+import { findPersistedGuestColoringTaskById } from '@/shared/lib/persistent-guest-coloring-gallery';
 import { findAITaskById, getAITasks } from '@/shared/models/ai_task';
 import { getAllConfigs } from '@/shared/models/config';
 import { DetailPreviewActions } from './detail-preview-actions';
@@ -56,18 +60,42 @@ type SimilarColoringPageItem = {
   score: number;
 };
 
-const SIMILAR_SCAN_LIMIT = 220;
+const SIMILAR_SCAN_LIMIT = 140;
 const SIMILAR_LIMIT = 10;
+const SIMILAR_CACHE_TAG = 'coloring-page-similar';
 
 function withLocalePath(locale: string, path: string): string {
   if (!path.startsWith('/')) {
     path = `/${path}`;
   }
 
-  if (locale === envConfigs.locale) {
+  if (locale === defaultLocale) {
     return path;
   }
   return `/${locale}${path}`;
+}
+
+function buildDetailLanguageAlternates(taskId: string, prompt: string | null) {
+  const appUrl = envConfigs.app_url.replace(/\/+$/, '');
+  const languages = Object.fromEntries(
+    locales.map((locale) => [
+      locale,
+      `${appUrl}${buildColoringPageDetailPath({
+        locale,
+        taskId,
+        prompt,
+      })}`,
+    ])
+  );
+
+  return {
+    ...languages,
+    'x-default': `${appUrl}${buildColoringPageDetailPath({
+      locale: defaultLocale,
+      taskId,
+      prompt,
+    })}`,
+  };
 }
 
 function buildMetadataDescription(prompt: string | null, locale: string): string {
@@ -109,11 +137,30 @@ function countTokenOverlap(a: string[], b: string[]): number {
 }
 
 function buildSimilarCardTitle(prompt: string | null, locale: string): string {
-  const cleaned = normalizePrompt(prompt);
-  if (cleaned) {
-    return truncateText(cleaned, 46);
+  const localizedTitle = getLocalizedColoringPromptTitle({
+    prompt,
+    locale,
+    fallbackZh: '可打印涂色页',
+    fallbackEn: 'Printable Coloring Page',
+  });
+  return truncateText(normalizePrompt(localizedTitle), 46);
+}
+
+function formatPublishedTime(value: string | null, locale: string): string | null {
+  if (!value) {
+    return null;
   }
-  return locale.startsWith('zh') ? '可打印涂色页' : 'Printable Coloring Page';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale || 'en', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
 }
 
 function pickPublicImageUrl(
@@ -121,6 +168,7 @@ function pickPublicImageUrl(
   taskInfo: any,
   r2UrlPrefixes: string[]
 ): string | null {
+  const shouldEnforceR2Prefix = r2UrlPrefixes.length > 0;
   const taskInfoUrls = extractImageUrls(taskInfo);
   const resultUrls = extractImageUrls(taskResult);
 
@@ -130,7 +178,7 @@ function pickPublicImageUrl(
     if (
       !url ||
       !isLikelyHttpUrl(url) ||
-      !isAllowedR2Url(url, r2UrlPrefixes)
+      (shouldEnforceR2Prefix && !isAllowedR2Url(url, r2UrlPrefixes))
     ) {
       continue;
     }
@@ -165,7 +213,15 @@ function toPublicColoringPage(
   const userPrompt = extractUserPrompt(task.prompt) || normalizePrompt(task.prompt);
   const taskResult = safeParseJSON(task.taskResult);
   const taskInfo = safeParseJSON(task.taskInfo);
-  const imageUrl = pickPublicImageUrl(taskResult, taskInfo, r2UrlPrefixes);
+  const shouldEnforceR2Prefix = r2UrlPrefixes.length > 0;
+  const directImageUrl =
+    typeof task.imageUrl === 'string' ? task.imageUrl : null;
+  const imageUrl =
+    directImageUrl &&
+    isLikelyHttpUrl(directImageUrl) &&
+    (!shouldEnforceR2Prefix || isAllowedR2Url(directImageUrl, r2UrlPrefixes))
+      ? directImageUrl
+      : pickPublicImageUrl(taskResult, taskInfo, r2UrlPrefixes);
   if (!imageUrl) {
     return null;
   }
@@ -179,7 +235,7 @@ function toPublicColoringPage(
   };
 }
 
-async function getSimilarColoringPages({
+async function getSimilarColoringPagesUncached({
   locale,
   currentTaskId,
   currentPrompt,
@@ -239,13 +295,90 @@ async function getSimilarColoringPages({
     .slice(0, SIMILAR_LIMIT);
 }
 
+const getSimilarColoringPagesCached = unstable_cache(
+  async (
+    locale: string,
+    currentTaskId: string,
+    currentPrompt: string | null,
+    currentCategoryKey: string,
+    r2PrefixSignature: string
+  ) => {
+    const r2UrlPrefixes = r2PrefixSignature
+      .split('\n')
+      .map((prefix) => prefix.trim())
+      .filter((prefix) => prefix.length > 0);
+
+    return getSimilarColoringPagesUncached({
+      locale,
+      currentTaskId,
+      currentPrompt,
+      currentCategoryKey,
+      r2UrlPrefixes,
+    });
+  },
+  ['coloring-page-similar-items'],
+  {
+    revalidate: 600,
+    tags: [SIMILAR_CACHE_TAG],
+  }
+);
+
+async function getSimilarColoringPages({
+  locale,
+  currentTaskId,
+  currentPrompt,
+  currentCategoryKey,
+  r2UrlPrefixes,
+}: {
+  locale: string;
+  currentTaskId: string;
+  currentPrompt: string | null;
+  currentCategoryKey: string;
+  r2UrlPrefixes: string[];
+}): Promise<SimilarColoringPageItem[]> {
+  const r2PrefixSignature = r2UrlPrefixes.join('\n');
+  return getSimilarColoringPagesCached(
+    locale,
+    currentTaskId,
+    currentPrompt,
+    currentCategoryKey,
+    r2PrefixSignature
+  );
+}
+
 async function getColoringPageDetail(
   taskId: string,
   r2UrlPrefixes: string[]
 ): Promise<ColoringPageDetail | null> {
-  const task = taskId.startsWith('guest_')
-    ? findGuestAITaskById(taskId)
-    : await findAITaskById(taskId);
+  let task: any = null;
+  const fallbackGuestTaskIds = taskId.startsWith('guest_')
+    ? [taskId]
+    : [taskId, `guest_${taskId}`];
+
+  if (taskId.startsWith('guest_')) {
+    task =
+      findGuestAITaskById(taskId) ||
+      (await findPersistedGuestColoringTaskById(taskId));
+  } else {
+    try {
+      task = await findAITaskById(taskId);
+    } catch (error) {
+      console.error('find coloring task failed:', { taskId, error });
+      task = null;
+    }
+  }
+
+  if (!task) {
+    for (const guestTaskId of fallbackGuestTaskIds) {
+      task =
+        findGuestAITaskById(guestTaskId) ||
+        (await findPersistedGuestColoringTaskById(guestTaskId));
+      if (task) {
+        break;
+      }
+    }
+  }
+
   const item = toPublicColoringPage(task, r2UrlPrefixes);
   if (!item) {
     return null;
@@ -304,6 +437,7 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: canonicalUrl,
+      languages: buildDetailLanguageAlternates(detailData.taskId, detailData.prompt),
     },
     openGraph: {
       type: 'article',
@@ -352,6 +486,7 @@ export default async function ColoringPageDetailPage({
 
   const title = buildSeoDetailTitle(detailData.prompt, locale);
   const description = buildMetadataDescription(detailData.prompt, locale);
+  const publishedTime = formatPublishedTime(detailData.createdAt, locale);
   const similarItems = await getSimilarColoringPages({
     locale,
     currentTaskId: detailData.taskId,
@@ -370,14 +505,23 @@ export default async function ColoringPageDetailPage({
   };
 
   return (
-    <section className="py-16 md:py-20">
+    <section className="pt-24 pb-16 md:pt-36 md:pb-20">
       <div className="container max-w-7xl space-y-6">
         <div className="grid items-start gap-14 lg:gap-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="w-full max-w-[540px]">
             <div className="space-y-3">
-              <h1 className="text-foreground text-xl font-medium tracking-tight md:text-2xl">
-                {title}
-              </h1>
+              <div className="space-y-0">
+                <h1 className="text-foreground text-center text-xl font-medium tracking-tight md:text-2xl">
+                  {title}
+                </h1>
+                {publishedTime && (
+                  <p className="text-muted-foreground text-center text-xs md:text-sm">
+                    {locale.startsWith('zh')
+                      ? `生成时间：${publishedTime}`
+                      : `Created: ${publishedTime}`}
+                  </p>
+                )}
+              </div>
 
               <div className="bg-card w-full overflow-hidden rounded-2xl border shadow-sm">
                 <img
@@ -398,7 +542,7 @@ export default async function ColoringPageDetailPage({
 
           <aside className="space-y-4">
             <div className="p-2 text-center">
-              <h2 className="text-foreground/80 text-lg font-medium tracking-tight">
+              <h2 className="text-foreground/60 text-lg font-medium tracking-tight">
                 {locale.startsWith('zh')
                   ? '相似涂色图推荐'
                   : 'Similar Coloring Pages'}
@@ -411,9 +555,9 @@ export default async function ColoringPageDetailPage({
                   <Link
                     key={`${item.taskId}-${slugifyPrompt(item.prompt)}`}
                     href={item.detailPath}
-                    className="group block w-full break-inside-avoid overflow-hidden rounded-xl border bg-card transition-colors hover:border-primary/40"
+                    className="group block w-full break-inside-avoid"
                   >
-                    <div className="bg-muted/20 overflow-hidden">
+                    <div className="bg-muted/20 overflow-hidden rounded-xl border bg-card">
                       <img
                         src={item.imageUrl}
                         alt={item.prompt || 'Similar coloring page'}
@@ -421,8 +565,8 @@ export default async function ColoringPageDetailPage({
                         loading="lazy"
                       />
                     </div>
-                    <div className="p-3">
-                      <p className="text-foreground line-clamp-2 text-sm font-medium">
+                    <div className="px-2 pt-2 pb-1 text-center">
+                      <p className="text-foreground line-clamp-2 text-xs font-medium">
                         {item.title}
                       </p>
                     </div>

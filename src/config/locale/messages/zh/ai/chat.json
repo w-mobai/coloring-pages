@@ -2,10 +2,10 @@
   "sidebar": {
     "header": {
       "brand": {
-        "title": "What Generation Am I Chat",
+        "title": "ColorFun Chat",
         "logo": {
           "src": "/logo.png",
-          "alt": "What Generation Am I Chat"
+          "alt": "ColorFun Chat"
         },
         "url": "/chat"
       },

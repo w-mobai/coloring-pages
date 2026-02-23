@@ -11,10 +11,25 @@ import {
   normalizeImageUrlForDedup,
   safeParseJSON,
 } from '@/shared/lib/ai-image-history';
-import { getAITasks, getAITasksCount } from '@/shared/models/ai_task';
+import {
+  buildR2AllowedUrlPrefixes,
+  isAllowedR2Url,
+} from '@/shared/lib/r2-url-filter';
+import {
+  getAITasksByImageUrlPrefixes,
+  getAITasksCountByImageUrlPrefixes,
+  getAITasks,
+  getAITasksCount,
+} from '@/shared/models/ai_task';
+import { getAllConfigs } from '@/shared/models/config';
+import { getMetadata } from '@/shared/lib/seo';
 import { getSignUser } from '@/shared/models/user';
 
 const HISTORY_PAGE_SIZE = 24;
+export const generateMetadata = getMetadata({
+  canonicalUrl: '/history',
+  noIndex: true,
+});
 
 function toPositiveInt(value: unknown, fallback: number): number {
   const parsed = Number(value);
@@ -23,6 +38,48 @@ function toPositiveInt(value: unknown, fallback: number): number {
   }
 
   return Math.floor(parsed);
+}
+
+function toHistoryTaskGroup(task: any, r2UrlPrefixes: string[]): HistoryTaskGroup | null {
+  const shouldEnforceR2Prefix = r2UrlPrefixes.length > 0;
+  const taskResult = safeParseJSON(task.taskResult);
+  const taskInfo = safeParseJSON(task.taskInfo);
+  const taskInfoUrls = extractImageUrls(taskInfo);
+  const resultUrls = extractImageUrls(taskResult);
+
+  const seen = new Set<string>();
+  const imageUrls = [...taskInfoUrls, ...resultUrls].filter((url) => {
+    if (!url) {
+      return false;
+    }
+
+    if (shouldEnforceR2Prefix && !isAllowedR2Url(url, r2UrlPrefixes)) {
+      return false;
+    }
+
+    const key = normalizeImageUrlForDedup(url);
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+
+  if (imageUrls.length === 0) {
+    return null;
+  }
+
+  return {
+    taskId: task.id,
+    prompt: task.prompt,
+    createdAt: task.createdAt ? new Date(task.createdAt).toISOString() : null,
+    images: imageUrls.map((imageUrl, index) => ({
+      id: `${task.id}-${index + 1}`,
+      taskId: task.id,
+      imageUrl,
+    })),
+  };
 }
 
 export default async function HistoryPage({
@@ -37,61 +94,51 @@ export default async function HistoryPage({
   setRequestLocale(locale);
 
   const user = await getSignUser();
-  if (!user?.id) {
+  const userId = user?.id;
+  if (!userId) {
     redirect({ href: '/sign-in', locale });
   }
+  const ensuredUserId = userId as string;
 
-  const total = await getAITasksCount({
-    userId: user.id,
-    mediaType: AIMediaType.IMAGE,
-    status: AITaskStatus.SUCCESS,
-  });
-  const totalPages = Math.max(1, Math.ceil(total / HISTORY_PAGE_SIZE));
   const requestedPage = toPositiveInt(pageParam, 1);
-  const page = Math.min(requestedPage, totalPages);
-
-  const tasks = await getAITasks({
-    userId: user.id,
-    mediaType: AIMediaType.IMAGE,
-    status: AITaskStatus.SUCCESS,
-    page,
-    limit: HISTORY_PAGE_SIZE,
-  });
-
-  const initialGroups: HistoryTaskGroup[] = tasks
-    .map((task) => {
-      const taskResult = safeParseJSON(task.taskResult);
-      const taskInfo = safeParseJSON(task.taskInfo);
-      const resultUrls = extractImageUrls(taskResult);
-      const fallbackUrls = resultUrls.length > 0 ? [] : extractImageUrls(taskInfo);
-
-      const seen = new Set<string>();
-      const imageUrls = [...resultUrls, ...fallbackUrls].filter((url) => {
-        if (!url) {
-          return false;
-        }
-
-        const key = normalizeImageUrlForDedup(url);
-        if (seen.has(key)) {
-          return false;
-        }
-
-        seen.add(key);
-        return true;
+  const configs = await getAllConfigs();
+  const r2UrlPrefixes = buildR2AllowedUrlPrefixes(configs);
+  const shouldEnforceR2Prefix = r2UrlPrefixes.length > 0;
+  const total = shouldEnforceR2Prefix
+    ? await getAITasksCountByImageUrlPrefixes({
+        userId: ensuredUserId,
+        mediaType: AIMediaType.IMAGE,
+        status: AITaskStatus.SUCCESS,
+        prefixes: r2UrlPrefixes,
+      })
+    : await getAITasksCount({
+        userId: ensuredUserId,
+        mediaType: AIMediaType.IMAGE,
+        status: AITaskStatus.SUCCESS,
       });
-
-      return {
-        taskId: task.id,
-        prompt: task.prompt,
-        createdAt: task.createdAt ? new Date(task.createdAt).toISOString() : null,
-        images: imageUrls.map((imageUrl, index) => ({
-          id: `${task.id}-${index + 1}`,
-          taskId: task.id,
-          imageUrl,
-        })),
-      };
-    })
-    .filter((group) => group.images.length > 0);
+  const totalPages = Math.max(1, Math.ceil(total / HISTORY_PAGE_SIZE));
+  const page = Math.min(requestedPage, totalPages);
+  const tasks = total > 0
+    ? shouldEnforceR2Prefix
+      ? await getAITasksByImageUrlPrefixes({
+          userId: ensuredUserId,
+          mediaType: AIMediaType.IMAGE,
+          status: AITaskStatus.SUCCESS,
+          prefixes: r2UrlPrefixes,
+          page,
+          limit: HISTORY_PAGE_SIZE,
+        })
+      : await getAITasks({
+          userId: ensuredUserId,
+          mediaType: AIMediaType.IMAGE,
+          status: AITaskStatus.SUCCESS,
+          page,
+          limit: HISTORY_PAGE_SIZE,
+        })
+    : [];
+  const initialGroups = tasks
+    .map((task) => toHistoryTaskGroup(task, r2UrlPrefixes))
+    .filter((group): group is HistoryTaskGroup => Boolean(group));
 
   return (
     <ImageHistory

@@ -16,13 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { useAppContext } from '@/shared/contexts/app';
 import { getCookie } from '@/shared/lib/cookie';
@@ -33,6 +26,8 @@ import {
   PricingItem,
   Pricing as PricingType,
 } from '@/shared/types/blocks/pricing';
+
+const FORCED_CURRENCY = 'usd';
 
 // Helper function to get all available currencies from a pricing item
 function getCurrenciesFromItem(item: PricingItem | null): PricingCurrency[] {
@@ -54,26 +49,28 @@ function getCurrenciesFromItem(item: PricingItem | null): PricingCurrency[] {
   return [defaultCurrency];
 }
 
-// Helper function to select initial currency based on locale
-function getInitialCurrency(
-  currencies: PricingCurrency[],
-  locale: string,
-  defaultCurrency: string
-): string {
-  if (currencies.length === 0) return defaultCurrency;
+function buildDisplayedItemByForcedCurrency(item: PricingItem): PricingItem {
+  const currencies = getCurrenciesFromItem(item);
+  const usdCurrencyData = currencies.find(
+    (c) => c.currency.toLowerCase() === FORCED_CURRENCY
+  );
 
-  // If locale is 'zh', prefer CNY
-  if (locale === 'zh') {
-    const cnyCurrency = currencies.find(
-      (c) => c.currency.toLowerCase() === 'cny'
-    );
-    if (cnyCurrency) {
-      return cnyCurrency.currency;
-    }
+  if (!usdCurrencyData) {
+    return {
+      ...item,
+      currency: item.currency || 'USD',
+    };
   }
 
-  // Otherwise return default currency
-  return defaultCurrency;
+  return {
+    ...item,
+    currency: usdCurrencyData.currency,
+    amount: usdCurrencyData.amount,
+    price: usdCurrencyData.price,
+    original_price: usdCurrencyData.original_price,
+    payment_product_id: usdCurrencyData.payment_product_id || item.payment_product_id,
+    payment_providers: usdCurrencyData.payment_providers || item.payment_providers,
+  };
 }
 
 export function Pricing({
@@ -119,7 +116,7 @@ export function Pricing({
   // Currency state management for each item
   // Store selected currency and displayed item for each product_id
   const [itemCurrencies, setItemCurrencies] = useState<
-    Record<string, { selectedCurrency: string; displayedItem: PricingItem }>
+    Record<string, { displayedItem: PricingItem }>
   >({});
 
   // Initialize currency states for all items
@@ -127,80 +124,20 @@ export function Pricing({
     if (section.items && section.items.length > 0) {
       const initialCurrencyStates: Record<
         string,
-        { selectedCurrency: string; displayedItem: PricingItem }
+        { displayedItem: PricingItem }
       > = {};
 
       section.items.forEach((item) => {
-        const currencies = getCurrenciesFromItem(item);
-        const selectedCurrency = getInitialCurrency(
-          currencies,
-          locale,
-          item.currency
-        );
-
-        // Create displayed item with selected currency
-        const currencyData = currencies.find(
-          (c) => c.currency.toLowerCase() === selectedCurrency.toLowerCase()
-        );
-
-        const displayedItem = currencyData
-          ? {
-              ...item,
-              currency: currencyData.currency,
-              amount: currencyData.amount,
-              price: currencyData.price,
-              original_price: currencyData.original_price,
-              // Override with currency-specific payment settings if available
-              payment_product_id:
-                currencyData.payment_product_id || item.payment_product_id,
-              payment_providers:
-                currencyData.payment_providers || item.payment_providers,
-            }
-          : item;
+        const displayedItem = buildDisplayedItemByForcedCurrency(item);
 
         initialCurrencyStates[item.product_id] = {
-          selectedCurrency,
           displayedItem,
         };
       });
 
       setItemCurrencies(initialCurrencyStates);
     }
-  }, [section.items, locale]);
-
-  // Handler for currency change
-  const handleCurrencyChange = (productId: string, currency: string) => {
-    const item = section.items?.find((i) => i.product_id === productId);
-    if (!item) return;
-
-    const currencies = getCurrenciesFromItem(item);
-    const currencyData = currencies.find(
-      (c) => c.currency.toLowerCase() === currency.toLowerCase()
-    );
-
-    if (currencyData) {
-      const displayedItem = {
-        ...item,
-        currency: currencyData.currency,
-        amount: currencyData.amount,
-        price: currencyData.price,
-        original_price: currencyData.original_price,
-        // Override with currency-specific payment settings if available
-        payment_product_id:
-          currencyData.payment_product_id || item.payment_product_id,
-        payment_providers:
-          currencyData.payment_providers || item.payment_providers,
-      };
-
-      setItemCurrencies((prev) => ({
-        ...prev,
-        [productId]: {
-          selectedCurrency: currency,
-          displayedItem,
-        },
-      }));
-    }
-  };
+  }, [section.items]);
 
   const handlePayment = async (item: PricingItem) => {
     if (!user) {
@@ -324,6 +261,9 @@ export function Pricing({
     }
   }, [section.items]);
 
+  const filteredItems =
+    section.items?.filter((item) => !item.group || item.group === group) || [];
+
   return (
     <section
       id={section.id}
@@ -362,16 +302,14 @@ export function Pricing({
         )}
 
         <div
-          className={`mx-auto mt-0 grid w-full gap-6 md:grid-cols-${
-            section.items?.filter((item) => !item.group || item.group === group)
-              ?.length
-          }`}
+          className={cn(
+            'mx-auto mt-0 grid w-full gap-6',
+            filteredItems.length <= 1 && 'max-w-sm md:grid-cols-1',
+            filteredItems.length === 2 && 'max-w-3xl md:grid-cols-2',
+            filteredItems.length >= 3 && 'max-w-[1080px] md:grid-cols-3'
+          )}
         >
-          {section.items?.map((item: PricingItem, idx) => {
-            if (item.group && item.group !== group) {
-              return null;
-            }
-
+          {filteredItems.map((item: PricingItem, idx) => {
             let isCurrentPlan = false;
             if (
               currentSubscription &&
@@ -383,12 +321,9 @@ export function Pricing({
             // Get currency state for this item
             const currencyState = itemCurrencies[item.product_id];
             const displayedItem = currencyState?.displayedItem || item;
-            const selectedCurrency =
-              currencyState?.selectedCurrency || item.currency;
-            const currencies = getCurrenciesFromItem(item);
 
             return (
-              <Card key={idx} className="relative">
+              <Card key={idx} className="relative w-full max-w-[340px] justify-self-center py-4 shadow-none">
                 {item.label && (
                   <span className="absolute inset-x-0 -top-3 mx-auto flex h-6 w-fit items-center rounded-full bg-linear-to-br/increasing from-purple-400 to-amber-300 px-3 py-1 text-xs font-medium text-amber-950 ring-1 ring-white/20 ring-offset-1 ring-offset-gray-950/5 ring-inset">
                     {item.label}
@@ -420,32 +355,6 @@ export function Pricing({
                       )}
                     </div>
 
-                    {currencies.length > 1 && (
-                      <Select
-                        value={selectedCurrency}
-                        onValueChange={(currency) =>
-                          handleCurrencyChange(item.product_id, currency)
-                        }
-                      >
-                        <SelectTrigger
-                          size="sm"
-                          className="border-muted-foreground/30 bg-background/50 h-6 min-w-[60px] px-2 text-xs"
-                        >
-                          <SelectValue placeholder="Currency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {currencies.map((currency) => (
-                            <SelectItem
-                              key={currency.currency}
-                              value={currency.currency}
-                              className="text-xs"
-                            >
-                              {currency.currency.toUpperCase()}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
                   </div>
 
                   <CardDescription className="text-sm">
@@ -474,7 +383,7 @@ export function Pricing({
                       className={cn(
                         'focus-visible:ring-ring inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                         'mt-4 h-9 w-full px-4 py-2',
-                        'bg-primary text-primary-foreground hover:bg-primary/90 border-[0.5px] border-white/25 shadow-md shadow-black/20'
+                        'bg-primary text-primary-foreground hover:bg-primary/90 border-0 shadow-none'
                       )}
                     >
                       {isLoading && item.product_id === productId ? (

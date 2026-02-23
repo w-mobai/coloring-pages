@@ -1,358 +1,101 @@
 {
   "metadata": {
-    "title": "价格方案 | What Generation Am I",
-    "description": "选择适合你的方案，解锁更多 AI 世代分析次数与积分额度。"
+    "title": "价格方案 | ColorFun",
+    "description": "一次购买积分，随时生成涂色图片。"
   },
   "page": {
-    "title": "What Generation Am I 价格方案",
+    "title": "ColorFun 价格方案",
     "sections": {
       "pricing": {
         "id": "pricing",
         "title": "价格",
-        "description": "解锁 What Generation Am I 的全部功能，获取更多分析能力。",
-        "groups": [
-          {
-            "name": "one-time",
-            "title": "按次付费"
-          },
-          {
-            "name": "monthly",
-            "title": "包月",
-            "is_featured": true,
-            "label": "立省15%"
-          },
-          {
-            "name": "yearly",
-            "title": "包年"
-          }
-        ],
+        "description": "一次性积分包，按需生成，无需订阅。",
+        "groups": [],
         "items": [
           {
-            "title": "入门版",
-            "description": "快速开启你的世代分析体验。",
+            "title": "入门包",
+            "description": "适合轻量体验。",
             "features_title": "包含",
             "features": [
-              "100 积分，有效期 1 个月",
-              "NextJS 项目模板",
-              "SEO 友好结构",
-              "支持 Stripe 支付",
-              "Supabase 数据存储",
-              "Google Oauth & 一键登录",
-              "多语言（i18n）支持"
+              "100 积分",
+              "约可生成 50 张图片",
+              "一次付费",
+              "积分永久有效"
             ],
             "interval": "one-time",
-            "amount": 9900,
+            "amount": 990,
             "currency": "USD",
-            "price": "$99",
-            "original_price": "$199",
-            "currencies": [
-              {
-                "currency": "CNY",
-                "amount": 69900,
-                "price": "¥699",
-                "original_price": "¥1399",
-                "payment_providers": ["stripe"]
-              }
-            ],
+            "price": "$9.9",
+            "original_price": "$12.9",
             "unit": "",
             "is_featured": false,
-            "tip": "一次付费，畅享无限项目部署！",
+            "tip": "一次购买，按需使用。",
             "button": {
-              "title": "立即开始",
+              "title": "立即充值",
               "url": "/#pricing",
               "icon": "RiFlashlightFill"
             },
             "product_id": "starter",
-            "product_name": "What Generation Am I 入门版",
+            "product_name": "ColorFun 入门积分包",
             "credits": 100,
-            "valid_days": 30,
-            "group": "one-time"
+            "valid_days": 0
           },
           {
-            "title": "标准版",
-            "description": "快速获得更多世代分析能力。",
+            "title": "进阶包",
+            "description": "大多数用户首选。",
             "label": "热门",
-            "features_title": "包含入门版功能，此外",
+            "features_title": "包含",
             "features": [
-              "200 积分，有效期 3 个月",
-              "支持 Vercel 或 Cloudflare 部署",
-              "自动生成隐私政策&服务条款",
-              "集成 Google Analytics",
-              "集成 Google Search Console",
-              "Discord 技术社区",
-              "首个上线项目技术支持",
-              "终身免费更新"
+              "240 积分",
+              "约可生成 120 张图片",
+              "一次付费",
+              "积分永久有效"
             ],
             "interval": "one-time",
-            "amount": 19900,
+            "amount": 1990,
             "currency": "USD",
-            "price": "$199",
-            "original_price": "$299",
-            "currencies": [
-              {
-                "currency": "CNY",
-                "amount": 139900,
-                "price": "¥1399",
-                "original_price": "¥1999",
-                "payment_providers": ["stripe"]
-              }
-            ],
+            "price": "$19.9",
+            "original_price": "$29.9",
             "unit": "",
             "is_featured": true,
-            "tip": "一次付费，畅享无限项目部署！",
+            "tip": "性价比最高。",
             "button": {
-              "title": "立即开始",
+              "title": "立即充值",
               "url": "/#pricing",
               "icon": "RiFlashlightFill"
             },
             "product_id": "standard",
-            "product_name": "What Generation Am I 标准版",
-            "credits": 200,
-            "valid_days": 90,
-            "group": "one-time"
+            "product_name": "ColorFun 进阶积分包",
+            "credits": 240,
+            "valid_days": 0
           },
           {
-            "title": "高级版",
-            "description": "解锁完整的 AI 世代分析能力。",
-            "features_title": "包含标准版功能，此外",
+            "title": "专业包",
+            "description": "适合高频和批量生成。",
+            "features_title": "包含",
             "features": [
-              "300 积分，有效期 1 年",
-              "内置 AI 业务功能",
-              "用户中心",
-              "积分系统",
-              "为你的 SaaS 售卖 API",
-              "后台管理系统",
-              "优先技术支持"
+              "700 积分",
+              "约可生成 350 张图片",
+              "一次付费",
+              "积分永久有效"
             ],
             "interval": "one-time",
-            "amount": 29900,
+            "amount": 4990,
             "currency": "USD",
-            "price": "$299",
-            "original_price": "$399",
-            "currencies": [
-              {
-                "currency": "CNY",
-                "amount": 199900,
-                "price": "¥1999",
-                "original_price": "¥2799",
-                "payment_providers": ["stripe", "creem"]
-              }
-            ],
+            "price": "$49.9",
+            "original_price": "$69.9",
             "unit": "",
             "is_featured": false,
-            "tip": "一次付费，畅享无限项目部署！",
+            "tip": "单张成本更低。",
             "button": {
-              "title": "立即开始",
+              "title": "立即充值",
               "url": "/#pricing",
               "icon": "RiFlashlightFill"
             },
             "product_id": "premium",
-            "product_name": "What Generation Am I 高级版",
-            "credits": 300,
-            "valid_days": 365,
-            "group": "one-time"
-          },
-          {
-            "title": "入门版",
-            "description": "快速开启你的世代分析体验。",
-            "features_title": "包含",
-            "features": [
-              "100 积分，有效期 1 个月",
-              "NextJS 项目模板",
-              "SEO 友好结构",
-              "支持 Stripe 支付",
-              "Supabase 数据存储",
-              "Google Oauth & 一键登录",
-              "多语言（i18n）支持"
-            ],
-            "interval": "month",
-            "amount": 8900,
-            "currency": "USD",
-            "price": "$89",
-            "original_price": "$99",
-            "unit": "/ 月",
-            "is_featured": false,
-            "tip": "按月付费，畅享无限项目部署！",
-            "button": {
-              "title": "立即开始",
-              "url": "/#pricing",
-              "icon": "RiFlashlightFill"
-            },
-            "product_id": "starter-monthly",
-            "product_name": "What Generation Am I 入门版包月",
-            "credits": 100,
-            "valid_days": 30,
-            "group": "monthly",
-            "plan_name": "入门版"
-          },
-          {
-            "title": "标准版",
-            "description": "快速获得更多世代分析能力。",
-            "label": "热门",
-            "features_title": "包含入门版功能，此外",
-            "features": [
-              "200 积分，有效期 1 个月",
-              "支持 Vercel 或 Cloudflare 部署",
-              "自动生成隐私政策&服务条款",
-              "集成 Google Analytics",
-              "集成 Google Search Console",
-              "Discord 技术社区",
-              "首个上线项目技术支持",
-              "终身免费更新"
-            ],
-            "interval": "month",
-            "amount": 16900,
-            "currency": "USD",
-            "price": "$169",
-            "original_price": "$199",
-            "unit": "/ 月",
-            "is_featured": true,
-            "tip": "按月付费，极速上线你的 SaaS 项目。",
-            "button": {
-              "title": "立即开始",
-              "url": "/#pricing",
-              "icon": "RiFlashlightFill"
-            },
-            "product_id": "standard-monthly",
-            "product_name": "What Generation Am I 标准版包月",
-            "credits": 200,
-            "valid_days": 30,
-            "group": "monthly",
-            "plan_name": "标准版"
-          },
-          {
-            "title": "高级版",
-            "description": "解锁完整的 AI 世代分析能力。",
-            "features_title": "包含标准版功能，此外",
-            "features": [
-              "300 积分，有效期 1 个月",
-              "内置 AI 业务功能",
-              "用户中心",
-              "积分系统",
-              "为你的 SaaS 售卖 API",
-              "后台管理系统",
-              "优先技术支持"
-            ],
-            "interval": "month",
-            "amount": 24900,
-            "currency": "USD",
-            "price": "$249",
-            "original_price": "$299",
-            "unit": "/ 月",
-            "is_featured": false,
-            "tip": "按月付费，助你交付任何 AI SaaS 项目。",
-            "button": {
-              "title": "立即开始",
-              "url": "/#pricing",
-              "icon": "RiFlashlightFill"
-            },
-            "product_id": "premium-monthly",
-            "product_name": "What Generation Am I 高级版包月",
-            "credits": 300,
-            "valid_days": 30,
-            "group": "monthly",
-            "plan_name": "高级版"
-          },
-          {
-            "title": "入门版",
-            "description": "快速开启你的世代分析体验。",
-            "features_title": "包含",
-            "features": [
-              "100 积分，有效期 1 年",
-              "NextJS 项目模板",
-              "SEO 友好结构",
-              "支持 Stripe 支付",
-              "Supabase 数据存储",
-              "Google Oauth & 一键登录",
-              "多语言（i18n）支持"
-            ],
-            "interval": "year",
-            "amount": 82800,
-            "currency": "USD",
-            "price": "$69",
-            "original_price": "$89",
-            "unit": "/ 月",
-            "is_featured": false,
-            "tip": "按年付费，畅享无限项目部署！",
-            "button": {
-              "title": "立即开始",
-              "url": "/#pricing",
-              "icon": "RiFlashlightFill"
-            },
-            "product_id": "starter-yearly",
-            "product_name": "What Generation Am I 入门版包年",
-            "credits": 1200,
-            "valid_days": 365,
-            "group": "yearly",
-            "plan_name": "入门版"
-          },
-          {
-            "title": "标准版",
-            "description": "快速获得更多世代分析能力。",
-            "label": "热门",
-            "features_title": "包含入门版功能，此外",
-            "features": [
-              "200 积分，有效期 1 年",
-              "支持 Vercel 或 Cloudflare 部署",
-              "自动生成隐私政策&服务条款",
-              "集成 Google Analytics",
-              "集成 Google Search Console",
-              "Discord 技术社区",
-              "首个上线项目技术支持",
-              "终身免费更新"
-            ],
-            "interval": "year",
-            "amount": 154800,
-            "currency": "USD",
-            "price": "$129",
-            "original_price": "$169",
-            "unit": "/ 月",
-            "is_featured": true,
-            "tip": "按年付费，极速上线你的 SaaS 项目。",
-            "button": {
-              "title": "立即开始",
-              "url": "/#pricing",
-              "icon": "RiFlashlightFill"
-            },
-            "product_id": "standard-yearly",
-            "product_name": "What Generation Am I 标准版包年",
-            "credits": 2400,
-            "valid_days": 365,
-            "group": "yearly",
-            "plan_name": "标准版"
-          },
-          {
-            "title": "高级版",
-            "description": "解锁完整的 AI 世代分析能力。",
-            "features_title": "包含标准版功能，此外",
-            "features": [
-              "300 积分，有效期 1 年",
-              "内置 AI 业务功能",
-              "用户中心",
-              "积分系统",
-              "为你的 SaaS 售卖 API",
-              "后台管理系统",
-              "优先技术支持"
-            ],
-            "interval": "year",
-            "amount": 226800,
-            "currency": "USD",
-            "price": "$189",
-            "original_price": "$249",
-            "unit": "/ 月",
-            "is_featured": false,
-            "tip": "按年付费，助你交付任何 AI SaaS 项目。",
-            "button": {
-              "title": "立即开始",
-              "url": "/#pricing",
-              "icon": "RiFlashlightFill"
-            },
-            "product_id": "premium-yearly",
-            "product_name": "What Generation Am I 高级版包年",
-            "credits": 3600,
-            "valid_days": 365,
-            "group": "yearly",
-            "plan_name": "高级版"
+            "product_name": "ColorFun 专业积分包",
+            "credits": 700,
+            "valid_days": 0
           }
         ]
       }

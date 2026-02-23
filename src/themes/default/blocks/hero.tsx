@@ -1,12 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, Calendar, Loader2, Sparkles, X } from 'lucide-react';
 
-import { ResultDisplay } from '@/shared/blocks/generation-finder/result-display';
-import { ColoringPageGenerator } from '@/shared/blocks/generator/coloring-page';
 import { Button } from '@/shared/components/ui/button';
 import {
   Select,
@@ -32,6 +31,26 @@ import { Highlighter } from '@/shared/components/ui/highlighter';
 import { cn } from '@/shared/lib/utils';
 import { Section } from '@/shared/types/blocks/landing';
 import type { AIGenerationResponse } from '@/lib/ai/generation-synthesizer';
+
+const ColoringPageGenerator = dynamic(
+  () =>
+    import('@/shared/blocks/generator/coloring-page').then(
+      (mod) => mod.ColoringPageGenerator
+    ),
+  {
+    loading: () => <div className="min-h-[220px] w-full" />,
+  }
+);
+
+const ResultDisplay = dynamic(
+  () =>
+    import('@/shared/blocks/generation-finder/result-display').then(
+      (mod) => mod.ResultDisplay
+    ),
+  {
+    loading: () => <div className="min-h-[160px] w-full" />,
+  }
+);
 
 export function Hero({
   section,

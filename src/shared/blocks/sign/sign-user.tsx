@@ -75,8 +75,8 @@ export function SignUser({
   const oneTapInitialized = useRef(false);
 
   useEffect(() => {
-    fetchConfigs();
-  }, []);
+    void fetchConfigs();
+  }, [fetchConfigs]);
 
   // set is check sign
   useEffect(() => {
@@ -147,7 +147,7 @@ export function SignUser({
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-8 w-8 rounded-full border-transparent p-0 hover:border-transparent hover:bg-transparent dark:hover:bg-transparent focus-visible:ring-0"
+              className="relative h-8 w-8 rounded-full border-transparent p-0 transition-none hover:border-transparent hover:bg-transparent hover:text-inherit dark:hover:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-inherit focus-visible:ring-0"
             >
               <Avatar>
                 <AvatarImage

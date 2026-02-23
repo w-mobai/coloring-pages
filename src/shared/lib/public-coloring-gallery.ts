@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+
 import { AIMediaType, AITaskStatus } from '@/extensions/ai';
 import {
   extractImageUrls,
@@ -11,6 +13,7 @@ import {
   isLikelyHttpUrl,
 } from '@/shared/lib/coloring-gallery';
 import { listGuestAITasks } from '@/shared/lib/guest-ai-task';
+import { listPersistedGuestColoringTasks } from '@/shared/lib/persistent-guest-coloring-gallery';
 import {
   buildR2AllowedUrlPrefixes,
   isAllowedR2Url,
@@ -33,21 +36,20 @@ type GalleryTaskItem = {
   prompt: string | null;
   taskInfo: string | null;
   taskResult: string | null;
+  imageUrl?: string | null;
+  mediaType?: AIMediaType;
+  status?: AITaskStatus;
   createdAtMs: number;
 };
 
 export const DEFAULT_GALLERY_LIMIT = 24;
-const MAX_GALLERY_LIMIT = 120;
-const MAX_SCAN_LIMIT = 360;
+const MAX_GALLERY_LIMIT = 600;
+const MAX_SCAN_LIMIT = 2400;
+const PUBLIC_COLORING_GALLERY_CACHE_TAG = 'public-coloring-gallery';
 
-export async function getPublicColoringGalleryItems({
-  limit = DEFAULT_GALLERY_LIMIT,
-}: {
-  limit?: number;
-} = {}): Promise<PublicColoringGalleryItem[]> {
-  const normalizedLimit = Number.isFinite(limit)
-    ? Math.min(Math.max(Math.floor(limit), 1), MAX_GALLERY_LIMIT)
-    : DEFAULT_GALLERY_LIMIT;
+async function fetchPublicColoringGalleryItems(
+  normalizedLimit: number
+): Promise<PublicColoringGalleryItem[]> {
   const scanLimit = Math.min(
     Math.max(normalizedLimit * 4, 80),
     MAX_SCAN_LIMIT
@@ -55,9 +57,7 @@ export async function getPublicColoringGalleryItems({
 
   const configs = await getAllConfigs();
   const r2UrlPrefixes = buildR2AllowedUrlPrefixes(configs);
-  if (r2UrlPrefixes.length === 0) {
-    return [];
-  }
+  const shouldEnforceR2Prefix = r2UrlPrefixes.length > 0;
 
   const tasks = await getAITasks({
     mediaType: AIMediaType.IMAGE,
@@ -72,6 +72,9 @@ export async function getPublicColoringGalleryItems({
         task.status === AITaskStatus.SUCCESS
     )
     .slice(0, scanLimit);
+  const persistedGuestTasks = await listPersistedGuestColoringTasks({
+    limit: scanLimit,
+  });
 
   const mergedTasks: GalleryTaskItem[] = [
     ...tasks.map((task) => ({
@@ -81,6 +84,17 @@ export async function getPublicColoringGalleryItems({
       taskInfo: task.taskInfo,
       taskResult: task.taskResult,
       createdAtMs: task.createdAt ? new Date(task.createdAt).getTime() : 0,
+    })),
+    ...persistedGuestTasks.map((task) => ({
+      id: task.id,
+      taskId: task.id,
+      prompt: task.prompt,
+      taskInfo: null,
+      taskResult: null,
+      imageUrl: task.imageUrl,
+      mediaType: AIMediaType.IMAGE,
+      status: AITaskStatus.SUCCESS,
+      createdAtMs: task.createdAt || 0,
     })),
     ...guestTasks.map((task) => ({
       id: task.id,
@@ -96,6 +110,13 @@ export async function getPublicColoringGalleryItems({
   const list: PublicColoringGalleryItem[] = [];
 
   for (const task of mergedTasks) {
+    if (
+      (task.mediaType && task.mediaType !== AIMediaType.IMAGE) ||
+      (task.status && task.status !== AITaskStatus.SUCCESS)
+    ) {
+      continue;
+    }
+
     if (!isColoringTaskPrompt(task.prompt)) {
       continue;
     }
@@ -103,9 +124,10 @@ export async function getPublicColoringGalleryItems({
     const userPrompt = extractUserPrompt(task.prompt);
     const taskResult = safeParseJSON(task.taskResult);
     const taskInfo = safeParseJSON(task.taskInfo);
+    const directImageUrls = task.imageUrl ? [task.imageUrl] : [];
     const taskInfoImageUrls = extractImageUrls(taskInfo);
     const resultImageUrls = extractImageUrls(taskResult);
-    const imageUrls = [...taskInfoImageUrls, ...resultImageUrls];
+    const imageUrls = [...directImageUrls, ...taskInfoImageUrls, ...resultImageUrls];
 
     let selectedImageUrl: string | null = null;
     for (const imageUrl of imageUrls) {
@@ -113,7 +135,7 @@ export async function getPublicColoringGalleryItems({
       if (
         !imageUrl ||
         !isLikelyHttpUrl(imageUrl) ||
-        !isAllowedR2Url(imageUrl, r2UrlPrefixes) ||
+        (shouldEnforceR2Prefix && !isAllowedR2Url(imageUrl, r2UrlPrefixes)) ||
         seen.has(dedupKey)
       ) {
         continue;
@@ -143,4 +165,26 @@ export async function getPublicColoringGalleryItems({
   }
 
   return list;
+}
+
+const getPublicColoringGalleryItemsCached = unstable_cache(
+  async (normalizedLimit: number) =>
+    fetchPublicColoringGalleryItems(normalizedLimit),
+  ['public-coloring-gallery-items-v2'],
+  {
+    revalidate: 120,
+    tags: [PUBLIC_COLORING_GALLERY_CACHE_TAG],
+  }
+);
+
+export async function getPublicColoringGalleryItems({
+  limit = DEFAULT_GALLERY_LIMIT,
+}: {
+  limit?: number;
+} = {}): Promise<PublicColoringGalleryItem[]> {
+  const normalizedLimit = Number.isFinite(limit)
+    ? Math.min(Math.max(Math.floor(limit), 1), MAX_GALLERY_LIMIT)
+    : DEFAULT_GALLERY_LIMIT;
+
+  return getPublicColoringGalleryItemsCached(normalizedLimit);
 }

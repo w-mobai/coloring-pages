@@ -41,8 +41,8 @@ export function ResultDisplay({ result, locale }: ResultDisplayProps) {
             src="/logo.png"
             alt={
               locale === 'zh'
-                ? 'What Generation Am I 品牌标志'
-                : 'What Generation Am I logo'
+                ? 'ColorFun 品牌标志'
+                : 'ColorFun logo'
             }
             className="h-20 w-20 rounded-lg object-contain flex-shrink-0"
           />

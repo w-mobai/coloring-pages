@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from 'drizzle-orm';
+import { and, count, desc, eq, or, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { aiTask, credit } from '@/config/db/schema';
@@ -174,6 +174,24 @@ function escapeLikePattern(value: string): string {
   return value.replace(/[%_\\]/g, '\\$&');
 }
 
+function buildImageUrlPrefixConditions(prefixes: string[]) {
+  const normalized = prefixes
+    .map((prefix) => prefix.trim())
+    .filter((prefix) => prefix.length > 0);
+
+  if (normalized.length === 0) {
+    return [];
+  }
+
+  return normalized.map((prefix) => {
+    const pattern = `%${escapeLikePattern(prefix)}%`;
+    return sql`(
+      ${aiTask.taskResult} LIKE ${pattern} ESCAPE '\\'
+      OR ${aiTask.taskInfo} LIKE ${pattern} ESCAPE '\\'
+    )`;
+  });
+}
+
 export async function countAITaskImageUrlReferences(
   normalizedImageUrl: string
 ): Promise<number> {
@@ -197,4 +215,77 @@ export async function countAITaskImageUrlReferences(
     );
 
   return result?.count || 0;
+}
+
+export async function getAITasksCountByImageUrlPrefixes({
+  userId,
+  status,
+  mediaType,
+  provider,
+  prefixes,
+}: {
+  userId?: string;
+  status?: string;
+  mediaType?: string;
+  provider?: string;
+  prefixes: string[];
+}): Promise<number> {
+  const prefixConditions = buildImageUrlPrefixConditions(prefixes);
+  if (prefixConditions.length === 0) {
+    return 0;
+  }
+
+  const [result] = await db()
+    .select({ count: count() })
+    .from(aiTask)
+    .where(
+      and(
+        userId ? eq(aiTask.userId, userId) : undefined,
+        mediaType ? eq(aiTask.mediaType, mediaType) : undefined,
+        provider ? eq(aiTask.provider, provider) : undefined,
+        status ? eq(aiTask.status, status) : undefined,
+        or(...prefixConditions)
+      )
+    );
+
+  return result?.count || 0;
+}
+
+export async function getAITasksByImageUrlPrefixes({
+  userId,
+  status,
+  mediaType,
+  provider,
+  prefixes,
+  page = 1,
+  limit = 30,
+}: {
+  userId?: string;
+  status?: string;
+  mediaType?: string;
+  provider?: string;
+  prefixes: string[];
+  page?: number;
+  limit?: number;
+}): Promise<AITask[]> {
+  const prefixConditions = buildImageUrlPrefixConditions(prefixes);
+  if (prefixConditions.length === 0) {
+    return [];
+  }
+
+  return db()
+    .select()
+    .from(aiTask)
+    .where(
+      and(
+        userId ? eq(aiTask.userId, userId) : undefined,
+        mediaType ? eq(aiTask.mediaType, mediaType) : undefined,
+        provider ? eq(aiTask.provider, provider) : undefined,
+        status ? eq(aiTask.status, status) : undefined,
+        or(...prefixConditions)
+      )
+    )
+    .orderBy(desc(aiTask.createdAt))
+    .limit(limit)
+    .offset((page - 1) * limit);
 }

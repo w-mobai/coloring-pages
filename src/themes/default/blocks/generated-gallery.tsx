@@ -1,13 +1,17 @@
+import { Suspense } from 'react';
+
 import {
   buildColoringPageDetailPath,
   normalizePrompt,
   truncateText,
 } from '@/shared/lib/coloring-page-seo';
 import { COLORING_KEYWORD_FILTER_RULES } from '@/shared/lib/coloring-keyword-filters';
+import { getLocalizedColoringPromptTitle } from '@/shared/lib/coloring-prompt-display';
 import {
   type PublicColoringGalleryItem,
   getPublicColoringGalleryItems,
 } from '@/shared/lib/public-coloring-gallery';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 import { cn } from '@/shared/lib/utils';
 import { Section } from '@/shared/types/blocks/landing';
 
@@ -34,21 +38,20 @@ function matchPromptKeywordGroups(prompt?: string | null): string[] {
 }
 
 function buildGalleryCardTitle(prompt: string | null | undefined, locale?: string): string {
-  const cleaned = normalizePrompt(prompt);
-  if (cleaned) {
-    return truncateText(cleaned, 52);
-  }
-
-  if (locale?.startsWith('zh')) {
-    return '涂色页';
-  }
-  return 'Coloring Page';
+  const localizedTitle = getLocalizedColoringPromptTitle({
+    prompt,
+    locale,
+    fallbackZh: '涂色页',
+    fallbackEn: 'Coloring Page',
+  });
+  return truncateText(normalizePrompt(localizedTitle), 52);
 }
 
 function getUiText(locale?: string) {
   const isZh = locale?.startsWith('zh');
 
   return {
+    loading: isZh ? '图片加载中...' : 'Loading images...',
     empty: isZh ? '暂时还没有可展示的生成图片。' : 'No generated images yet.',
     error: isZh ? '加载图片失败，请稍后重试。' : 'Failed to load images. Please try again.',
     imageAltPrefix: isZh ? '涂色页' : 'Coloring page',
@@ -60,6 +63,8 @@ function getUiText(locale?: string) {
     promptLabel: isZh ? '提示词：' : 'Prompt: ',
     dateLabel: isZh ? '生成时间：' : 'Created: ',
     noPrompt: isZh ? '（无提示词记录）' : '(No prompt record)',
+    viewMoreTitle: isZh ? '查看更多' : 'See More',
+    viewMoreDescription: isZh ? '查看全部涂色页' : 'View full gallery',
   };
 }
 
@@ -80,7 +85,70 @@ function formatDate(value: string | null, locale?: string): string {
   }).format(date);
 }
 
-export async function GeneratedGallery({
+export function GeneratedGallery({
+  section,
+  locale,
+  className,
+}: {
+  section: Section;
+  locale?: string;
+  className?: string;
+}) {
+  const uiText = getUiText(locale);
+
+  return (
+    <Suspense
+      fallback={
+        <section
+          id={section.id}
+          className={cn('py-20', section.className, className)}
+        >
+          <div className="container">
+            <div className="mx-auto mb-12 max-w-5xl text-center">
+              {section.title && (
+                <h2 className="text-foreground mb-4 text-2xl font-medium tracking-tight md:text-3xl">
+                  {section.title}
+                </h2>
+              )}
+            {section.description && (
+              <p className="text-muted-foreground text-md">{section.description}</p>
+            )}
+          </div>
+          <div className="text-muted-foreground mb-6 text-center text-sm">
+            {uiText.loading}
+          </div>
+          <div className="grid items-start gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+            <aside className="hidden lg:block lg:sticky lg:top-24">
+              <Skeleton className="mb-3 h-3 w-16" />
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: 7 }).map((_, idx) => (
+                  <Skeleton key={`gallery-filter-skeleton-${idx}`} className="h-5 w-28" />
+                ))}
+              </div>
+            </aside>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 12 }).map((_, idx) => (
+                <div key={`gallery-card-skeleton-${idx}`} className="space-y-2">
+                  <Skeleton className="aspect-square w-full rounded-xl" />
+                  <Skeleton className="mx-auto h-4 w-4/5" />
+                </div>
+              ))}
+            </div>
+          </div>
+          </div>
+        </section>
+      }
+    >
+      <GeneratedGalleryContent
+        section={section}
+        locale={locale}
+        className={className}
+      />
+    </Suspense>
+  );
+}
+
+async function GeneratedGalleryContent({
   section,
   locale,
   className,
@@ -136,11 +204,14 @@ export async function GeneratedGallery({
         ...section,
         group_layout: 'sidebar-left',
         group_sidebar_title: uiText.keywordFiltersTitle,
+        view_more_title: (section as any).view_more_title || uiText.viewMoreTitle,
+        view_more_description:
+          (section as any).view_more_description || uiText.viewMoreDescription,
         groups: [
           { name: 'all', title: uiText.allGroup },
           ...COLORING_KEYWORD_FILTER_RULES.map((rule) => ({
             name: rule.name,
-            title: rule.title,
+            title: locale?.startsWith('zh') ? rule.titleZh || rule.title : rule.title,
           })),
           { name: 'other', title: uiText.groupLabels.other },
         ],
@@ -148,8 +219,14 @@ export async function GeneratedGallery({
           const titleCounter = new Map<string, number>();
 
           return images.map((item, index) => {
+            const localizedPrompt = getLocalizedColoringPromptTitle({
+              prompt: item.prompt,
+              locale,
+              fallbackZh: uiText.noPrompt,
+              fallbackEn: uiText.noPrompt,
+            });
             const promptText = item.prompt?.trim()
-              ? `${uiText.promptLabel}${item.prompt}`
+              ? `${uiText.promptLabel}${localizedPrompt}`
               : `${uiText.promptLabel}${uiText.noPrompt}`;
             const dateText = formatDate(item.createdAt, locale);
             const detailPath = buildColoringPageDetailPath({

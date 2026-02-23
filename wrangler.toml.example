@@ -18,7 +18,7 @@ enabled = true
 [vars]
 # app
 NEXT_PUBLIC_APP_URL = "https://whatgenerationami.online"
-NEXT_PUBLIC_APP_NAME = "What Generation Am I"
+NEXT_PUBLIC_APP_NAME = "ColorFun"
 
 # theme
 NEXT_PUBLIC_THEME = "default"

@@ -2,10 +2,10 @@
   "header": {
     "id": "header",
     "brand": {
-      "title": "GenFinder",
+      "title": "ColorFun",
       "logo": {
         "src": "/logo.png",
-        "alt": "GenFinder",
+        "alt": "ColorFun",
         "width": 100,
         "height": 100
       },
@@ -24,47 +24,9 @@
           "icon": "Image"
         },
         {
-          "title": "AI Tools",
-          "icon": "Sparkles",
-          "hidden": false,
-          "children": [
-            {
-              "title": "AI Chat",
-              "description": "Chat with AI Assistant",
-              "url": "/chat",
-              "icon": "MessageCircle"
-            },
-            {
-              "title": "Music Generator",
-              "description": "Create music with AI",
-              "url": "/ai-music-generator",
-              "icon": "Music"
-            },
-            {
-              "title": "Video Generator",
-              "description": "Generate videos with AI",
-              "url": "/ai-video-generator",
-              "icon": "Video"
-            }
-          ]
-        },
-        {
-          "title": "Content",
-          "icon": "FileText",
-          "children": [
-            {
-              "title": "Blog",
-              "description": "Read Blog Posts",
-              "url": "/blog",
-              "icon": "Newspaper"
-            },
-            {
-              "title": "Updates",
-              "description": "Read Update Logs",
-              "url": "/updates",
-              "icon": "Clock"
-            }
-          ]
+          "title": "Pricing",
+          "url": "/pricing",
+          "icon": "CreditCard"
         },
         {
           "title": "Help",
@@ -93,11 +55,11 @@
   "footer": {
     "id": "footer",
     "brand": {
-      "title": "GenFinder",
-      "description": "Discover your generation with AI-powered analysis. Find out which generation you belong to based on your birth year and explore all generation names and years.",
+      "title": "ColorFun",
+      "description": "Create free printable coloring pages with AI in seconds. Enter a prompt, choose age group and layout, then download and print instantly.",
       "logo": {
         "src": "/logo.png",
-        "alt": "GenFinder",
+        "alt": "ColorFun",
         "width": 1024,
         "height": 1024
       },
@@ -121,6 +83,16 @@
             {
               "title": "Blog",
               "url": "/blog",
+              "target": "_self"
+            },
+            {
+              "title": "Help",
+              "url": "/how-to-find-your-generation",
+              "target": "_self"
+            },
+            {
+              "title": "Updates",
+              "url": "/updates",
               "target": "_self"
             },
             {

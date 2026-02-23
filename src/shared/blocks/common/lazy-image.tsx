@@ -1,8 +1,6 @@
 'use client';
 
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import Image from 'next/image';
 
 export function LazyImage({
   src,
@@ -27,15 +25,66 @@ export function LazyImage({
   priority?: boolean;
   sizes?: string;
 }) {
+  const resolvedSrc = src || placeholderSrc || '';
+  const isRemoteUrl =
+    resolvedSrc.startsWith('http://') ||
+    resolvedSrc.startsWith('https://') ||
+    resolvedSrc.startsWith('//');
+  const isLocalWithQuery =
+    resolvedSrc.startsWith('/') && resolvedSrc.includes('?');
+  const useNativeImg =
+    !resolvedSrc ||
+    isRemoteUrl ||
+    resolvedSrc.startsWith('blob:') ||
+    resolvedSrc.startsWith('data:') ||
+    isLocalWithQuery;
+
+  if (useNativeImg) {
+    return (
+      <img
+        src={resolvedSrc}
+        alt={alt}
+        width={fill ? undefined : width}
+        height={fill ? undefined : height}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchPriority={priority ? 'high' : 'auto'}
+        sizes={sizes}
+        title={title}
+        className={className}
+        style={
+          fill
+            ? {
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+              }
+            : undefined
+        }
+      />
+    );
+  }
+
   return (
-    <LazyLoadImage
-      src={src}
+    <Image
+      src={resolvedSrc}
       alt={alt}
-      width={width}
-      height={height}
-      effect="blur" // 支持 blur、opacity 等
-      placeholderSrc={placeholderSrc} // 可选
+      width={fill ? undefined : (width ?? 1200)}
+      height={fill ? undefined : (height ?? 900)}
+      fill={fill}
+      priority={priority}
+      loading={priority ? undefined : 'lazy'}
+      sizes={sizes}
+      title={title}
       className={className}
+      style={
+        fill
+          ? undefined
+          : {
+              height: 'auto',
+            }
+      }
     />
   );
 }

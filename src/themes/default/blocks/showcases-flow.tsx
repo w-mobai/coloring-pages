@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Link, useRouter } from '@/core/i18n/navigation';
@@ -20,6 +20,7 @@ export function ShowcasesFlow({
   className?: string;
 }) {
   const isGeneratedGallerySection = section.id === 'generated-gallery';
+  const shouldAnimateGallery = !isGeneratedGallerySection;
   const router = useRouter();
   const groups = (section as any).groups || [];
   const useSidebarGroups =
@@ -31,22 +32,82 @@ export function ShowcasesFlow({
     (section as any).show_full_description_in_modal
   );
   const showDownloadInModal = Boolean((section as any).show_download_in_modal);
+  const showViewMoreCard = Boolean(
+    isGeneratedGallerySection && (section as any).show_view_more_card
+  );
+  const maxVisibleItems = Number((section as any).max_visible_items || 0);
+  const viewMorePath = ((section as any).view_more_path as string) || '/coloring-pages';
+  const viewMoreTitle = ((section as any).view_more_title as string) || 'See More';
+  const viewMoreDescription = (section as any).view_more_description as
+    | string
+    | undefined;
+  const searchParams = useSearchParams();
   const [selectedGroup, setSelectedGroup] = useState<string>(
     groups.length > 0 ? groups[0].name : ''
   );
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const groupNameSet = useMemo(
+    () => new Set(groups.map((group: { name: string }) => group.name)),
+    [groups]
+  );
+
+  useEffect(() => {
+    if (!isGeneratedGallerySection || groups.length === 0) {
+      return;
+    }
+
+    const filter = searchParams.get('filter');
+    if (!filter) {
+      return;
+    }
+
+    if (groupNameSet.has(filter)) {
+      setSelectedGroup(filter);
+    }
+  }, [groupNameSet, groups.length, isGeneratedGallerySection, searchParams]);
 
   const filteredItems = useMemo(() => {
     if (!section.items) return [];
-    if (!selectedGroup || !groups.length) return section.items;
-    if (selectedGroup === 'all') return section.items;
-    return section.items.filter((item) => {
-      const itemGroups = Array.isArray((item as any).groups)
-        ? ((item as any).groups as string[])
-        : [item.group as string];
-      return itemGroups.includes(selectedGroup);
-    });
-  }, [section.items, selectedGroup, groups.length]);
+
+    const baseItems =
+      !selectedGroup || !groups.length || selectedGroup === 'all'
+        ? section.items
+        : section.items.filter((item) => {
+            const itemGroups = Array.isArray((item as any).groups)
+              ? ((item as any).groups as string[])
+              : [item.group as string];
+            return itemGroups.includes(selectedGroup);
+          });
+
+    let visibleItems = baseItems;
+    if (showViewMoreCard && Number.isFinite(maxVisibleItems) && maxVisibleItems > 0) {
+      visibleItems = baseItems.slice(0, maxVisibleItems);
+    }
+
+    if (showViewMoreCard) {
+      return [
+        ...visibleItems,
+        {
+          isViewMoreCard: true,
+          title: viewMoreTitle,
+          description: viewMoreDescription,
+          viewMorePath,
+          groups: groups.map((group: { name: string }) => group.name),
+        },
+      ];
+    }
+
+    return visibleItems;
+  }, [
+    groups,
+    maxVisibleItems,
+    section.items,
+    selectedGroup,
+    showViewMoreCard,
+    viewMoreDescription,
+    viewMorePath,
+    viewMoreTitle,
+  ]);
 
   const handlePrevious = useCallback(() => {
     setSelectedIndex((prev) =>
@@ -141,6 +202,15 @@ export function ShowcasesFlow({
 
   const handleCardClick = useCallback(
     (item: any, index: number) => {
+      if (item?.isViewMoreCard) {
+        const query =
+          selectedGroup && selectedGroup !== 'all'
+            ? `?filter=${encodeURIComponent(selectedGroup)}`
+            : '';
+        router.push(`${(item.viewMorePath as string) || viewMorePath}${query}`);
+        return;
+      }
+
       if (isGeneratedGallerySection) {
         const detailUrl = item?.detailUrl || item?.button?.url;
         if (typeof detailUrl === 'string' && detailUrl) {
@@ -151,46 +221,135 @@ export function ShowcasesFlow({
 
       setSelectedIndex(index);
     },
-    [isGeneratedGallerySection, router]
+    [isGeneratedGallerySection, router, selectedGroup, viewMorePath]
   );
 
   const groupButtons = groups.map(
     (group: { name: string; title: string }, index: number) => {
       const isSelected = selectedGroup === group.name;
+      const buttonClassName = cn(
+        'transition-colors',
+        useSidebarGroups
+          ? cn(
+              'w-full bg-transparent px-0 py-1.5 text-left text-xs leading-snug hover:bg-transparent',
+              isSelected
+                ? 'text-foreground font-semibold'
+                : 'text-foreground/85 font-medium hover:text-foreground'
+            )
+          : cn(
+              'relative rounded-lg px-3 py-1.5 text-sm font-medium',
+              isSelected
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                : 'ring-border bg-background text-foreground ring-1 ring-inset hover:bg-muted hover:text-foreground hover:ring-border/80'
+            )
+      );
+
+      if (!shouldAnimateGallery) {
+        return (
+          <button
+            key={group.name}
+            type="button"
+            onClick={() => setSelectedGroup(group.name)}
+            className={buttonClassName}
+          >
+            <span>{group.title}</span>
+          </button>
+        );
+      }
+
       return (
-        <motion.button
+        <button
           key={group.name}
+          type="button"
           onClick={() => setSelectedGroup(group.name)}
-          className={cn(
-            'transition-colors',
-            useSidebarGroups
-              ? cn(
-                'w-full bg-transparent px-0 py-1.5 text-left text-sm leading-snug hover:bg-transparent',
-                  isSelected
-                    ? 'text-foreground font-semibold'
-                    : 'text-foreground/85 font-medium hover:text-foreground'
-                )
-              : cn(
-                  'relative rounded-lg px-3 py-1.5 text-sm font-medium',
-                  isSelected
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'ring-border bg-background text-foreground ring-1 ring-inset hover:bg-muted hover:text-foreground hover:ring-border/80'
-                )
-          )}
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{
-            duration: 0.4,
-            delay: 0.2 + index * 0.03,
-            ease: [0.22, 1, 0.36, 1] as const,
-          }}
+          className={buttonClassName}
         >
           <span>{group.title}</span>
-        </motion.button>
+        </button>
       );
     }
   );
+
+  const renderCardBody = (item: any) => {
+    if (isGeneratedGallerySection) {
+      return (
+        <>
+          <div
+            className={cn(
+              'overflow-hidden rounded-xl border',
+              !item?.isViewMoreCard && 'bg-card'
+            )}
+          >
+            {item?.isViewMoreCard ? (
+              <div className="flex aspect-square w-full items-center justify-center p-4">
+                <div className="space-y-1 text-center">
+                  <h3 className="text-foreground text-base font-semibold">
+                    {item.title}
+                  </h3>
+                  {item.description && (
+                    <p className="text-muted-foreground text-xs">{item.description}</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <LazyImage
+                src={item.image?.src ?? ''}
+                alt={item.image?.alt ?? ''}
+                className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.02]"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+              />
+            )}
+          </div>
+          {!item?.isViewMoreCard && (
+            <div className="px-2 pt-2 pb-1">
+              <h3 className="text-foreground line-clamp-2 text-center text-sm font-medium">
+                {item.title}
+              </h3>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <LazyImage
+          src={item.image?.src ?? ''}
+          alt={item.image?.alt ?? ''}
+          className="h-auto w-full"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+        />
+        <div className="absolute inset-0 flex flex-col justify-end bg-black/60 p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <p className="mb-2 translate-y-4 text-sm font-medium text-white transition-transform duration-300 group-hover:translate-y-0">
+            {item.title}
+          </p>
+          {(item as any).button && (
+            <div
+              className="mt-3 translate-y-4 transition-transform delay-100 duration-300 group-hover:translate-y-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                asChild
+                variant={(item as any).button.variant || 'default'}
+                size={(item as any).button.size || 'sm'}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-full border-0 px-1 py-1.5 text-sm font-medium"
+              >
+                <Link
+                  href={(item as any).button.url || ''}
+                  target={(item as any).button.target || '_self'}
+                >
+                  {(item as any).button.icon && (
+                    <SmartIcon name={(item as any).button.icon as string} />
+                  )}
+                  {(item as any).button.title}
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  };
 
   const itemsContent =
     filteredItems.length > 0 ? (
@@ -202,92 +361,59 @@ export function ShowcasesFlow({
           !useSidebarGroups && 'container mx-auto'
         )}
       >
-        {filteredItems.map((item, index) => (
-          <motion.div
-            key={index}
-            className={cn(
-              'group relative break-inside-avoid rounded-xl',
-              isGeneratedGallerySection
-                ? 'cursor-pointer overflow-hidden border bg-card transition-colors hover:border-primary/40'
-                : 'cursor-zoom-in overflow-hidden'
-            )}
-            onClick={() => handleCardClick(item, index)}
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{
-              duration: 0.6,
-              delay: index * 0.1,
-              ease: [0.22, 1, 0.36, 1] as const,
-            }}
-          >
-            <LazyImage
-              src={item.image?.src ?? ''}
-              alt={item.image?.alt ?? ''}
-              className={cn(
-                'h-auto w-full',
-                isGeneratedGallerySection &&
-                  'transition-transform duration-300 group-hover:scale-[1.02]'
-              )}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            />
-            {isGeneratedGallerySection ? (
-              <div className="p-3">
-                <h3 className="text-foreground line-clamp-2 text-center text-sm font-medium">
-                  {item.title}
-                </h3>
+        {filteredItems.map((item, index) => {
+          const cardClassName = cn(
+            'group relative break-inside-avoid rounded-xl',
+            !isGeneratedGallerySection &&
+              '[content-visibility:auto] [contain-intrinsic-size:360px_480px]',
+            isGeneratedGallerySection
+              ? 'cursor-pointer'
+              : 'cursor-zoom-in overflow-hidden'
+          );
+
+          if (!shouldAnimateGallery) {
+            return (
+              <div
+                key={index}
+                className={cardClassName}
+                onClick={() => handleCardClick(item, index)}
+              >
+                {renderCardBody(item)}
               </div>
-            ) : (
-              <div className="absolute inset-0 flex flex-col justify-end bg-black/60 p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <p className="mb-2 translate-y-4 text-sm font-medium text-white transition-transform duration-300 group-hover:translate-y-0">
-                  {item.title}
-                </p>
-                {/* {item.description && (
-                    <p className="line-clamp-2 translate-y-4 text-sm text-white/80 transition-transform delay-75 duration-300 group-hover:translate-y-0">
-                      {item.description}
-                    </p>
-                  )} */}
-                {(item as any).button && (
-                  <div
-                    className="mt-3 translate-y-4 transition-transform delay-100 duration-300 group-hover:translate-y-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      asChild
-                      variant={(item as any).button.variant || 'default'}
-                      size={(item as any).button.size || 'sm'}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-full border-0 px-1 py-1.5 text-sm font-medium"
-                    >
-                      <Link
-                        href={(item as any).button.url || ''}
-                        target={(item as any).button.target || '_self'}
-                      >
-                        {(item as any).button.icon && (
-                          <SmartIcon name={(item as any).button.icon as string} />
-                        )}
-                        {(item as any).button.title}
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.div>
-        ))}
+            );
+          }
+
+          return (
+            <div
+              key={index}
+              className={cardClassName}
+              onClick={() => handleCardClick(item, index)}
+            >
+              {renderCardBody(item)}
+            </div>
+          );
+        })}
       </div>
     ) : (
-      <motion.div
-        className={cn(
-          'text-muted-foreground text-center',
-          !useSidebarGroups && 'container'
-        )}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4 }}
-      >
-        No items found in this category.
-      </motion.div>
+      shouldAnimateGallery ? (
+        <div
+          className={cn(
+            'text-muted-foreground text-center',
+            !useSidebarGroups && 'container'
+          )}
+        >
+          No items found in this category.
+        </div>
+      ) : (
+        <div
+          className={cn(
+            'text-muted-foreground text-center',
+            !useSidebarGroups && 'container'
+          )}
+        >
+          No items found in this category.
+        </div>
+      )
     );
 
   return (
@@ -295,104 +421,154 @@ export function ShowcasesFlow({
       id={section.id || section.name}
       className={cn('py-20', section.className, className)}
     >
-      <motion.div
-        className="container mb-4 text-center"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{
-          duration: 0.6,
-          ease: [0.22, 1, 0.36, 1] as const,
-        }}
-      >
-        {section.sr_only_title && (
-          <h1 className="sr-only">{section.sr_only_title}</h1>
-        )}
+      {shouldAnimateGallery ? (
         <div
-          className={cn(
-            isGeneratedGallerySection
-              ? 'mx-auto mb-12 max-w-5xl'
-              : 'mx-auto max-w-full md:max-w-5xl'
-          )}
+          className="container mb-4 text-center"
         >
-          <h2
+          {section.sr_only_title && (
+            <h1 className="sr-only">{section.sr_only_title}</h1>
+          )}
+          <div
             className={cn(
-              'text-foreground tracking-tight',
               isGeneratedGallerySection
-                ? 'mb-4 text-2xl font-medium md:text-3xl'
-                : 'mb-12 text-3xl font-semibold md:text-4xl'
+                ? 'mx-auto mb-12 max-w-5xl'
+                : 'mx-auto max-w-full md:max-w-5xl'
             )}
           >
-            {section.title}
-          </h2>
-          {section.description && (
-            <p
+            <h2
               className={cn(
-                'text-muted-foreground text-md',
-                !isGeneratedGallerySection && 'mb-4 line-clamp-3'
+                'text-foreground tracking-tight',
+                isGeneratedGallerySection
+                  ? 'mb-4 text-2xl font-medium md:text-3xl'
+                  : 'mb-12 text-3xl font-semibold md:text-4xl'
               )}
             >
-              {section.description}
-            </p>
+              {section.title}
+            </h2>
+            {section.description && (
+              <p
+                className={cn(
+                  'text-muted-foreground text-md',
+                  !isGeneratedGallerySection && 'mb-4 line-clamp-3'
+                )}
+              >
+                {section.description}
+              </p>
+            )}
+          </div>
+          {section.buttons && section.buttons.length > 0 && (
+            <div className="container mx-auto mt-8 mb-12 flex flex-wrap justify-center gap-4">
+              {section.buttons.map((button) => (
+                <Button
+                  key={button.title}
+                  variant={button.variant || 'default'}
+                  size={button.size || 'sm'}
+                  asChild
+                >
+                  <Link href={button.url || ''} target={button.target || '_self'}>
+                    {button.icon && <SmartIcon name={button.icon as string} />}
+                    {button.title}
+                  </Link>
+                </Button>
+              ))}
+            </div>
           )}
         </div>
-        {section.buttons && section.buttons.length > 0 && (
-          <div className="container mx-auto mt-8 mb-12 flex flex-wrap justify-center gap-4">
-            {section.buttons.map((button) => (
-              <Button
-                key={button.title}
-                variant={button.variant || 'default'}
-                size={button.size || 'sm'}
-                asChild
+      ) : (
+        <div className="container mb-4 text-center">
+          {section.sr_only_title && (
+            <h1 className="sr-only">{section.sr_only_title}</h1>
+          )}
+          <div
+            className={cn(
+              isGeneratedGallerySection
+                ? 'mx-auto mb-12 max-w-5xl'
+                : 'mx-auto max-w-full md:max-w-5xl'
+            )}
+          >
+            <h2
+              className={cn(
+                'text-foreground tracking-tight',
+                isGeneratedGallerySection
+                  ? 'mb-4 text-2xl font-medium md:text-3xl'
+                  : 'mb-12 text-3xl font-semibold md:text-4xl'
+              )}
+            >
+              {section.title}
+            </h2>
+            {section.description && (
+              <p
+                className={cn(
+                  'text-muted-foreground text-md',
+                  !isGeneratedGallerySection && 'mb-4 line-clamp-3'
+                )}
               >
-                <Link href={button.url || ''} target={button.target || '_self'}>
-                  {button.icon && <SmartIcon name={button.icon as string} />}
-                  {button.title}
-                </Link>
-              </Button>
-            ))}
+                {section.description}
+              </p>
+            )}
           </div>
-        )}
-      </motion.div>
+          {section.buttons && section.buttons.length > 0 && (
+            <div className="container mx-auto mt-8 mb-12 flex flex-wrap justify-center gap-4">
+              {section.buttons.map((button) => (
+                <Button
+                  key={button.title}
+                  variant={button.variant || 'default'}
+                  size={button.size || 'sm'}
+                  asChild
+                >
+                  <Link href={button.url || ''} target={button.target || '_self'}>
+                    {button.icon && <SmartIcon name={button.icon as string} />}
+                    {button.title}
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {groups.length > 0 && !useSidebarGroups && (
-        <motion.div
-          className="container mb-8 flex flex-wrap justify-center gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{
-            duration: 0.6,
-            delay: 0.15,
-            ease: [0.22, 1, 0.36, 1] as const,
-          }}
-        >
-          {groupButtons}
-        </motion.div>
+        shouldAnimateGallery ? (
+          <div
+            className="container mb-8 flex flex-wrap justify-center gap-4"
+          >
+            {groupButtons}
+          </div>
+        ) : (
+          <div className="container mb-8 flex flex-wrap justify-center gap-4">
+            {groupButtons}
+          </div>
+        )
       )}
 
       {useSidebarGroups ? (
         <div className="container">
           <div className="grid items-start gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-            <motion.aside
-              className="lg:sticky lg:top-24"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.5,
-                ease: [0.22, 1, 0.36, 1] as const,
-              }}
-            >
-              {groupSidebarTitle && (
-                <h3 className="text-foreground/50 mb-3 text-sm font-normal leading-tight tracking-wide">
-                  {groupSidebarTitle}
-                </h3>
-              )}
-              <div className="flex flex-col gap-1">
-                {groupButtons}
-              </div>
-            </motion.aside>
+            {shouldAnimateGallery ? (
+              <aside
+                className="lg:sticky lg:top-24"
+              >
+                {groupSidebarTitle && (
+                  <h3 className="text-foreground/50 mb-3 text-xs font-normal leading-tight tracking-wide">
+                    {groupSidebarTitle}
+                  </h3>
+                )}
+                <div className="flex flex-col gap-1">
+                  {groupButtons}
+                </div>
+              </aside>
+            ) : (
+              <aside className="lg:sticky lg:top-24">
+                {groupSidebarTitle && (
+                  <h3 className="text-foreground/50 mb-3 text-xs font-normal leading-tight tracking-wide">
+                    {groupSidebarTitle}
+                  </h3>
+                )}
+                <div className="flex flex-col gap-1">
+                  {groupButtons}
+                </div>
+              </aside>
+            )}
             <div>{itemsContent}</div>
           </div>
         </div>
@@ -400,14 +576,11 @@ export function ShowcasesFlow({
         itemsContent
       )}
 
-      <AnimatePresence>
+      <>
         {selectedIndex !== null &&
           filteredItems &&
           filteredItems.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm md:p-8"
               onClick={() => setSelectedIndex(null)}
             >
@@ -438,12 +611,8 @@ export function ShowcasesFlow({
                 <ChevronRight className="size-8 md:size-12" />
               </button>
 
-              <motion.div
+              <div
                 key={selectedIndex}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
                 className="relative flex h-full w-full items-center justify-center"
               >
                 <div
@@ -531,10 +700,10 @@ export function ShowcasesFlow({
                     </Button>
                   )}
                 </div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           )}
-      </AnimatePresence>
+      </>
     </section>
   );
 }

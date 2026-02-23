@@ -10,7 +10,6 @@ import { getLocale, setRequestLocale } from 'next-intl/server';
 import NextTopLoader from 'nextjs-toploader';
 
 import { envConfigs } from '@/config';
-import { locales } from '@/config/locale';
 import { ScrollLockOverride } from '@/shared/blocks/common/scroll-lock-override';
 import { UtmCapture } from '@/shared/blocks/common/utm-capture';
 import { getAllConfigs } from '@/shared/models/config';
@@ -31,7 +30,7 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
-  preload: true,
+  preload: false,
 });
 
 const fredoka = Fredoka({
@@ -47,7 +46,7 @@ const zcoolKuaiLe = ZCOOL_KuaiLe({
   weight: ['400'],
   variable: '--font-heading-cjk',
   display: 'swap',
-  preload: true,
+  preload: false,
 });
 
 export default async function RootLayout({
@@ -60,9 +59,7 @@ export default async function RootLayout({
 
   const isProduction = process.env.NODE_ENV === 'production';
   const isDebug = process.env.NEXT_PUBLIC_DEBUG === 'true';
-
-  // app url
-  const appUrl = envConfigs.app_url || '';
+  const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
 
   // ads components
   let adsMetaTags = null;
@@ -84,7 +81,7 @@ export default async function RootLayout({
   let customerServiceHeadScripts = null;
   let customerServiceBodyScripts = null;
 
-  if (isProduction || isDebug) {
+  if ((isProduction || isDebug) && !isBuildPhase) {
     const configs = await getAllConfigs();
 
     const [adsService, analyticsService, affiliateService, customerService] =
@@ -125,21 +122,6 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href={envConfigs.app_favicon} />
         <link rel="alternate icon" href="/favicon.ico" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        {/* inject locales */}
-        {locales ? (
-          <>
-            {locales.map((loc) => (
-              <link
-                key={loc}
-                rel="alternate"
-                hrefLang={loc}
-                href={`${appUrl}${loc === 'en' ? '' : `/${loc}`}`}
-              />
-            ))}
-          </>
-        ) : null}
 
         {/* inject ads meta tags */}
         {adsMetaTags}

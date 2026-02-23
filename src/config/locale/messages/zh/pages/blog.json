@@ -1,15 +1,15 @@
 {
   "metadata": {
-    "title": "世代博客 | What Generation Am I",
-    "description": "阅读世代名称、出生年份区间与代际趋势相关文章。"
+    "title": "ColorFun 博客 | 儿童涂色页实用技巧",
+    "description": "阅读儿童可打印涂色页的实用指南，包含提示词写法、打印建议与课堂/家庭应用。"
   },
   "page": {
-    "title": "What Generation Am I 博客",
+    "title": "ColorFun 博客",
     "sections": {
       "blog": {
         "id": "blog",
         "title": "博客",
-        "description": "阅读关于世代名称、年份区间和代际趋势的内容。"
+        "description": "围绕提示词、打印和 AI 儿童涂色页创作的实用文章。"
       }
     }
   },

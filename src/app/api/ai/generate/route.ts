@@ -2,10 +2,12 @@ import { envConfigs } from '@/config';
 import { AIMediaType } from '@/extensions/ai';
 import { getGuestOwnerKey, saveGuestAITask } from '@/shared/lib/guest-ai-task';
 import { getUuid } from '@/shared/lib/hash';
+import { enforceMinIntervalRateLimit } from '@/shared/lib/rate-limit';
 import { respData, respErr } from '@/shared/lib/resp';
 import { buildUserStorageKeyPrefix } from '@/shared/lib/storage-key-prefix';
 import { createAITask, NewAITask } from '@/shared/models/ai_task';
 import { getRemainingCredits } from '@/shared/models/credit';
+import { getOrdersCount, OrderStatus } from '@/shared/models/order';
 import { getUserInfo } from '@/shared/models/user';
 import { getAIService } from '@/shared/services/ai';
 
@@ -38,6 +40,26 @@ export async function POST(request: Request) {
     // get current user
     const user = await getUserInfo();
     const isGuest = !user;
+    let isPaidUser = false;
+    if (user?.id) {
+      const paidOrders = await getOrdersCount({
+        userId: user.id,
+        status: OrderStatus.PAID,
+      });
+      isPaidUser = paidOrders > 0;
+    }
+
+    // Paid users are exempt from generate rate-limit.
+    if (!isPaidUser) {
+      const rateLimitedResp = enforceMinIntervalRateLimit(request, {
+        keyPrefix: 'ai-generate',
+        intervalMs: isGuest ? 15000 : 5000,
+        extraKey: `${mediaType}|${scene || ''}|${provider}|${model}`,
+      });
+      if (rateLimitedResp) {
+        return rateLimitedResp;
+      }
+    }
 
     // todo: get cost credits from settings
     let costCredits = 2;

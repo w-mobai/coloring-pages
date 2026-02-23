@@ -1,9 +1,12 @@
 import { AITaskStatus } from '@/extensions/ai';
+import { extractImageUrls } from '@/shared/lib/ai-image-history';
+import { isLikelyHttpUrl } from '@/shared/lib/coloring-gallery';
 import {
   findGuestAITaskById,
   getGuestOwnerKey,
   updateGuestAITaskById,
 } from '@/shared/lib/guest-ai-task';
+import { upsertPersistedGuestColoringTask } from '@/shared/lib/persistent-guest-coloring-gallery';
 import { respData, respErr } from '@/shared/lib/resp';
 import {
   buildGuestStorageKeyPrefix,
@@ -83,6 +86,33 @@ export async function POST(req: Request) {
       const taskResult = result.taskResult
         ? JSON.stringify(result.taskResult)
         : null;
+
+      if (result.taskStatus === AITaskStatus.SUCCESS) {
+        const imageUrl = [
+          ...extractImageUrls(result.taskInfo),
+          ...extractImageUrls(result.taskResult),
+        ].find((url) => isLikelyHttpUrl(url));
+
+        if (imageUrl) {
+          try {
+            await upsertPersistedGuestColoringTask({
+              id: guestTask.id,
+              mediaType: guestTask.mediaType,
+              status: AITaskStatus.SUCCESS,
+              provider: guestTask.provider,
+              model: guestTask.model,
+              prompt: guestTask.prompt,
+              imageUrl,
+              createdAt: guestTask.createdAt,
+            });
+          } catch (persistError) {
+            console.warn(
+              'persist guest coloring task failed:',
+              persistError
+            );
+          }
+        }
+      }
 
       updateGuestAITaskById(guestTask.id, {
         status: result.taskStatus,

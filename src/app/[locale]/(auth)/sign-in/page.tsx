@@ -3,8 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
 import { redirect } from '@/core/i18n/navigation';
-import { SignIn } from '@/shared/blocks/sign/sign-in';
-import { getConfigs } from '@/shared/models/config';
+import { SignInForm } from '@/shared/blocks/sign/sign-in-form';
 import { getSignUser } from '@/shared/models/user';
 
 function safeInternalPath(raw?: string) {
@@ -39,6 +38,14 @@ export async function generateMetadata({
           ? `${envConfigs.app_url}/${locale}/sign-in`
           : `${envConfigs.app_url}/sign-in`,
     },
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
   };
 }
 
@@ -55,6 +62,7 @@ export default async function SignInPage({
 }) {
   const { callbackUrl, email } = await searchParams;
   const { locale } = await params;
+  const t = await getTranslations('common.sign');
 
   // If user is already signed in, don't show sign-in form again.
   const sessionUser = await getSignUser();
@@ -63,13 +71,16 @@ export default async function SignInPage({
     redirect({ href: target || '/', locale });
   }
 
-  const configs = await getConfigs();
-
   return (
-    <SignIn
-      configs={configs}
-      callbackUrl={callbackUrl || '/'}
-      defaultEmail={email || ''}
-    />
+    <div className="mx-auto w-full max-w-[425px] rounded-xl border bg-card/95 p-6 shadow-lg backdrop-blur-sm">
+      <div className="mb-4 space-y-1">
+        <h1 className="text-lg font-semibold md:text-xl">{t('sign_in_title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('sign_in_description')}</p>
+      </div>
+      <SignInForm
+        callbackUrl={callbackUrl || '/'}
+        defaultEmail={email || ''}
+      />
+    </div>
   );
 }

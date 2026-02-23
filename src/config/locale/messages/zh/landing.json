@@ -2,10 +2,10 @@
   "header": {
     "id": "header",
     "brand": {
-      "title": "世代查询",
+      "title": "ColorFun",
       "logo": {
         "src": "/logo.png",
-        "alt": "世代查询",
+        "alt": "ColorFun",
         "width": 100,
         "height": 100
       },
@@ -24,47 +24,9 @@
           "icon": "Image"
         },
         {
-          "title": "AI 工具",
-          "icon": "Sparkles",
-          "hidden": false,
-          "children": [
-            {
-              "title": "AI 对话",
-              "description": "与 AI 助手对话",
-              "url": "/chat",
-              "icon": "MessageCircle"
-            },
-            {
-              "title": "音乐生成器",
-              "description": "使用 AI 创作音乐",
-              "url": "/ai-music-generator",
-              "icon": "Music"
-            },
-            {
-              "title": "视频生成器",
-              "description": "使用 AI 生成视频",
-              "url": "/ai-video-generator",
-              "icon": "Video"
-            }
-          ]
-        },
-        {
-          "title": "内容",
-          "icon": "FileText",
-          "children": [
-            {
-              "title": "博客",
-              "description": "阅读博客文章",
-              "url": "/blog",
-              "icon": "Newspaper"
-            },
-            {
-              "title": "更新日志",
-              "description": "阅读更新日志",
-              "url": "/updates",
-              "icon": "Clock"
-            }
-          ]
+          "title": "充值",
+          "url": "/pricing",
+          "icon": "CreditCard"
         },
         {
           "title": "帮助",
@@ -93,11 +55,11 @@
   "footer": {
     "id": "footer",
     "brand": {
-      "title": "世代查询",
-      "description": "通过 AI 驱动的分析发现你的世代。根据出生年份找出你属于哪个世代，探索所有世代名称和年份。",
+      "title": "ColorFun",
+      "description": "用 AI 在几秒内生成免费可打印涂色页。输入提示词，选择年龄段和版式后即可下载打印。",
       "logo": {
         "src": "/logo.png",
-        "alt": "世代查询",
+        "alt": "ColorFun",
         "width": 100,
         "height": 100
       },
@@ -121,6 +83,16 @@
             {
               "title": "博客",
               "url": "/blog",
+              "target": "_self"
+            },
+            {
+              "title": "帮助",
+              "url": "/how-to-find-your-generation",
+              "target": "_self"
+            },
+            {
+              "title": "更新日志",
+              "url": "/updates",
               "target": "_self"
             },
             {

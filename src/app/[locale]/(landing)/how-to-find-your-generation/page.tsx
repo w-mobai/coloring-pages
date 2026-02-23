@@ -2,10 +2,34 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { envConfigs } from '@/config';
+import { defaultLocale, locales } from '@/config/locale';
 import { getThemePage } from '@/core/theme';
 import { getLocalPage } from '@/shared/models/post';
 
 export const revalidate = 3600;
+
+function buildCanonical(locale: string): string {
+  const appUrl = envConfigs.app_url.replace(/\/+$/, '');
+  return locale !== defaultLocale
+    ? `${appUrl}/${locale}/how-to-find-your-generation`
+    : `${appUrl}/how-to-find-your-generation`;
+}
+
+function buildLanguageAlternates() {
+  const appUrl = envConfigs.app_url.replace(/\/+$/, '');
+  const path = '/how-to-find-your-generation';
+  const languages = Object.fromEntries(
+    locales.map((locale) => [
+      locale,
+      locale !== defaultLocale ? `${appUrl}/${locale}${path}` : `${appUrl}${path}`,
+    ])
+  );
+
+  return {
+    ...languages,
+    'x-default': `${appUrl}${path}`,
+  };
+}
 
 export async function generateMetadata({
   params,
@@ -19,10 +43,7 @@ export async function generateMetadata({
     locale,
   });
 
-  const canonical =
-    locale !== envConfigs.locale
-      ? `${envConfigs.app_url}/${locale}/how-to-find-your-generation`
-      : `${envConfigs.app_url}/how-to-find-your-generation`;
+  const canonical = buildCanonical(locale);
 
   if (post) {
     return {
@@ -30,6 +51,7 @@ export async function generateMetadata({
       description: post.description || '',
       alternates: {
         canonical,
+        languages: buildLanguageAlternates(),
       },
     };
   }
@@ -40,6 +62,7 @@ export async function generateMetadata({
     description: t('description'),
     alternates: {
       canonical,
+      languages: buildLanguageAlternates(),
     },
   };
 }

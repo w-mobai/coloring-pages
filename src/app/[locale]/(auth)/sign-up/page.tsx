@@ -3,8 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
 import { redirect } from '@/core/i18n/navigation';
-import { SignUp } from '@/shared/blocks/sign/sign-up';
-import { getConfigs } from '@/shared/models/config';
+import { SignUpForm } from '@/shared/blocks/sign/sign-up-form';
 import { getSignUser } from '@/shared/models/user';
 
 function safeInternalPath(raw?: string) {
@@ -39,6 +38,14 @@ export async function generateMetadata({
           ? `${envConfigs.app_url}/${locale}/sign-up`
           : `${envConfigs.app_url}/sign-up`,
     },
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
   };
 }
 
@@ -51,6 +58,7 @@ export default async function SignUpPage({
 }) {
   const { callbackUrl } = await searchParams;
   const { locale } = await params;
+  const t = await getTranslations('common.sign');
 
   // If user is already signed in, don't show sign-up form again.
   const sessionUser = await getSignUser();
@@ -59,7 +67,13 @@ export default async function SignUpPage({
     redirect({ href: target || '/', locale });
   }
 
-  const configs = await getConfigs();
-
-  return <SignUp configs={configs} callbackUrl={callbackUrl || '/'} />;
+  return (
+    <div className="mx-auto w-full max-w-[425px] rounded-xl border bg-card/95 p-6 shadow-lg backdrop-blur-sm">
+      <div className="mb-4 space-y-1">
+        <h1 className="text-lg font-semibold md:text-xl">{t('sign_up_title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('sign_up_description')}</p>
+      </div>
+      <SignUpForm callbackUrl={callbackUrl || '/'} />
+    </div>
+  );
 }

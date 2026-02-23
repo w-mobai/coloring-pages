@@ -15,7 +15,7 @@ interface SocialShareProps {
 
 export function SocialShare({
   url,
-  title = 'What Generation Am I',
+  title = 'ColorFun',
   description = 'Find your generation by birth year.',
   className,
 }: SocialShareProps) {

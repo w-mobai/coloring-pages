@@ -1,9 +1,10 @@
 import moment from 'moment';
+import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
-import { Empty } from '@/shared/blocks/common';
+import { defaultLocale, locales } from '@/config/locale';
 import {
   PostType as DBPostType,
   getPosts,
@@ -34,20 +35,38 @@ export async function generateMetadata({
     slug,
     status: TaxonomyStatus.PUBLISHED,
   });
+  if (!category) {
+    notFound();
+  }
+
   const categoryTitle = category?.title || slug;
   const categoryDescription =
     locale === 'zh'
       ? `${t('description')} 分类：${categoryTitle}。`
       : `${t('description')} Category: ${categoryTitle}.`;
+  const appUrl = envConfigs.app_url.replace(/\/+$/, '');
+  const canonical =
+    locale !== defaultLocale
+      ? `${appUrl}/${locale}/blog/category/${slug}`
+      : `${appUrl}/blog/category/${slug}`;
+  const languages = Object.fromEntries(
+    locales.map((loc) => [
+      loc,
+      loc !== defaultLocale
+        ? `${appUrl}/${loc}/blog/category/${slug}`
+        : `${appUrl}/blog/category/${slug}`,
+    ])
+  );
 
   return {
     title: `${categoryTitle} | ${t('title')}`,
     description: categoryDescription,
     alternates: {
-      canonical:
-        locale !== envConfigs.locale
-          ? `${envConfigs.app_url}/${locale}/blog/category/${slug}`
-          : `${envConfigs.app_url}/blog/category/${slug}`,
+      canonical,
+      languages: {
+        ...languages,
+        'x-default': `${appUrl}/blog/category/${slug}`,
+      },
     },
   };
 }
@@ -75,7 +94,7 @@ export default async function CategoryBlogPage({
     status: TaxonomyStatus.PUBLISHED,
   });
   if (!categoryData) {
-    return <Empty message={`category not found`} />;
+    notFound();
   }
 
   // get posts data

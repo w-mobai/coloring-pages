@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { envConfigs } from '@/config';
-import { defaultLocale } from '@/config/locale';
+import { defaultLocale, locales } from '@/config/locale';
 
 // get metadata for page component
 export function getMetadata(
@@ -44,11 +44,10 @@ export function getMetadata(
       );
     }
 
-    // canonical url
-    const canonicalUrl = await getCanonicalUrl(
-      options.canonicalUrl || '',
-      locale || ''
-    );
+    const hasExplicitCanonical = Boolean(options.canonicalUrl);
+    const canonicalUrl = hasExplicitCanonical
+      ? await getCanonicalUrl(options.canonicalUrl || '', locale || '')
+      : '';
 
     const title =
       passedMetadata.title || translatedMetadata.title || defaultMetadata.title;
@@ -83,14 +82,10 @@ export function getMetadata(
         passedMetadata.description ||
         translatedMetadata.description ||
         defaultMetadata.description,
-      alternates: {
-        canonical: canonicalUrl,
-      },
 
       openGraph: {
         type: 'website',
         locale: locale,
-        url: canonicalUrl,
         title,
         description,
         siteName: appName,
@@ -110,6 +105,16 @@ export function getMetadata(
         follow: options.noIndex ? false : true,
       },
     };
+
+    if (hasExplicitCanonical) {
+      metadata.alternates = {
+        canonical: canonicalUrl,
+        languages: buildLocaleAlternates(
+          normalizeCanonicalPath(options.canonicalUrl || '/')
+        ),
+      };
+      metadata.openGraph.url = canonicalUrl;
+    }
 
     // Add Google site verification if available
     if (googleSiteVerification) {
@@ -158,4 +163,62 @@ async function getCanonicalUrl(canonicalUrl: string, locale: string) {
   }
 
   return canonicalUrl;
+}
+
+function normalizeCanonicalPath(canonicalUrl: string): string {
+  let path = canonicalUrl || '/';
+
+  if (path.startsWith('http')) {
+    try {
+      path = new URL(path).pathname || '/';
+    } catch {
+      path = '/';
+    }
+  }
+
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+
+  for (const locale of locales) {
+    if (locale === defaultLocale) {
+      continue;
+    }
+
+    if (path === `/${locale}`) {
+      return '/';
+    }
+
+    if (path.startsWith(`/${locale}/`)) {
+      path = path.slice(locale.length + 1) || '/';
+      break;
+    }
+  }
+
+  if (path !== '/' && path.endsWith('/')) {
+    path = path.slice(0, -1);
+  }
+
+  return path || '/';
+}
+
+function buildLocaleAlternates(path: string) {
+  const appUrl = envConfigs.app_url.replace(/\/+$/, '');
+
+  const alternates = Object.fromEntries(
+    locales.map((locale) => {
+      const localizedPath =
+        locale === defaultLocale
+          ? path
+          : path === '/'
+            ? `/${locale}`
+            : `/${locale}${path}`;
+      return [locale, `${appUrl}${localizedPath}`];
+    })
+  );
+
+  return {
+    ...alternates,
+    'x-default': `${appUrl}${path}`,
+  };
 }

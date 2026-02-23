@@ -19,10 +19,11 @@ import { getUserInfo } from '@/shared/models/user';
 import { getPaymentService } from '@/shared/services/payment';
 import { PricingCurrency } from '@/shared/types/blocks/pricing';
 
+const FORCED_CHECKOUT_CURRENCY = 'usd';
+
 export async function POST(req: Request) {
   try {
-    const { product_id, currency, locale, payment_provider, metadata } =
-      await req.json();
+    const { product_id, locale, payment_provider, metadata } = await req.json();
     if (!product_id) {
       return respErr('product_id is required');
     }
@@ -67,13 +68,12 @@ export async function POST(req: Request) {
     // First check currency-specific payment_providers if currency is provided
     let allowedProviders: string[] | undefined;
 
-    if (
-      currency &&
-      currency.toLowerCase() !== (pricingItem.currency || 'usd').toLowerCase()
-    ) {
+    const defaultCurrency = (pricingItem.currency || 'usd').toLowerCase();
+
+    if (FORCED_CHECKOUT_CURRENCY !== defaultCurrency) {
       const selectedCurrencyData = pricingItem.currencies?.find(
         (c: PricingCurrency) =>
-          c.currency.toLowerCase() === currency.toLowerCase()
+          c.currency.toLowerCase() === FORCED_CHECKOUT_CURRENCY
       );
       allowedProviders = selectedCurrencyData?.payment_providers;
     }
@@ -102,31 +102,25 @@ export async function POST(req: Request) {
 
     // checkout currency and amount - calculate from server-side data only (never trust client input)
     // Security: currency can be provided by frontend, but amount must be calculated server-side
-    const defaultCurrency = (pricingItem.currency || 'usd').toLowerCase();
     let checkoutCurrency = defaultCurrency;
     let checkoutAmount = pricingItem.amount;
 
-    // If currency is provided, validate it and find corresponding amount from server-side data
-    if (currency) {
-      const requestedCurrency = currency.toLowerCase();
-
-      // Check if requested currency is the default currency
-      if (requestedCurrency === defaultCurrency) {
-        checkoutCurrency = defaultCurrency;
-        checkoutAmount = pricingItem.amount;
-      } else if (pricingItem.currencies && pricingItem.currencies.length > 0) {
-        // Find amount for the requested currency in currencies list
-        const selectedCurrencyData = pricingItem.currencies.find(
-          (c: PricingCurrency) => c.currency.toLowerCase() === requestedCurrency
-        );
-        if (selectedCurrencyData) {
-          // Valid currency found, use it
-          checkoutCurrency = requestedCurrency;
-          checkoutAmount = selectedCurrencyData.amount;
-        }
-        // If currency not found in list, fallback to default (already set above)
+    // Force checkout currency to USD for all locales.
+    if (defaultCurrency === FORCED_CHECKOUT_CURRENCY) {
+      checkoutCurrency = defaultCurrency;
+      checkoutAmount = pricingItem.amount;
+    } else if (pricingItem.currencies && pricingItem.currencies.length > 0) {
+      const usdCurrencyData = pricingItem.currencies.find(
+        (c: PricingCurrency) =>
+          c.currency.toLowerCase() === FORCED_CHECKOUT_CURRENCY
+      );
+      if (!usdCurrencyData) {
+        return respErr('usd pricing is not configured for this product');
       }
-      // If no currencies list exists, fallback to default (already set above)
+      checkoutCurrency = FORCED_CHECKOUT_CURRENCY;
+      checkoutAmount = usdCurrencyData.amount;
+    } else {
+      return respErr('usd pricing is not configured for this product');
     }
 
     // get payment interval
@@ -146,10 +140,10 @@ export async function POST(req: Request) {
     let paymentProductId = '';
 
     // If currency is provided and different from default, check currency-specific payment_product_id
-    if (currency && currency.toLowerCase() !== defaultCurrency) {
+    if (checkoutCurrency !== defaultCurrency) {
       const selectedCurrencyData = pricingItem.currencies?.find(
         (c: PricingCurrency) =>
-          c.currency.toLowerCase() === currency.toLowerCase()
+          c.currency.toLowerCase() === checkoutCurrency
       );
       if (selectedCurrencyData?.payment_product_id) {
         paymentProductId = selectedCurrencyData.payment_product_id;

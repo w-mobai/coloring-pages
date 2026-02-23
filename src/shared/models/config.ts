@@ -15,6 +15,28 @@ export type UpdateConfig = Partial<Omit<NewConfig, 'name'>>;
 export type Configs = Record<string, string>;
 
 export const CACHE_TAG_CONFIGS = 'configs';
+const CONFIG_DB_TIMEOUT_MS = 3500;
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  fallbackValue: T
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timeoutId = setTimeout(() => resolve(fallbackValue), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } catch {
+    return fallbackValue;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
 
 export async function saveConfigs(configs: Record<string, string>) {
   const result = await db().transaction(async (tx: any) => {
@@ -81,7 +103,7 @@ export async function getAllConfigs(): Promise<Configs> {
   // only get configs from db in server side
   if (typeof window === 'undefined' && envConfigs.database_url) {
     try {
-      dbConfigs = await getConfigs();
+      dbConfigs = await withTimeout(getConfigs(), CONFIG_DB_TIMEOUT_MS, {});
     } catch (e) {
       console.log(`get configs from db failed:`, e);
       dbConfigs = {};
@@ -108,20 +130,28 @@ export async function getAllConfigs(): Promise<Configs> {
 }
 
 export async function getPublicConfigs(): Promise<Configs> {
-  let allConfigs = await getAllConfigs();
-
-  const publicConfigs: Record<string, string> = {};
-
-  // get public configs
-  for (const key in allConfigs) {
-    if (publicSettingNames.includes(key)) {
-      publicConfigs[key] = String(allConfigs[key]);
-    }
-  }
-
-  const configs = {
-    ...publicConfigs,
-  };
-
-  return configs;
+  return getPublicConfigsCached();
 }
+
+const getPublicConfigsCached = unstable_cache(
+  async (): Promise<Configs> => {
+    const allConfigs = await getAllConfigs();
+    const publicConfigs: Record<string, string> = {};
+
+    // get public configs
+    for (const key in allConfigs) {
+      if (publicSettingNames.includes(key)) {
+        publicConfigs[key] = String(allConfigs[key]);
+      }
+    }
+
+    return {
+      ...publicConfigs,
+    };
+  },
+  ['public-configs'],
+  {
+    revalidate: 3600,
+    tags: [CACHE_TAG_CONFIGS],
+  }
+);

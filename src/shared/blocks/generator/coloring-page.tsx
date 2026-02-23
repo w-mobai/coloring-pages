@@ -17,14 +17,14 @@ import {
   ImageIcon,
   Loader2,
   Sparkles,
+  User,
   X,
-  Users,
 } from 'lucide-react';
 import Script from 'next/script';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { Link } from '@/core/i18n/navigation';
+import { Link, useRouter } from '@/core/i18n/navigation';
 import { AIMediaType, AITaskStatus } from '@/extensions/ai/types';
 import { LazyImage } from '@/shared/blocks/common';
 import { Button } from '@/shared/components/ui/button';
@@ -32,6 +32,14 @@ import {
   Card,
   CardContent,
 } from '@/shared/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -373,6 +381,7 @@ export function ColoringPageGenerator({
   className,
 }: ColoringPageGeneratorProps) {
   const t = useTranslations('ai.coloring.generator');
+  const router = useRouter();
 
   const [theme, setTheme] = useState('');
   const [ageGroup, setAgeGroup] = useState<AgeGroup>('toddler');
@@ -406,6 +415,7 @@ export function ColoringPageGenerator({
     useState<ReferenceImageSource>('remote');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);
 
   const fallbackAttemptsRef = useRef(0);
   const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -993,7 +1003,7 @@ export function ColoringPageGenerator({
         return;
       }
     } else if (remainingCredits < requiredCredits) {
-      toast.error(t('error_insufficient_credits'));
+      setShowInsufficientCreditsDialog(true);
       return;
     }
 
@@ -1154,11 +1164,13 @@ export function ColoringPageGenerator({
 
   return (
     <section className={cn('', className)}>
-      <Script
-        src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.11/dist/dotlottie-wc.js"
-        type="module"
-        strategy="afterInteractive"
-      />
+      {(isGenerating || isDownloading) && (
+        <Script
+          src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.11/dist/dotlottie-wc.js"
+          type="module"
+          strategy="afterInteractive"
+        />
+      )}
       <div className="container">
         <div className="mx-auto max-w-5xl space-y-4">
           {/* Header */}
@@ -1412,7 +1424,7 @@ export function ColoringPageGenerator({
                               : "text-muted-foreground hover:text-foreground hover:bg-muted"
                           )}
                         >
-                          {ageGroup === 'toddler' ? <Baby className="h-4 w-4" /> : <Users className="h-4 w-4" />}
+                          {ageGroup === 'toddler' ? <Baby className="h-4 w-4" /> : <User className="h-4 w-4" />}
                           {ageGroup === 'toddler' ? t('age.toddler_short') : t('age.child_short')}
                         </button>
                         
@@ -1430,7 +1442,7 @@ export function ColoringPageGenerator({
                                 {
                                   value: 'child',
                                   label: t('age.child_short'),
-                                  icon: Users,
+                                  icon: User,
                                   desc: t('age.child_label'),
                                 },
                               ].map((age) => (
@@ -1478,26 +1490,15 @@ export function ColoringPageGenerator({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Credits/Trials Info - Left Side */}
             {user ? (
-              remainingCredits > 0 ? (
-                <div className="flex items-center gap-2 text-sm">
-                  <Coins className="text-primary h-4 w-4" />
-                  <span className="text-primary font-medium tabular-nums">
-                    {remainingCredits}
-                  </span>
-                  <span className="text-muted-foreground/70">
-                    {t('credits_unit')}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-4">
-                  <Link href="/#pricing">
-                    <Button variant="outline" size="sm">
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      {t('buy_credits')}
-                    </Button>
-                  </Link>
-                </div>
-              )
+              <div className="flex items-center gap-2 text-sm">
+                <Coins className="text-primary h-4 w-4" />
+                <span className="text-primary font-medium tabular-nums">
+                  {remainingCredits}
+                </span>
+                <span className="text-muted-foreground/70">
+                  {t('credits_unit')}
+                </span>
+              </div>
             ) : (
               <div className="flex items-center gap-4 text-sm">
                 <span className="text-muted-foreground">
@@ -1752,6 +1753,38 @@ export function ColoringPageGenerator({
           )}
         </div>
       </div>
+
+      {/* Insufficient Credits Dialog */}
+      <Dialog open={showInsufficientCreditsDialog} onOpenChange={setShowInsufficientCreditsDialog}>
+        <DialogContent className="flex flex-col sm:max-w-[22rem] sm:min-h-[14rem]">
+          <DialogHeader className="gap-4">
+            <DialogTitle className="text-xl sm:text-2xl">{t('error_insufficient_credits')}</DialogTitle>
+            <DialogDescription className="leading-relaxed">
+              {user?.locale === 'zh' 
+                ? '您的积分不足，是否前往购买页面？' 
+                : 'You are out of credits. Buy more to continue.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-auto">
+            <Button
+              variant="outline"
+              onClick={() => setShowInsufficientCreditsDialog(false)}
+              className="shadow-none hover:bg-transparent hover:text-current hover:shadow-none"
+            >
+              {user?.locale === 'zh' ? '取消' : 'Cancel'}
+            </Button>
+            <Button
+              onClick={() => {
+                setShowInsufficientCreditsDialog(false);
+                window.location.href = '/pricing';
+              }}
+              className="shadow-none hover:bg-primary hover:text-primary-foreground hover:shadow-none"
+            >
+              {'Buy'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -171,6 +171,7 @@ export async function getPost({
         slug: postData.slug,
         title: postData.title || '',
         description: postData.description || '',
+        image: postData.image || '',
         content: '',
         body: body,
         toc: toc,
@@ -228,6 +229,7 @@ export async function getLocalPost({
     slug: slug,
     title: localPost.data.title || '',
     description: localPost.data.description || '',
+    image: frontmatter.image || '',
     content: '',
     body: body,
     toc: localPost.data.toc, // Use fumadocs auto-generated TOC

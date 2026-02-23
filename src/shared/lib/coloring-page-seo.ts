@@ -1,4 +1,5 @@
 import { defaultLocale } from '@/config/locale';
+import { getLocalizedColoringPromptTitle } from '@/shared/lib/coloring-prompt-display';
 
 const DEFAULT_MAX_TITLE_LENGTH = 72;
 const DEFAULT_MAX_SLUG_LENGTH = 70;
@@ -35,7 +36,14 @@ export function buildSeoGalleryTitle(
   maxLength = DEFAULT_MAX_TITLE_LENGTH
 ): string {
   const isZh = locale?.startsWith('zh');
-  const promptText = normalizePrompt(prompt);
+  const promptText = normalizePrompt(
+    getLocalizedColoringPromptTitle({
+      prompt,
+      locale,
+      fallbackZh: '',
+      fallbackEn: '',
+    })
+  );
 
   if (isZh) {
     const suffix = ' 涂色页';
@@ -60,7 +68,14 @@ export function buildSeoDetailTitle(
   maxLength = DEFAULT_MAX_TITLE_LENGTH
 ): string {
   const isZh = locale?.startsWith('zh');
-  const promptText = normalizePrompt(prompt);
+  const promptText = normalizePrompt(
+    getLocalizedColoringPromptTitle({
+      prompt,
+      locale,
+      fallbackZh: '',
+      fallbackEn: '',
+    })
+  );
 
   if (isZh) {
     const suffix = ' 涂色页';

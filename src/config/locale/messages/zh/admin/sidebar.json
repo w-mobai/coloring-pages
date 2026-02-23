@@ -1,10 +1,10 @@
 {
   "header": {
     "brand": {
-      "title": "What Generation Am I",
+      "title": "ColorFun",
       "logo": {
         "src": "/logo.png",
-        "alt": "What Generation Am I"
+        "alt": "ColorFun"
       },
       "url": "/admin"
     },

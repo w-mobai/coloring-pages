@@ -25,9 +25,9 @@ export interface ContextValue {
   isShowPaymentModal: boolean;
   setIsShowPaymentModal: (show: boolean) => void;
   configs: Record<string, string>;
-  fetchConfigs: () => Promise<void>;
-  fetchUserCredits: () => Promise<void>;
-  fetchUserInfo: () => Promise<void>;
+  fetchConfigs: (force?: boolean) => Promise<void>;
+  fetchUserCredits: (force?: boolean) => Promise<void>;
+  fetchUserInfo: (force?: boolean) => Promise<void>;
   showOneTap: (configs: Record<string, string>) => Promise<void>;
 }
 
@@ -36,7 +36,13 @@ const AppContext = createContext({} as ContextValue);
 export const useAppContext = () => useContext(AppContext);
 
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
+  const USER_CREDITS_REFRESH_MIN_INTERVAL_MS = 15_000;
   const [configs, setConfigs] = useState<Record<string, string>>({});
+  const configsLoadedRef = useRef(false);
+  const fetchConfigsPromiseRef = useRef<Promise<void> | null>(null);
+  const fetchUserCreditsPromiseRef = useRef<Promise<void> | null>(null);
+  const fetchUserInfoPromiseRef = useRef<Promise<void> | null>(null);
+  const lastUserCreditsFetchedAtRef = useRef(0);
 
   // sign user
   const [user, setUser] = useState<User | null>(null);
@@ -51,71 +57,116 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   // show payment modal
   const [isShowPaymentModal, setIsShowPaymentModal] = useState(false);
 
-  const fetchConfigs = useCallback(async () => {
-    try {
-      const resp = await fetch('/api/config/get-configs', {
-        method: 'POST',
-      });
-      if (!resp.ok) {
-        throw new Error(`fetch failed with status: ${resp.status}`);
-      }
-      const { code, message, data } = await resp.json();
-      if (code !== 0) {
-        throw new Error(message);
-      }
-
-      setConfigs(data);
-    } catch (e) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('fetch configs failed:', e);
-      }
+  const fetchConfigs = useCallback(async (force = false) => {
+    if (!force && configsLoadedRef.current) {
+      return;
     }
+
+    if (fetchConfigsPromiseRef.current) {
+      return fetchConfigsPromiseRef.current;
+    }
+
+    const run = (async () => {
+      try {
+        const resp = await fetch('/api/config/get-configs', {
+          method: 'POST',
+        });
+        if (!resp.ok) {
+          throw new Error(`fetch failed with status: ${resp.status}`);
+        }
+        const { code, message, data } = await resp.json();
+        if (code !== 0) {
+          throw new Error(message);
+        }
+
+        setConfigs(data);
+        configsLoadedRef.current = true;
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('fetch configs failed:', e);
+        }
+      } finally {
+        fetchConfigsPromiseRef.current = null;
+      }
+    })();
+
+    fetchConfigsPromiseRef.current = run;
+    return run;
   }, []);
 
-  const fetchUserCredits = useCallback(async () => {
-    try {
-      if (!userRef.current) {
-        return;
-      }
-
-      const resp = await fetch('/api/user/get-user-credits', {
-        method: 'POST',
-      });
-      if (!resp.ok) {
-        throw new Error(`fetch failed with status: ${resp.status}`);
-      }
-      const { code, message, data } = await resp.json();
-      if (code !== 0) {
-        throw new Error(message);
-      }
-
-      setUser((prev) => (prev ? { ...prev, credits: data } : prev));
-    } catch (e) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('fetch user credits failed:', e);
-      }
+  const fetchUserCredits = useCallback(async (force = false) => {
+    if (!userRef.current) {
+      return;
     }
+
+    if (fetchUserCreditsPromiseRef.current) {
+      return fetchUserCreditsPromiseRef.current;
+    }
+
+    const now = Date.now();
+    const elapsed = now - lastUserCreditsFetchedAtRef.current;
+    if (!force && elapsed < USER_CREDITS_REFRESH_MIN_INTERVAL_MS) {
+      return;
+    }
+
+    const run = (async () => {
+      try {
+        const resp = await fetch('/api/user/get-user-credits', {
+          method: 'POST',
+        });
+        if (!resp.ok) {
+          throw new Error(`fetch failed with status: ${resp.status}`);
+        }
+        const { code, message, data } = await resp.json();
+        if (code !== 0) {
+          throw new Error(message);
+        }
+
+        setUser((prev) => (prev ? { ...prev, credits: data } : prev));
+        lastUserCreditsFetchedAtRef.current = Date.now();
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('fetch user credits failed:', e);
+        }
+      } finally {
+        fetchUserCreditsPromiseRef.current = null;
+      }
+    })();
+
+    fetchUserCreditsPromiseRef.current = run;
+    return run;
   }, []);
 
-  const fetchUserInfo = useCallback(async () => {
-    try {
-      const resp = await fetch('/api/user/get-user-info', {
-        method: 'POST',
-      });
-      if (!resp.ok) {
-        throw new Error(`fetch failed with status: ${resp.status}`);
-      }
-      const { code, message, data } = await resp.json();
-      if (code !== 0) {
-        throw new Error(message);
-      }
-
-      setUser(data);
-    } catch (e) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('fetch user info failed:', e);
-      }
+  const fetchUserInfo = useCallback(async (_force = false) => {
+    if (fetchUserInfoPromiseRef.current) {
+      return fetchUserInfoPromiseRef.current;
     }
+
+    const run = (async () => {
+      try {
+        const resp = await fetch('/api/user/get-user-info', {
+          method: 'POST',
+        });
+        if (!resp.ok) {
+          throw new Error(`fetch failed with status: ${resp.status}`);
+        }
+        const { code, message, data } = await resp.json();
+        if (code !== 0) {
+          throw new Error(message);
+        }
+
+        setUser(data);
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('fetch user info failed:', e);
+        }
+      } finally {
+        fetchUserInfoPromiseRef.current = null;
+      }
+    })();
+
+    fetchUserInfoPromiseRef.current = run;
+    return run;
   }, []);
 
   const showOneTap = useCallback(async (configs: Record<string, string>) => {
@@ -145,6 +196,9 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     userRef.current = user;
+    if (!user?.id) {
+      lastUserCreditsFetchedAtRef.current = 0;
+    }
   }, [user]);
 
   const value = useMemo(

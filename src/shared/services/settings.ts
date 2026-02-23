@@ -280,7 +280,7 @@ export async function getSettings() {
     {
       name: 'app_name',
       title: 'App Name',
-      placeholder: 'What Generation Am I',
+      placeholder: 'ColorFun',
       type: 'text',
       group: 'appinfo',
       tab: 'general',
@@ -289,7 +289,7 @@ export async function getSettings() {
       name: 'app_description',
       title: 'App Description',
       placeholder:
-        'What Generation Am I is an AI-powered generation finder that identifies generations by birth year.',
+        'ColorFun is an AI-powered generation finder that identifies generations by birth year.',
       type: 'textarea',
       group: 'appinfo',
       tab: 'general',
@@ -704,7 +704,7 @@ export async function getSettings() {
       name: 'resend_sender_email',
       title: 'Resend Sender Email',
       type: 'text',
-      placeholder: 'What Generation Am I <no-reply@whatgenerationami.online>',
+      placeholder: 'ColorFun <no-reply@whatgenerationami.online>',
       group: 'resend',
       tab: 'email',
     },
