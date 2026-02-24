@@ -17,6 +17,7 @@ import { listPersistedGuestColoringTasks } from '@/shared/lib/persistent-guest-c
 import {
   buildR2AllowedUrlPrefixes,
   isAllowedR2Url,
+  normalizeR2UrlToPrimaryPrefix,
 } from '@/shared/lib/r2-url-filter';
 import { getAITasks } from '@/shared/models/ai_task';
 import { getAllConfigs } from '@/shared/models/config';
@@ -133,18 +134,22 @@ async function fetchPublicColoringGalleryItems(
 
     let selectedImageUrl: string | null = null;
     for (const imageUrl of imageUrls) {
-      const dedupKey = normalizeImageUrlForDedup(imageUrl);
+      const normalizedImageUrl = normalizeR2UrlToPrimaryPrefix(
+        imageUrl,
+        r2UrlPrefixes
+      );
+      const dedupKey = normalizeImageUrlForDedup(normalizedImageUrl);
       if (
-        !imageUrl ||
-        !isLikelyHttpUrl(imageUrl) ||
-        !isAllowedR2Url(imageUrl, r2UrlPrefixes) ||
+        !normalizedImageUrl ||
+        !isLikelyHttpUrl(normalizedImageUrl) ||
+        !isAllowedR2Url(normalizedImageUrl, r2UrlPrefixes) ||
         seen.has(dedupKey)
       ) {
         continue;
       }
 
       seen.add(dedupKey);
-      selectedImageUrl = imageUrl;
+      selectedImageUrl = normalizedImageUrl;
       break;
     }
 

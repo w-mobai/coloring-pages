@@ -89,6 +89,22 @@ export function SignInForm({
     return path;
   };
 
+  const navigateAfterAuthSuccess = (path: string) => {
+    const normalizedPath = stripLocalePrefix(path || '/');
+    if (typeof window !== 'undefined') {
+      const localizedPath =
+        locale !== defaultLocale
+          ? normalizedPath === '/'
+            ? `/${locale}`
+            : `/${locale}${normalizedPath}`
+          : normalizedPath;
+      window.location.assign(localizedPath);
+      return;
+    }
+
+    router.push(normalizedPath || '/');
+  };
+
   const handleSignIn = async () => {
     if (loading) {
       return;
@@ -133,10 +149,7 @@ export function SignInForm({
             setIsShowSignModal(false);
             setLoading(false);
 
-            const normalizedCallbackUrl = stripLocalePrefix(callbackUrl);
-            if (normalizedCallbackUrl && normalizedCallbackUrl !== '/') {
-              router.push(normalizedCallbackUrl);
-            }
+            navigateAfterAuthSuccess(callbackUrl);
           },
           onError: (e: any) => {
             const status = e?.error?.status;

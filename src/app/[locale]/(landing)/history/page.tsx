@@ -14,6 +14,7 @@ import {
 import {
   buildR2AllowedUrlPrefixes,
   isAllowedR2Url,
+  normalizeR2UrlToPrimaryPrefix,
 } from '@/shared/lib/r2-url-filter';
 import {
   getAITasksByImageUrlPrefixes,
@@ -48,23 +49,28 @@ function toHistoryTaskGroup(task: any, r2UrlPrefixes: string[]): HistoryTaskGrou
   const resultUrls = extractImageUrls(taskResult);
 
   const seen = new Set<string>();
-  const imageUrls = [...taskInfoUrls, ...resultUrls].filter((url) => {
+  const imageUrls: string[] = [];
+  for (const url of [...taskInfoUrls, ...resultUrls]) {
     if (!url) {
-      return false;
+      continue;
     }
 
-    if (shouldEnforceR2Prefix && !isAllowedR2Url(url, r2UrlPrefixes)) {
-      return false;
+    const normalizedUrl = shouldEnforceR2Prefix
+      ? normalizeR2UrlToPrimaryPrefix(url, r2UrlPrefixes)
+      : url;
+
+    if (shouldEnforceR2Prefix && !isAllowedR2Url(normalizedUrl, r2UrlPrefixes)) {
+      continue;
     }
 
-    const key = normalizeImageUrlForDedup(url);
+    const key = normalizeImageUrlForDedup(normalizedUrl);
     if (seen.has(key)) {
-      return false;
+      continue;
     }
 
     seen.add(key);
-    return true;
-  });
+    imageUrls.push(normalizedUrl);
+  }
 
   if (imageUrls.length === 0) {
     return null;

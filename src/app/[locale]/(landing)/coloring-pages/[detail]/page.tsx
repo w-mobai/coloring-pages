@@ -32,6 +32,7 @@ import { getPublicColoringGalleryItems } from '@/shared/lib/public-coloring-gall
 import {
   buildR2AllowedUrlPrefixes,
   isAllowedR2Url,
+  normalizeR2UrlToPrimaryPrefix,
 } from '@/shared/lib/r2-url-filter';
 import { findGuestAITaskById } from '@/shared/lib/guest-ai-task';
 import {
@@ -247,20 +248,21 @@ function pickPublicImageUrl(
   const seen = new Set<string>();
   // Prefer custom storage URLs (usually in taskInfo), then fallback to provider URLs.
   for (const url of [...taskInfoUrls, ...resultUrls]) {
+    const normalizedUrl = normalizeR2UrlToPrimaryPrefix(url, r2UrlPrefixes);
     if (
-      !url ||
-      !isLikelyHttpUrl(url) ||
-      (shouldEnforceR2Prefix && !isAllowedR2Url(url, r2UrlPrefixes))
+      !normalizedUrl ||
+      !isLikelyHttpUrl(normalizedUrl) ||
+      (shouldEnforceR2Prefix && !isAllowedR2Url(normalizedUrl, r2UrlPrefixes))
     ) {
       continue;
     }
 
-    const key = normalizeImageUrlForDedup(url);
+    const key = normalizeImageUrlForDedup(normalizedUrl);
     if (seen.has(key)) {
       continue;
     }
     seen.add(key);
-    return url;
+    return normalizedUrl;
   }
 
   return null;
@@ -288,11 +290,16 @@ function toPublicColoringPage(
   const shouldEnforceR2Prefix = r2UrlPrefixes.length > 0;
   const directImageUrl =
     typeof task.imageUrl === 'string' ? task.imageUrl : null;
+  const normalizedDirectImageUrl =
+    directImageUrl && shouldEnforceR2Prefix
+      ? normalizeR2UrlToPrimaryPrefix(directImageUrl, r2UrlPrefixes)
+      : directImageUrl;
   const imageUrl =
-    directImageUrl &&
-    isLikelyHttpUrl(directImageUrl) &&
-    (!shouldEnforceR2Prefix || isAllowedR2Url(directImageUrl, r2UrlPrefixes))
-      ? directImageUrl
+    normalizedDirectImageUrl &&
+    isLikelyHttpUrl(normalizedDirectImageUrl) &&
+    (!shouldEnforceR2Prefix ||
+      isAllowedR2Url(normalizedDirectImageUrl, r2UrlPrefixes))
+      ? normalizedDirectImageUrl
       : pickPublicImageUrl(taskResult, taskInfo, r2UrlPrefixes);
   if (!imageUrl) {
     return null;

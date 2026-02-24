@@ -85,6 +85,22 @@ export function SignUpForm({
     return path;
   };
 
+  const navigateAfterAuthSuccess = (path: string) => {
+    const normalizedPath = stripLocalePrefix(path || '/');
+    if (typeof window !== 'undefined') {
+      const localizedPath =
+        locale !== defaultLocale
+          ? normalizedPath === '/'
+            ? `/${locale}`
+            : `/${locale}${normalizedPath}`
+          : normalizedPath;
+      window.location.assign(localizedPath);
+      return;
+    }
+
+    router.push(normalizedPath || '/');
+  };
+
   const handleSignUp = async () => {
     if (loading) {
       return;
@@ -143,9 +159,7 @@ export function SignUpForm({
             setIsShowSignModal(false);
             setLoading(false);
 
-            if (normalizedCallbackUrl && normalizedCallbackUrl !== '/') {
-              router.push(normalizedCallbackUrl);
-            }
+            navigateAfterAuthSuccess(callbackUrl);
           },
           onError: (e: any) => {
             toast.error(e?.error?.message || 'sign up failed');
