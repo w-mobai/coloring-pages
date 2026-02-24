@@ -264,29 +264,29 @@
       "stats": {
         "disabled": false,
         "id": "stats",
-        "title": "为真实涂色页需求而打造",
-        "description": "家长、老师与内容创作者每天都在使用，快速获得可打印结果。",
+        "title": "为实际涂色场景打造",
+        "description": "面向家庭、课堂与内容创作场景，重点保证线稿清晰和打印稳定。",
         "items": [
           {
-            "title": "10,000+",
-            "description": "已生成涂色页"
+            "title": "儿童友好线稿",
+            "description": "黑白高对比线条，便于上色与打印。"
           },
           {
-            "title": "40+",
-            "description": "热门提示词主题"
+            "title": "主题覆盖灵活",
+            "description": "支持角色、动物、幻想、节日和课堂常用主题。"
           },
           {
-            "title": "3",
-            "description": "完成打印所需步骤"
+            "title": "流程简单",
+            "description": "输入提示词、调整设置、下载打印，步骤清晰。"
           }
         ],
         "className": "bg-muted"
       },
       "testimonials": {
-        "disabled": false,
+        "disabled": true,
         "id": "testimonials",
-        "title": "用户如何评价我们的涂色页",
-        "description": "来自家庭、教师与创作者的真实反馈。",
+        "title": "示例使用场景",
+        "description": "展示 ColorFun 在不同人群中的典型使用方式。",
         "items": [
           {
             "name": "Sarah Johnson",

@@ -264,29 +264,29 @@
       "stats": {
         "disabled": false,
         "id": "stats",
-        "title": "Built for Real Coloring Pages Demand",
-        "description": "Parents, teachers, and creators use it daily for fast printable outputs.",
+        "title": "Built for Practical Coloring Workflows",
+        "description": "Designed for home, classroom, and creator use with clear printable output.",
         "items": [
           {
-            "title": "10,000+",
-            "description": "Coloring Pages Generated"
+            "title": "Kid-Safe Output",
+            "description": "Clear black-and-white line art for easy coloring and printing."
           },
           {
-            "title": "40+",
-            "description": "Popular Prompt Themes"
+            "title": "Theme Flexibility",
+            "description": "Supports character, animal, fantasy, seasonal, and classroom themes."
           },
           {
-            "title": "3",
-            "description": "Steps to Printable Results"
+            "title": "Simple Workflow",
+            "description": "Prompt, settings, and download in a straightforward flow."
           }
         ],
         "className": "bg-muted"
       },
       "testimonials": {
-        "disabled": false,
+        "disabled": true,
         "id": "testimonials",
-        "title": "What Users Say About Our Coloring Pages",
-        "description": "Real feedback from families, teachers, and creators using AI coloring pages.",
+        "title": "Example Use Cases",
+        "description": "Typical ways people use ColorFun for printable coloring pages.",
         "items": [
           {
             "name": "Sarah Johnson",
