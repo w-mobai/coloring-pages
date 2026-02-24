@@ -30,7 +30,6 @@ export default async function BlogPage({
   const t = await getTranslations('pages.blog');
 
   let posts: PostType[] = [];
-  let categories: CategoryType[] = [];
 
   // current category data
   const currentCategory: CategoryType = {
@@ -45,17 +44,13 @@ export default async function BlogPage({
     const page = pageNum || 1;
     const limit = pageSize || 30;
 
-    const { posts: allPosts, categories: allCategories } =
-      await getPostsAndCategories({
-        locale,
-        page,
-        limit,
-      });
+    const { posts: allPosts } = await getPostsAndCategories({
+      locale,
+      page,
+      limit,
+    });
 
     posts = allPosts;
-    categories = allCategories;
-
-    categories.unshift(currentCategory);
   } catch (error) {
     console.log('getting posts failed:', error);
   }
@@ -67,7 +62,7 @@ export default async function BlogPage({
       blog: {
         ...t.raw('page.sections.blog'),
         data: {
-          categories,
+          categories: [currentCategory],
           currentCategory,
           posts,
         },

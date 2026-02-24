@@ -16,7 +16,7 @@ const seoRoutes: SeoRoute[] = [
   { path: '/', changeFrequency: 'weekly', priority: 1.0 },
   { path: '/coloring-pages', changeFrequency: 'daily', priority: 0.9 },
   {
-    path: '/how-to-find-your-generation',
+    path: '/coloring-pages-help',
     changeFrequency: 'monthly',
     priority: 0.8,
   },
@@ -116,7 +116,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const locale of locales) {
     try {
-      const { posts, categories } = await getPostsAndCategories({
+      const { posts } = await getPostsAndCategories({
         locale,
         page: 1,
         limit: DYNAMIC_BLOG_LIMIT,
@@ -133,17 +133,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
 
-      for (const category of categories) {
-        const categoryPath = normalizeRelativePath(
-          category.url || `/blog/category/${category.slug || ''}`
-        );
-        const localizedPath = withLocale(categoryPath, locale);
-        addEntry(entries, seen, {
-          url: toAbsoluteUrl(appUrl, localizedPath),
-          changeFrequency: 'weekly',
-          priority: 0.6,
-        });
-      }
     } catch (error) {
       console.error(`failed to build blog sitemap entries for locale ${locale}:`, error);
     }

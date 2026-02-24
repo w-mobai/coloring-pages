@@ -30,7 +30,7 @@
         },
         {
           "title": "Help",
-          "url": "/how-to-find-your-generation",
+          "url": "/coloring-pages-help",
           "icon": "BookOpen"
         }
       ]
@@ -92,7 +92,7 @@
             },
             {
               "title": "Help",
-              "url": "/how-to-find-your-generation",
+              "url": "/coloring-pages-help",
               "target": "_self"
             },
             {
