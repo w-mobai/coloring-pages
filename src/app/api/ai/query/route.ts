@@ -1,4 +1,4 @@
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { AITaskStatus } from '@/extensions/ai';
 import { extractImageUrls } from '@/shared/lib/ai-image-history';
@@ -91,6 +91,8 @@ export async function POST(req: Request) {
         : null;
 
       if (result.taskStatus === AITaskStatus.SUCCESS) {
+        revalidateTag(PUBLIC_COLORING_GALLERY_CACHE_TAG, 'max');
+        revalidatePath('/sitemap.xml');
         const imageUrl = [
           ...extractImageUrls(result.taskInfo),
           ...extractImageUrls(result.taskResult),
@@ -188,6 +190,7 @@ export async function POST(req: Request) {
       await updateAITaskById(task.id, updateAITask);
       if (updateAITask.status === AITaskStatus.SUCCESS) {
         revalidateTag(PUBLIC_COLORING_GALLERY_CACHE_TAG, 'max');
+        revalidatePath('/sitemap.xml');
       }
     }
 

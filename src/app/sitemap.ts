@@ -27,7 +27,7 @@ const seoRoutes: SeoRoute[] = [
 ];
 
 const DYNAMIC_BLOG_LIMIT = 1000;
-const DYNAMIC_COLORING_LIMIT = 500;
+const DYNAMIC_COLORING_LIMIT = 2000;
 
 function withLocale(path: string, locale: string) {
   if (locale === defaultLocale) {
@@ -82,7 +82,7 @@ function addEntry(
   entries.push(entry);
 }
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const appUrl = envConfigs.app_url.replace(/\/+$/, '');

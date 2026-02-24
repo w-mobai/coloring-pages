@@ -44,8 +44,8 @@ type GalleryTaskItem = {
 };
 
 export const DEFAULT_GALLERY_LIMIT = 24;
-const MAX_GALLERY_LIMIT = 600;
-const MAX_SCAN_LIMIT = 2400;
+const MAX_GALLERY_LIMIT = 5000;
+const MAX_SCAN_LIMIT = 20000;
 export const PUBLIC_COLORING_GALLERY_CACHE_TAG = 'public-coloring-gallery';
 
 async function fetchPublicColoringGalleryItems(
