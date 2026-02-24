@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
+  ArrowRight,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -331,11 +332,13 @@ export function ImageHistory({
                 {t('history.subtitle')}
               </p>
             </div>
-            <Button asChild variant="outline" size="sm" className="w-fit self-center sm:self-auto">
-              <Link href="/#coloring-page-generator">
-                {t('history.create_new_image')}
-              </Link>
-            </Button>
+            <Link
+              href="/#coloring-page-generator"
+              className="text-muted-foreground/70 hover:text-primary inline-flex w-fit items-center gap-1 self-center text-xs transition-colors sm:self-auto"
+            >
+              <span>{t('history.create_new_image')}</span>
+              <ArrowRight className="size-3.5" />
+            </Link>
           </div>
 
           {images.length === 0 ? (

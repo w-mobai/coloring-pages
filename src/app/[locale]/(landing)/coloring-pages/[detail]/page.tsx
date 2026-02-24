@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
+import { ArrowRight } from 'lucide-react';
 
 import { envConfigs } from '@/config';
 import { defaultLocale, locales } from '@/config/locale';
@@ -21,20 +22,22 @@ import {
 import {
   buildColoringPageDetailPath,
   buildColoringPageDetailSegment,
-  buildSeoDetailTitle,
   normalizePrompt,
   parseColoringPageDetailSegment,
   slugifyPrompt,
   truncateText,
 } from '@/shared/lib/coloring-page-seo';
 import { getLocalizedColoringPromptTitle } from '@/shared/lib/coloring-prompt-display';
+import { getPublicColoringGalleryItems } from '@/shared/lib/public-coloring-gallery';
 import {
   buildR2AllowedUrlPrefixes,
   isAllowedR2Url,
 } from '@/shared/lib/r2-url-filter';
 import { findGuestAITaskById } from '@/shared/lib/guest-ai-task';
-import { findPersistedGuestColoringTaskById } from '@/shared/lib/persistent-guest-coloring-gallery';
-import { findAITaskById, getAITasks } from '@/shared/models/ai_task';
+import {
+  findPersistedGuestColoringTaskById,
+} from '@/shared/lib/persistent-guest-coloring-gallery';
+import { findAITaskById } from '@/shared/models/ai_task';
 import { getAllConfigs } from '@/shared/models/config';
 import { DetailPreviewActions } from './detail-preview-actions';
 
@@ -60,9 +63,11 @@ type SimilarColoringPageItem = {
   score: number;
 };
 
-const SIMILAR_SCAN_LIMIT = 140;
 const SIMILAR_LIMIT = 10;
 const SIMILAR_CACHE_TAG = 'coloring-page-similar';
+// Keep title numbering aligned with the Coloring Pages list page.
+const TITLE_SEQUENCE_SCAN_LIMIT = 48;
+const DETAIL_TITLE_MAX_LENGTH = 72;
 
 function withLocalePath(locale: string, path: string): string {
   if (!path.startsWith('/')) {
@@ -136,14 +141,81 @@ function countTokenOverlap(a: string[], b: string[]): number {
   return count;
 }
 
-function buildSimilarCardTitle(prompt: string | null, locale: string): string {
+function buildGalleryStyleBaseTitle(prompt: string | null, locale: string): string {
   const localizedTitle = getLocalizedColoringPromptTitle({
     prompt,
     locale,
-    fallbackZh: '可打印涂色页',
-    fallbackEn: 'Printable Coloring Page',
+    fallbackZh: '涂色页',
+    fallbackEn: 'Coloring Page',
   });
-  return truncateText(normalizePrompt(localizedTitle), 46);
+  return truncateText(normalizePrompt(localizedTitle), 52);
+}
+
+function buildPromptWithSequence(
+  prompt: string | null,
+  sequence: number
+): string | null {
+  const normalizedPrompt = normalizePrompt(prompt);
+  if (!normalizedPrompt || sequence <= 1) {
+    return normalizedPrompt || prompt;
+  }
+
+  return `${normalizedPrompt}-${sequence}`;
+}
+
+function buildDetailTitleFromDisplayName(
+  displayName: string | null,
+  locale: string
+): string {
+  const cleaned = normalizePrompt(displayName);
+  if (locale.startsWith('zh')) {
+    if (!cleaned) {
+      return '涂色页';
+    }
+    const suffix = ' 涂色页';
+    const maxBaseLength = Math.max(12, DETAIL_TITLE_MAX_LENGTH - suffix.length);
+    return `${truncateText(cleaned, maxBaseLength)}${suffix}`;
+  }
+
+  if (!cleaned) {
+    return 'Coloring Page';
+  }
+  const suffix = ' Coloring Page';
+  const maxBaseLength = Math.max(12, DETAIL_TITLE_MAX_LENGTH - suffix.length);
+  return `${truncateText(cleaned, maxBaseLength)}${suffix}`;
+}
+
+async function getGalleryTitleSequence({
+  taskId,
+  prompt,
+  locale,
+}: {
+  taskId: string;
+  prompt: string | null;
+  locale: string;
+}): Promise<number> {
+  const items = await getPublicColoringGalleryItems({
+    limit: TITLE_SEQUENCE_SCAN_LIMIT,
+  });
+  if (!items.length) {
+    return 1;
+  }
+
+  const targetTitleKey = buildGalleryStyleBaseTitle(prompt, locale).toLowerCase();
+  let count = 0;
+  for (const item of items) {
+    const itemTitleKey = buildGalleryStyleBaseTitle(item.prompt, locale).toLowerCase();
+    if (itemTitleKey !== targetTitleKey) {
+      continue;
+    }
+
+    count += 1;
+    if (item.taskId === taskId) {
+      return count;
+    }
+  }
+
+  return 1;
 }
 
 function formatPublishedTime(value: string | null, locale: string): string | null {
@@ -240,52 +312,91 @@ async function getSimilarColoringPagesUncached({
   currentTaskId,
   currentPrompt,
   currentCategoryKey,
-  r2UrlPrefixes,
 }: {
   locale: string;
   currentTaskId: string;
   currentPrompt: string | null;
   currentCategoryKey: string;
-  r2UrlPrefixes: string[];
 }): Promise<SimilarColoringPageItem[]> {
-  const tasks = await getAITasks({
-    mediaType: AIMediaType.IMAGE,
-    status: AITaskStatus.SUCCESS,
-    page: 1,
-    limit: SIMILAR_SCAN_LIMIT,
+  const galleryItems = await getPublicColoringGalleryItems({
+    limit: TITLE_SEQUENCE_SCAN_LIMIT,
   });
+  if (galleryItems.length === 0) {
+    return [];
+  }
+
+  const titleCounter = new Map<string, number>();
+  const galleryDisplayTitleMap = new Map<string, string>();
+  for (const item of galleryItems) {
+    const baseTitle = buildGalleryStyleBaseTitle(item.prompt, locale);
+    const titleKey = baseTitle.toLowerCase();
+    const count = (titleCounter.get(titleKey) || 0) + 1;
+    titleCounter.set(titleKey, count);
+    galleryDisplayTitleMap.set(
+      item.taskId,
+      count > 1 ? `${baseTitle}-${count}` : baseTitle
+    );
+  }
 
   const currentTokens = tokenizePrompt(currentPrompt);
+  const currentPromptText = normalizePrompt(currentPrompt).toLowerCase();
+  const currentTitleText = buildGalleryStyleBaseTitle(currentPrompt, locale).toLowerCase();
   const seenImageUrls = new Set<string>();
   const list: SimilarColoringPageItem[] = [];
 
-  for (const task of tasks) {
-    const item = toPublicColoringPage(task, r2UrlPrefixes);
-    if (!item || item.taskId === currentTaskId) {
+  for (const item of galleryItems) {
+    if (item.taskId === currentTaskId) {
       continue;
     }
 
-    const dedupKey = normalizeImageUrlForDedup(item.imageUrl);
-    if (seenImageUrls.has(dedupKey)) {
+    const overlap = countTokenOverlap(currentTokens, tokenizePrompt(item.prompt));
+    const sameCategory = item.categoryKey === currentCategoryKey ? 1 : 0;
+    const promptText = normalizePrompt(item.prompt).toLowerCase();
+    const titleText = buildGalleryStyleBaseTitle(item.prompt, locale).toLowerCase();
+    const exactPromptMatch =
+      currentPromptText.length > 0 && promptText === currentPromptText ? 1 : 0;
+    const partialPromptMatch =
+      exactPromptMatch === 0 &&
+      currentPromptText.length > 0 &&
+      promptText.length > 0 &&
+      (promptText.includes(currentPromptText) ||
+        currentPromptText.includes(promptText))
+        ? 1
+        : 0;
+    const sameTitle =
+      currentTitleText.length > 0 && titleText === currentTitleText ? 1 : 0;
+    const dedupKey = normalizeImageUrlForDedup(item.url);
+    // Keep multiple same-title candidates even if image URLs are identical.
+    if (sameTitle === 0 && seenImageUrls.has(dedupKey)) {
       continue;
     }
     seenImageUrls.add(dedupKey);
 
-    const overlap = countTokenOverlap(currentTokens, tokenizePrompt(item.prompt));
-    const sameCategory = item.categoryKey === currentCategoryKey ? 1 : 0;
     const recencyScore = item.createdAt
       ? Math.floor(new Date(item.createdAt).getTime() / 1_000_000_000)
       : 0;
-    const score = sameCategory * 10 + Math.min(overlap, 5) * 2 + recencyScore / 10_000_000;
+    const score =
+      sameTitle * 42 +
+      exactPromptMatch * 30 +
+      partialPromptMatch * 12 +
+      sameCategory * 10 +
+      Math.min(overlap, 5) * 2 +
+      recencyScore / 10_000_000;
 
     list.push({
-      ...item,
+      taskId: item.taskId,
+      prompt: item.prompt,
+      imageUrl: item.url,
+      createdAt: item.createdAt,
+      categoryKey: item.categoryKey,
       detailPath: buildColoringPageDetailPath({
         locale,
         taskId: item.taskId,
         prompt: item.prompt,
       }),
-      title: buildSimilarCardTitle(item.prompt, locale),
+      title:
+        galleryDisplayTitleMap.get(item.taskId) ||
+        buildGalleryStyleBaseTitle(item.prompt, locale),
       score,
     });
   }
@@ -300,23 +411,16 @@ const getSimilarColoringPagesCached = unstable_cache(
     locale: string,
     currentTaskId: string,
     currentPrompt: string | null,
-    currentCategoryKey: string,
-    r2PrefixSignature: string
+    currentCategoryKey: string
   ) => {
-    const r2UrlPrefixes = r2PrefixSignature
-      .split('\n')
-      .map((prefix) => prefix.trim())
-      .filter((prefix) => prefix.length > 0);
-
     return getSimilarColoringPagesUncached({
       locale,
       currentTaskId,
       currentPrompt,
       currentCategoryKey,
-      r2UrlPrefixes,
     });
   },
-  ['coloring-page-similar-items'],
+  ['coloring-page-similar-items-v2'],
   {
     revalidate: 600,
     tags: [SIMILAR_CACHE_TAG],
@@ -328,21 +432,17 @@ async function getSimilarColoringPages({
   currentTaskId,
   currentPrompt,
   currentCategoryKey,
-  r2UrlPrefixes,
 }: {
   locale: string;
   currentTaskId: string;
   currentPrompt: string | null;
   currentCategoryKey: string;
-  r2UrlPrefixes: string[];
 }): Promise<SimilarColoringPageItem[]> {
-  const r2PrefixSignature = r2UrlPrefixes.join('\n');
   return getSimilarColoringPagesCached(
     locale,
     currentTaskId,
     currentPrompt,
-    currentCategoryKey,
-    r2PrefixSignature
+    currentCategoryKey
   );
 }
 
@@ -429,8 +529,14 @@ export async function generateMetadata({
     prompt: detailData.prompt,
   });
   const canonicalUrl = `${envConfigs.app_url}${canonicalPath}`;
-  const title = buildSeoDetailTitle(detailData.prompt, locale);
-  const description = buildMetadataDescription(detailData.prompt, locale);
+  const titleSequence = await getGalleryTitleSequence({
+    taskId: detailData.taskId,
+    prompt: detailData.prompt,
+    locale,
+  });
+  const promptForTitle = buildPromptWithSequence(detailData.prompt, titleSequence);
+  const title = buildDetailTitleFromDisplayName(promptForTitle, locale);
+  const description = buildMetadataDescription(promptForTitle, locale);
 
   return {
     title,
@@ -484,15 +590,20 @@ export default async function ColoringPageDetailPage({
     permanentRedirect(canonicalPath);
   }
 
-  const title = buildSeoDetailTitle(detailData.prompt, locale);
-  const description = buildMetadataDescription(detailData.prompt, locale);
+  const titleSequence = await getGalleryTitleSequence({
+    taskId: detailData.taskId,
+    prompt: detailData.prompt,
+    locale,
+  });
+  const promptForTitle = buildPromptWithSequence(detailData.prompt, titleSequence);
+  const title = buildDetailTitleFromDisplayName(promptForTitle, locale);
+  const description = buildMetadataDescription(promptForTitle, locale);
   const publishedTime = formatPublishedTime(detailData.createdAt, locale);
   const similarItems = await getSimilarColoringPages({
     locale,
     currentTaskId: detailData.taskId,
     currentPrompt: detailData.prompt,
     currentCategoryKey: detailData.categoryKey,
-    r2UrlPrefixes,
   });
 
   const structuredData = {
@@ -580,6 +691,16 @@ export default async function ColoringPageDetailPage({
                   : 'No similar pages yet. Please check back later.'}
               </div>
             )}
+
+            <div className="pt-1 text-center">
+              <Link
+                href="/coloring-pages"
+                className="text-muted-foreground/70 hover:text-primary inline-flex items-center gap-1 text-xs transition-colors"
+              >
+                <span>{locale.startsWith('zh') ? '查看更多' : 'View more'}</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
           </aside>
         </div>
 

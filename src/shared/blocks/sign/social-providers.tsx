@@ -96,7 +96,9 @@ export function SocialProviders({
           key={provider.name}
           type="button"
           variant="outline"
-          className={cn('w-full gap-2')}
+          className={cn(
+            'w-full gap-2 !border-border shadow-none hover:!border-transparent focus-visible:!border-transparent'
+          )}
           disabled={loading}
           onClick={provider.onClick}
         >

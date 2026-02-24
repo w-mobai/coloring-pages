@@ -74,6 +74,11 @@
               "title": "功能亮点",
               "url": "/#features",
               "target": "_self"
+            },
+            {
+              "title": "联系我们",
+              "url": "mailto:whl774148248@gmail.com",
+              "target": "_self"
             }
           ]
         },

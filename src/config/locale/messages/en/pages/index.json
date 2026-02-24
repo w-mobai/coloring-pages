@@ -36,7 +36,7 @@
         "id": "generated-gallery",
         "title": "Coloring Pages",
         "description": "Browse and filter printable coloring pages from real prompts.",
-        "limit": 24,
+        "limit": 48,
         "show_view_more_card": true,
         "max_visible_items": 19,
         "view_more_path": "/coloring-pages",

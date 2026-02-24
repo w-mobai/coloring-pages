@@ -15,6 +15,9 @@
         "id": "generated-gallery",
         "title": "涂色页",
         "description": "浏览并筛选来自真实提示词的可打印涂色页。",
+        "show_generate_link": true,
+        "generate_link_title": "生成图片",
+        "generate_link_path": "/#coloring-page-generator",
         "limit": 48,
         "className": "py-24 md:py-36"
       }

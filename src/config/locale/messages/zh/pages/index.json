@@ -36,7 +36,7 @@
         "id": "generated-gallery",
         "title": "涂色页",
         "description": "浏览并筛选来自真实提示词的可打印涂色页。",
-        "limit": 24,
+        "limit": 48,
         "show_view_more_card": true,
         "max_visible_items": 19,
         "view_more_path": "/coloring-pages",

@@ -74,6 +74,11 @@
               "title": "Features",
               "url": "/#features",
               "target": "_self"
+            },
+            {
+              "title": "Contact Us",
+              "url": "mailto:whl774148248@gmail.com",
+              "target": "_self"
             }
           ]
         },

@@ -15,6 +15,9 @@
         "id": "generated-gallery",
         "title": "Coloring Pages",
         "description": "Browse and filter printable coloring pages from real prompts.",
+        "show_generate_link": true,
+        "generate_link_title": "Generate Image",
+        "generate_link_path": "/#coloring-page-generator",
         "limit": 48,
         "className": "py-24 md:py-36"
       }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -32,6 +32,10 @@ export function ShowcasesFlow({
     (section as any).show_full_description_in_modal
   );
   const showDownloadInModal = Boolean((section as any).show_download_in_modal);
+  const showGenerateLink = Boolean((section as any).show_generate_link);
+  const generateLinkTitle = ((section as any).generate_link_title as string) || 'Generate Image';
+  const generateLinkPath =
+    ((section as any).generate_link_path as string) || '/#coloring-page-generator';
   const showViewMoreCard = Boolean(
     isGeneratedGallerySection && (section as any).show_view_more_card
   );
@@ -234,13 +238,13 @@ export function ShowcasesFlow({
               'w-full bg-transparent px-0 py-1.5 text-left text-xs leading-snug hover:bg-transparent',
               isSelected
                 ? 'text-foreground font-semibold'
-                : 'text-foreground/85 font-medium hover:text-foreground'
+                : 'text-foreground/55 font-medium hover:text-foreground'
             )
           : cn(
               'relative rounded-lg px-3 py-1.5 text-sm font-medium',
               isSelected
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'ring-border bg-background text-foreground ring-1 ring-inset hover:bg-muted hover:text-foreground hover:ring-border/80'
+                : 'ring-border bg-background text-foreground/60 ring-1 ring-inset hover:bg-muted hover:text-foreground hover:ring-border/80'
             )
       );
 
@@ -422,38 +426,58 @@ export function ShowcasesFlow({
       className={cn('py-20', section.className, className)}
     >
       {shouldAnimateGallery ? (
-        <div
-          className="container mb-4 text-center"
-        >
+        <div className="container mb-4">
           {section.sr_only_title && (
             <h1 className="sr-only">{section.sr_only_title}</h1>
           )}
           <div
             className={cn(
               isGeneratedGallerySection
-                ? 'mx-auto mb-12 max-w-5xl'
-                : 'mx-auto max-w-full md:max-w-5xl'
+                ? cn('relative w-full', showGenerateLink ? 'mb-8' : 'mb-12')
+                : 'mx-auto max-w-full text-center md:max-w-5xl'
             )}
           >
-            <h2
-              className={cn(
-                'text-foreground tracking-tight',
-                isGeneratedGallerySection
-                  ? 'mb-4 text-2xl font-medium md:text-3xl'
-                  : 'mb-12 text-3xl font-semibold md:text-4xl'
-              )}
-            >
-              {section.title}
-            </h2>
-            {section.description && (
-              <p
-                className={cn(
-                  'text-muted-foreground text-md',
-                  !isGeneratedGallerySection && 'mb-4 line-clamp-3'
+            {isGeneratedGallerySection ? (
+              <div className="mx-auto max-w-5xl text-center">
+                <h2
+                  className={cn(
+                    'text-foreground tracking-tight',
+                    'mb-4 text-2xl font-medium md:text-3xl'
+                  )}
+                >
+                  {section.title}
+                </h2>
+                {section.description && (
+                  <p className="text-muted-foreground text-md">
+                    {section.description}
+                  </p>
                 )}
+              </div>
+            ) : (
+              <>
+                <h2
+                  className={cn(
+                    'text-foreground tracking-tight',
+                    'mb-12 text-3xl font-semibold md:text-4xl'
+                  )}
+                >
+                  {section.title}
+                </h2>
+                {section.description && (
+                  <p className="text-muted-foreground text-md mb-4 line-clamp-3">
+                    {section.description}
+                  </p>
+                )}
+              </>
+            )}
+            {isGeneratedGallerySection && showGenerateLink && (
+              <Link
+                href={generateLinkPath}
+                className="text-muted-foreground/70 hover:text-primary mt-4 ml-auto flex w-fit items-center gap-1 text-xs transition-colors md:absolute md:top-1/2 md:right-0 md:mt-0 md:-translate-y-1/2"
               >
-                {section.description}
-              </p>
+                <span>{generateLinkTitle}</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
             )}
           </div>
           {section.buttons && section.buttons.length > 0 && (
@@ -475,36 +499,58 @@ export function ShowcasesFlow({
           )}
         </div>
       ) : (
-        <div className="container mb-4 text-center">
+        <div className="container mb-4">
           {section.sr_only_title && (
             <h1 className="sr-only">{section.sr_only_title}</h1>
           )}
           <div
             className={cn(
               isGeneratedGallerySection
-                ? 'mx-auto mb-12 max-w-5xl'
-                : 'mx-auto max-w-full md:max-w-5xl'
+                ? cn('relative w-full', showGenerateLink ? 'mb-8' : 'mb-12')
+                : 'mx-auto max-w-full text-center md:max-w-5xl'
             )}
           >
-            <h2
-              className={cn(
-                'text-foreground tracking-tight',
-                isGeneratedGallerySection
-                  ? 'mb-4 text-2xl font-medium md:text-3xl'
-                  : 'mb-12 text-3xl font-semibold md:text-4xl'
-              )}
-            >
-              {section.title}
-            </h2>
-            {section.description && (
-              <p
-                className={cn(
-                  'text-muted-foreground text-md',
-                  !isGeneratedGallerySection && 'mb-4 line-clamp-3'
+            {isGeneratedGallerySection ? (
+              <div className="mx-auto max-w-5xl text-center">
+                <h2
+                  className={cn(
+                    'text-foreground tracking-tight',
+                    'mb-4 text-2xl font-medium md:text-3xl'
+                  )}
+                >
+                  {section.title}
+                </h2>
+                {section.description && (
+                  <p className="text-muted-foreground text-md">
+                    {section.description}
+                  </p>
                 )}
+              </div>
+            ) : (
+              <>
+                <h2
+                  className={cn(
+                    'text-foreground tracking-tight',
+                    'mb-12 text-3xl font-semibold md:text-4xl'
+                  )}
+                >
+                  {section.title}
+                </h2>
+                {section.description && (
+                  <p className="text-muted-foreground text-md mb-4 line-clamp-3">
+                    {section.description}
+                  </p>
+                )}
+              </>
+            )}
+            {isGeneratedGallerySection && showGenerateLink && (
+              <Link
+                href={generateLinkPath}
+                className="text-muted-foreground/70 hover:text-primary mt-4 ml-auto flex w-fit items-center gap-1 text-xs transition-colors md:absolute md:top-1/2 md:right-0 md:mt-0 md:-translate-y-1/2"
               >
-                {section.description}
-              </p>
+                <span>{generateLinkTitle}</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
             )}
           </div>
           {section.buttons && section.buttons.length > 0 && (

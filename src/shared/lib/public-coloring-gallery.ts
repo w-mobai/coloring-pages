@@ -57,7 +57,9 @@ async function fetchPublicColoringGalleryItems(
 
   const configs = await getAllConfigs();
   const r2UrlPrefixes = buildR2AllowedUrlPrefixes(configs);
-  const shouldEnforceR2Prefix = r2UrlPrefixes.length > 0;
+  if (r2UrlPrefixes.length === 0) {
+    return [];
+  }
 
   const tasks = await getAITasks({
     mediaType: AIMediaType.IMAGE,
@@ -135,7 +137,7 @@ async function fetchPublicColoringGalleryItems(
       if (
         !imageUrl ||
         !isLikelyHttpUrl(imageUrl) ||
-        (shouldEnforceR2Prefix && !isAllowedR2Url(imageUrl, r2UrlPrefixes)) ||
+        !isAllowedR2Url(imageUrl, r2UrlPrefixes) ||
         seen.has(dedupKey)
       ) {
         continue;

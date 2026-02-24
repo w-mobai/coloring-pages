@@ -233,7 +233,7 @@ export function SignUpForm({
       </div>
 
       {isEmailAuthEnabled && (
-        <div className="flex w-full justify-center border-t py-4">
+        <div className="flex w-full justify-center pt-4">
           <p className="text-center text-xs text-neutral-500">
             {t('already_have_account')}
             {onSwitchToSignIn ? (

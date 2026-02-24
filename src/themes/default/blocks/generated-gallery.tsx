@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
+import { ArrowRight } from 'lucide-react';
 
+import { Link } from '@/core/i18n/navigation';
 import {
   buildColoringPageDetailPath,
   normalizePrompt,
@@ -68,6 +70,17 @@ function getUiText(locale?: string) {
   };
 }
 
+function getGenerateLinkConfig(section: Section, locale?: string) {
+  const isZh = locale?.startsWith('zh');
+  return {
+    show: Boolean((section as any).show_generate_link),
+    title:
+      ((section as any).generate_link_title as string) ||
+      (isZh ? '生成图片' : 'Generate Image'),
+    path: ((section as any).generate_link_path as string) || '/#coloring-page-generator',
+  };
+}
+
 function formatDate(value: string | null, locale?: string): string {
   if (!value) {
     return '';
@@ -95,6 +108,7 @@ export function GeneratedGallery({
   className?: string;
 }) {
   const uiText = getUiText(locale);
+  const generateLink = getGenerateLinkConfig(section, locale);
 
   return (
     <Suspense
@@ -104,37 +118,54 @@ export function GeneratedGallery({
           className={cn('py-20', section.className, className)}
         >
           <div className="container">
-            <div className="mx-auto mb-12 max-w-5xl text-center">
+            <div
+              className={cn(
+                'relative mx-auto max-w-5xl text-center',
+                generateLink.show ? 'mb-5' : 'mb-12'
+              )}
+            >
               {section.title && (
                 <h2 className="text-foreground mb-4 text-2xl font-medium tracking-tight md:text-3xl">
                   {section.title}
                 </h2>
               )}
-            {section.description && (
-              <p className="text-muted-foreground text-md">{section.description}</p>
-            )}
-          </div>
-          <div className="text-muted-foreground mb-6 text-center text-sm">
-            {uiText.loading}
-          </div>
-          <div className="grid items-start gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-            <aside className="hidden lg:block lg:sticky lg:top-24">
-              <Skeleton className="mb-3 h-3 w-16" />
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: 7 }).map((_, idx) => (
-                  <Skeleton key={`gallery-filter-skeleton-${idx}`} className="h-5 w-28" />
+              {section.description && (
+                <p className="text-muted-foreground text-md">{section.description}</p>
+              )}
+              {generateLink.show && (
+                <Link
+                  href={generateLink.path}
+                  className="text-muted-foreground/70 hover:text-primary mt-4 inline-flex w-fit items-center gap-1 text-xs transition-colors md:absolute md:top-1/2 md:right-0 md:mt-0 md:-translate-y-1/2"
+                >
+                  <span>{generateLink.title}</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              )}
+            </div>
+            <div className="text-muted-foreground mb-6 text-center text-sm">
+              {uiText.loading}
+            </div>
+            <div className="grid items-start gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+              <aside className="hidden lg:block lg:sticky lg:top-24">
+                <Skeleton className="mb-3 h-3 w-16" />
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: 7 }).map((_, idx) => (
+                    <Skeleton
+                      key={`gallery-filter-skeleton-${idx}`}
+                      className="h-5 w-28"
+                    />
+                  ))}
+                </div>
+              </aside>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+                {Array.from({ length: 12 }).map((_, idx) => (
+                  <div key={`gallery-card-skeleton-${idx}`} className="space-y-2">
+                    <Skeleton className="aspect-square w-full rounded-xl" />
+                    <Skeleton className="mx-auto h-4 w-4/5" />
+                  </div>
                 ))}
               </div>
-            </aside>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-              {Array.from({ length: 12 }).map((_, idx) => (
-                <div key={`gallery-card-skeleton-${idx}`} className="space-y-2">
-                  <Skeleton className="aspect-square w-full rounded-xl" />
-                  <Skeleton className="mx-auto h-4 w-4/5" />
-                </div>
-              ))}
             </div>
-          </div>
           </div>
         </section>
       }
@@ -158,6 +189,7 @@ async function GeneratedGalleryContent({
   className?: string;
 }) {
   const uiText = getUiText(locale);
+  const generateLink = getGenerateLinkConfig(section, locale);
   const rawLimit = Number((section as any).limit || DEFAULT_LIMIT);
   const limit = Number.isFinite(rawLimit)
     ? Math.min(Math.max(Math.floor(rawLimit), 1), MAX_LIMIT)
@@ -180,7 +212,12 @@ async function GeneratedGalleryContent({
         className={cn('py-20', section.className, className)}
       >
         <div className="container">
-          <div className="mx-auto mb-12 max-w-5xl text-center">
+          <div
+            className={cn(
+              'relative mx-auto max-w-5xl text-center',
+              generateLink.show ? 'mb-5' : 'mb-12'
+            )}
+          >
             {section.title && (
               <h2 className="text-foreground mb-4 text-2xl font-medium tracking-tight md:text-3xl">
                 {section.title}
@@ -188,6 +225,15 @@ async function GeneratedGalleryContent({
             )}
             {section.description && (
               <p className="text-muted-foreground text-md">{section.description}</p>
+            )}
+            {generateLink.show && (
+              <Link
+                href={generateLink.path}
+                className="text-muted-foreground/70 hover:text-primary mt-4 inline-flex w-fit items-center gap-1 text-xs transition-colors md:absolute md:top-1/2 md:right-0 md:mt-0 md:-translate-y-1/2"
+              >
+                <span>{generateLink.title}</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
             )}
           </div>
           <div className="text-muted-foreground text-center">
@@ -240,7 +286,7 @@ async function GeneratedGalleryContent({
             const titleKey = baseTitle.toLowerCase();
             const count = (titleCounter.get(titleKey) || 0) + 1;
             titleCounter.set(titleKey, count);
-            const displayTitle = count > 1 ? `${baseTitle} (${count})` : baseTitle;
+            const displayTitle = count > 1 ? `${baseTitle}-${count}` : baseTitle;
 
             return {
               title: displayTitle,
@@ -261,6 +307,9 @@ async function GeneratedGalleryContent({
         })(),
         show_full_description_in_modal: true,
         show_download_in_modal: true,
+        show_generate_link: generateLink.show,
+        generate_link_title: generateLink.title,
+        generate_link_path: generateLink.path,
       }}
       className={className}
     />
