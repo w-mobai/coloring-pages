@@ -274,8 +274,9 @@ export function ShowcasesFlow({
     }
   );
 
-  const renderCardBody = (item: any) => {
+  const renderCardBody = (item: any, index: number) => {
     if (isGeneratedGallerySection) {
+      const isPriorityImage = index < 8 && !item?.isViewMoreCard;
       return (
         <>
           <div
@@ -301,6 +302,7 @@ export function ShowcasesFlow({
                 alt={item.image?.alt ?? ''}
                 className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.02]"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                priority={isPriorityImage}
               />
             )}
           </div>
@@ -382,7 +384,7 @@ export function ShowcasesFlow({
                 className={cardClassName}
                 onClick={() => handleCardClick(item, index)}
               >
-                {renderCardBody(item)}
+                {renderCardBody(item, index)}
               </div>
             );
           }
@@ -393,7 +395,7 @@ export function ShowcasesFlow({
               className={cardClassName}
               onClick={() => handleCardClick(item, index)}
             >
-              {renderCardBody(item)}
+              {renderCardBody(item, index)}
             </div>
           );
         })}

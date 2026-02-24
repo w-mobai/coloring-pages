@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
 import { defaultLocale, locales } from '@/config/locale';
+import { normalizeMetadataCopy } from '@/shared/lib/seo';
 import { getLocalPage } from '@/shared/models/post';
 
 export const revalidate = 3600;
@@ -76,8 +77,12 @@ export async function generateMetadata({
 
   // return static page metadata
   if (staticPage) {
-    title = staticPage.title || '';
-    description = staticPage.description || '';
+    const metadata = normalizeMetadataCopy({
+      title: staticPage.title || '',
+      description: staticPage.description || '',
+    });
+    title = metadata.title;
+    description = metadata.description;
 
     return {
       title,
@@ -102,8 +107,12 @@ export async function generateMetadata({
 
     // return dynamic page metadata
     if (t.has('metadata')) {
-      title = t.raw('metadata.title');
-      description = t.raw('metadata.description');
+      const metadata = normalizeMetadataCopy({
+        title: t.raw('metadata.title'),
+        description: t.raw('metadata.description'),
+      });
+      title = metadata.title;
+      description = metadata.description;
 
       return {
         title,
@@ -121,8 +130,12 @@ export async function generateMetadata({
   // 3. return common metadata
   const tc = await getTranslations('common.metadata');
 
-  title = tc('title');
-  description = tc('description');
+  const metadata = normalizeMetadataCopy({
+    title: tc('title'),
+    description: tc('description'),
+  });
+  title = metadata.title;
+  description = metadata.description;
 
   return {
     title,

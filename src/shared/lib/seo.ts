@@ -3,6 +3,44 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { envConfigs } from '@/config';
 import { defaultLocale, locales } from '@/config/locale';
 
+export const METADATA_TITLE_MAX_LENGTH = 60;
+export const METADATA_DESCRIPTION_MAX_LENGTH = 160;
+
+function normalizeMetadataText(value: string): string {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+export function limitMetadataText(value: string, maxLength: number): string {
+  const normalized = normalizeMetadataText(value || '');
+  if (!normalized) {
+    return '';
+  }
+
+  const chars = Array.from(normalized);
+  if (chars.length <= maxLength) {
+    return normalized;
+  }
+
+  if (maxLength <= 1) {
+    return chars.slice(0, maxLength).join('');
+  }
+
+  return `${chars.slice(0, maxLength - 1).join('')}…`;
+}
+
+export function normalizeMetadataCopy(input: {
+  title?: string;
+  description?: string;
+}) {
+  return {
+    title: limitMetadataText(input.title || '', METADATA_TITLE_MAX_LENGTH),
+    description: limitMetadataText(
+      input.description || '',
+      METADATA_DESCRIPTION_MAX_LENGTH
+    ),
+  };
+}
+
 // get metadata for page component
 export function getMetadata(
   options: {
@@ -49,12 +87,16 @@ export function getMetadata(
       ? await getCanonicalUrl(options.canonicalUrl || '', locale || '')
       : '';
 
-    const title =
-      passedMetadata.title || translatedMetadata.title || defaultMetadata.title;
-    const description =
-      passedMetadata.description ||
-      translatedMetadata.description ||
-      defaultMetadata.description;
+    const normalizedMetadata = normalizeMetadataCopy({
+      title:
+        passedMetadata.title || translatedMetadata.title || defaultMetadata.title,
+      description:
+        passedMetadata.description ||
+        translatedMetadata.description ||
+        defaultMetadata.description,
+    });
+    const title = normalizedMetadata.title;
+    const description = normalizedMetadata.description;
 
     // image url
     let imageUrl = options.imageUrl || envConfigs.app_preview_image;
@@ -74,14 +116,8 @@ export function getMetadata(
     const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 
     const metadata: any = {
-      title:
-        passedMetadata.title ||
-        translatedMetadata.title ||
-        defaultMetadata.title,
-      description:
-        passedMetadata.description ||
-        translatedMetadata.description ||
-        defaultMetadata.description,
+      title,
+      description,
 
       openGraph: {
         type: 'website',

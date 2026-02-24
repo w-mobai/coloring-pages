@@ -4,6 +4,7 @@ import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
 import { redirect } from '@/core/i18n/navigation';
 import { SignUpForm } from '@/shared/blocks/sign/sign-up-form';
+import { normalizeMetadataCopy } from '@/shared/lib/seo';
 import { getSignUser } from '@/shared/models/user';
 
 function safeInternalPath(raw?: string) {
@@ -28,10 +29,14 @@ export async function generateMetadata({
   const { locale } = await params;
 
   const t = await getTranslations('common');
-
-  return {
+  const metadata = normalizeMetadataCopy({
     title: `${t('sign.sign_up_title')} - ${t('metadata.title')}`,
     description: t('sign.sign_up_description'),
+  });
+
+  return {
+    title: metadata.title,
+    description: metadata.description,
     alternates: {
       canonical:
         locale !== defaultLocale

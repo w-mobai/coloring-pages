@@ -38,6 +38,7 @@ import { findGuestAITaskById } from '@/shared/lib/guest-ai-task';
 import {
   findPersistedGuestColoringTaskById,
 } from '@/shared/lib/persistent-guest-coloring-gallery';
+import { normalizeMetadataCopy } from '@/shared/lib/seo';
 import { findAITaskById } from '@/shared/models/ai_task';
 import { getAllConfigs } from '@/shared/models/config';
 import { DetailPreviewActions } from './detail-preview-actions';
@@ -508,9 +509,13 @@ export async function generateMetadata({
   const fallbackCanonical = `${envConfigs.app_url}${path}`;
 
   if (!parsed) {
-    return {
+    const metadata = normalizeMetadataCopy({
       title: 'Coloring Page',
       description: 'Free printable coloring page details.',
+    });
+    return {
+      title: metadata.title,
+      description: metadata.description,
       alternates: {
         canonical: fallbackCanonical,
       },
@@ -521,9 +526,13 @@ export async function generateMetadata({
   const r2UrlPrefixes = buildR2AllowedUrlPrefixes(configs);
   const detailData = await getColoringPageDetail(parsed.taskId, r2UrlPrefixes);
   if (!detailData) {
-    return {
+    const metadata = normalizeMetadataCopy({
       title: 'Coloring Page',
       description: 'Free printable coloring page details.',
+    });
+    return {
+      title: metadata.title,
+      description: metadata.description,
       alternates: {
         canonical: fallbackCanonical,
       },
@@ -542,8 +551,12 @@ export async function generateMetadata({
     locale,
   });
   const promptForTitle = buildPromptWithSequence(detailData.prompt, titleSequence);
-  const title = buildDetailTitleFromDisplayName(promptForTitle, locale);
-  const description = buildMetadataDescription(promptForTitle, locale);
+  const metadata = normalizeMetadataCopy({
+    title: buildDetailTitleFromDisplayName(promptForTitle, locale),
+    description: buildMetadataDescription(promptForTitle, locale),
+  });
+  const title = metadata.title;
+  const description = metadata.description;
 
   return {
     title,

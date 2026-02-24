@@ -103,7 +103,17 @@ export async function getAllConfigs(): Promise<Configs> {
   // only get configs from db in server side
   if (typeof window === 'undefined' && envConfigs.database_url) {
     try {
-      dbConfigs = await withTimeout(getConfigs(), CONFIG_DB_TIMEOUT_MS, {});
+      const timedResult = await withTimeout(
+        getConfigs().then((configs) => ({ configs, timedOut: false })),
+        CONFIG_DB_TIMEOUT_MS,
+        { configs: {}, timedOut: true }
+      );
+
+      // On cold starts, the first config read can exceed timeout briefly.
+      // Retry once before falling back to empty configs to avoid transient empty pages.
+      dbConfigs = timedResult.timedOut
+        ? await withTimeout(getConfigs(), CONFIG_DB_TIMEOUT_MS, {})
+        : timedResult.configs;
     } catch (e) {
       console.log(`get configs from db failed:`, e);
       dbConfigs = {};

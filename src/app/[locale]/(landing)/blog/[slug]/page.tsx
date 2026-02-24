@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
 import { defaultLocale, locales } from '@/config/locale';
+import { normalizeMetadataCopy } from '@/shared/lib/seo';
 import { getPost } from '@/shared/models/post';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
@@ -79,8 +80,12 @@ export async function generateMetadata({
 
   const imageUrl = toAbsoluteUrl(post.image);
   const publishedTime = toIsoDate(post.created_at);
-  const title = `${post.title} | ${t('title')}`;
-  const description = post.description || t('description');
+  const metadata = normalizeMetadataCopy({
+    title: `${post.title} | ${t('title')}`,
+    description: post.description || t('description'),
+  });
+  const title = metadata.title;
+  const description = metadata.description;
 
   return {
     title,

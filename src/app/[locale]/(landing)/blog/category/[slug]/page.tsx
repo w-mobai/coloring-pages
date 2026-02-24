@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
 import { defaultLocale, locales } from '@/config/locale';
+import { normalizeMetadataCopy } from '@/shared/lib/seo';
 import {
   PostType as DBPostType,
   getPosts,
@@ -58,9 +59,14 @@ export async function generateMetadata({
     ])
   );
 
-  return {
+  const metadata = normalizeMetadataCopy({
     title: `${categoryTitle} | ${t('title')}`,
     description: categoryDescription,
+  });
+
+  return {
+    title: metadata.title,
+    description: metadata.description,
     alternates: {
       canonical,
       languages: {

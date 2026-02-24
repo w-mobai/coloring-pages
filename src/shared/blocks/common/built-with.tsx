@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { Link } from '@/core/i18n/navigation';
 import { Button } from '@/shared/components/ui/button';
 
 export function BuiltWith() {
@@ -13,7 +13,7 @@ export function BuiltWith() {
       size="sm"
       className="text-foreground hover:bg-muted hover:text-foreground"
     >
-      <Link href="https://whatgenerationami.online" target="_blank">
+      <Link href="/">
         {t('built_with')}
       </Link>
     </Button>

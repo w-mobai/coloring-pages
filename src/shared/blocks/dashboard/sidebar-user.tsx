@@ -52,11 +52,6 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
     setHasMounted(true);
   }, []);
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push(user.signout_callback || '/sign-in');
-  };
-
   // get app context values
   const {
     configs,
@@ -69,6 +64,12 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
     fetchUserInfo,
     showOneTap,
   } = useAppContext();
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+    router.push(user.signout_callback || '/sign-in');
+  };
 
   useEffect(() => {
     void fetchConfigs();
@@ -115,8 +116,6 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
     if (sessionUser && sessionUserId !== currentUserId) {
       setUser(sessionUser as UserType);
       fetchUserInfo();
-    } else if (!sessionUser && currentUserId) {
-      setUser(null);
     }
   }, [hasMounted, session?.user?.id, authUser?.id, setUser, fetchUserInfo]);
 

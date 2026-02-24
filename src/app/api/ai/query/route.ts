@@ -1,3 +1,5 @@
+import { revalidateTag } from 'next/cache';
+
 import { AITaskStatus } from '@/extensions/ai';
 import { extractImageUrls } from '@/shared/lib/ai-image-history';
 import { isLikelyHttpUrl } from '@/shared/lib/coloring-gallery';
@@ -7,6 +9,7 @@ import {
   updateGuestAITaskById,
 } from '@/shared/lib/guest-ai-task';
 import { upsertPersistedGuestColoringTask } from '@/shared/lib/persistent-guest-coloring-gallery';
+import { PUBLIC_COLORING_GALLERY_CACHE_TAG } from '@/shared/lib/public-coloring-gallery';
 import { respData, respErr } from '@/shared/lib/resp';
 import {
   buildGuestStorageKeyPrefix,
@@ -183,6 +186,9 @@ export async function POST(req: Request) {
     };
     if (updateAITask.taskInfo !== task.taskInfo) {
       await updateAITaskById(task.id, updateAITask);
+      if (updateAITask.status === AITaskStatus.SUCCESS) {
+        revalidateTag(PUBLIC_COLORING_GALLERY_CACHE_TAG, 'max');
+      }
     }
 
     task.status = updateAITask.status || '';

@@ -6,7 +6,7 @@ import { Coins, LayoutDashboard, Loader2, LogOut, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { authClient, signOut, useSession } from '@/core/auth/client';
-import { Link, useRouter } from '@/core/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/core/i18n/navigation';
 import {
   Avatar,
   AvatarFallback,
@@ -44,6 +44,7 @@ export function SignUser({
 }) {
   const t = useTranslations('common.sign');
   const router = useRouter();
+  const pathname = usePathname();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -68,8 +69,8 @@ export function SignUser({
   const sessionUser = extractSessionUser(session);
   const displayUser = (user as UserType | null) ?? sessionUser;
 
-  // In dev (React StrictMode) effects can run twice; ensure we don't spam getSession().
-  const didFallbackSyncRef = useRef(false);
+  // Avoid parallel fallback sync attempts when session hydration is lagging.
+  const fallbackSyncInProgressRef = useRef(false);
 
   // one tap initialized
   const oneTapInitialized = useRef(false);
@@ -106,35 +107,65 @@ export function SignUser({
     if (sessionUser && sessionUserId !== currentUserId) {
       setUser(sessionUser as UserType);
       fetchUserInfo();
-    } else if (!sessionUser && currentUserId) {
-      setUser(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionUser?.id, (sessionUser as any)?.email, user?.id]);
 
-  // Fallback: if the session cookie is present but useSession lags, do a single refresh.
+  // Fallback: if session hydration lags behind cookie persistence after sign-in,
+  // retry getSession a few times to avoid requiring manual page refresh.
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (didFallbackSyncRef.current) return;
-    // Only run when useSession is done but still no user.
     if (isPending) return;
-    if (sessionUser || user) return;
 
-    didFallbackSyncRef.current = true;
+    // Session is already available, stop fallback loop.
+    if (sessionUser || user) {
+      fallbackSyncInProgressRef.current = false;
+      return;
+    }
+
+    if (fallbackSyncInProgressRef.current) return;
+    fallbackSyncInProgressRef.current = true;
+
+    let canceled = false;
+    const retryDelays = [0, 400, 900, 1600];
+
     void (async () => {
-      try {
-        const res: any = await authClient.getSession();
-        const fresh = extractSessionUser(res?.data ?? res);
-        if (fresh?.id) {
-          setUser(fresh);
-          fetchUserInfo();
+      for (const delay of retryDelays) {
+        if (canceled) {
+          return;
         }
-      } catch {
-        // ignore
+
+        if (delay > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          if (canceled) {
+            return;
+          }
+        }
+
+        try {
+          const res: any = await authClient.getSession();
+          const fresh = extractSessionUser(res?.data ?? res);
+          if (fresh?.id) {
+            setUser(fresh);
+            void fetchUserInfo();
+            break;
+          }
+        } catch {
+          // ignore and continue retrying
+        }
+      }
+
+      if (!canceled) {
+        fallbackSyncInProgressRef.current = false;
       }
     })();
+
+    return () => {
+      canceled = true;
+      fallbackSyncInProgressRef.current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPending, sessionUser, user?.id]);
+  }, [isPending, sessionUser?.id, user?.id]);
 
   return (
     <>
@@ -228,6 +259,7 @@ export function SignUser({
                   signOut({
                     fetchOptions: {
                       onSuccess: () => {
+                        setUser(null);
                         router.push('/');
                       },
                     },
@@ -253,7 +285,7 @@ export function SignUser({
           >
             <span>{t('sign_in_title')}</span>
           </Button>
-          <SignModal />
+          <SignModal callbackUrl={pathname || '/'} />
         </div>
       )}
     </>

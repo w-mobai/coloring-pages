@@ -22,6 +22,26 @@ function extractSessionUser(data: any): UserType | null {
   return u && typeof u === 'object' ? (u as UserType) : null;
 }
 
+async function syncSessionAfterAuth(): Promise<UserType | null> {
+  const delays = [0, 300, 700, 1200, 1800, 2600, 3600, 4800];
+  for (const delay of delays) {
+    if (delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
+    try {
+      const res: any = await authClient.getSession();
+      const fresh = extractSessionUser(res?.data ?? res);
+      if (fresh?.id) {
+        return fresh;
+      }
+    } catch {
+      // ignore and retry
+    }
+  }
+  return null;
+}
+
 export function SignInForm({
   callbackUrl = '/',
   className,
@@ -98,7 +118,12 @@ export function SignInForm({
             ? `/${locale}`
             : `/${locale}${normalizedPath}`
           : normalizedPath;
-      window.location.assign(localizedPath);
+      const currentPath = window.location.pathname;
+      if (currentPath === localizedPath) {
+        window.location.reload();
+      } else {
+        window.location.assign(localizedPath);
+      }
       return;
     }
 
@@ -135,15 +160,10 @@ export function SignInForm({
           onSuccess: async () => {
             // For modal sign-in on the same route, sync auth state immediately
             // so users don't need a manual page refresh.
-            try {
-              const res: any = await authClient.getSession();
-              const fresh = extractSessionUser(res?.data ?? res);
-              if (fresh?.id) {
-                setUser(fresh);
-                void fetchUserInfo();
-              }
-            } catch {
-              // ignore and continue; cookie is already set server-side
+            const fresh = await syncSessionAfterAuth();
+            if (fresh?.id) {
+              setUser(fresh);
+              void fetchUserInfo();
             }
 
             setIsShowSignModal(false);

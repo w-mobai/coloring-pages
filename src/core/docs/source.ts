@@ -1,6 +1,6 @@
 // .source folder will be generated when you run `next dev`
 import { createElement } from 'react';
-import { docs, logs, pages, posts } from '@/.source';
+import { logs, pages, posts } from '@/.source';
 import type { I18nConfig } from 'fumadocs-core/i18n';
 import { loader } from 'fumadocs-core/source';
 import { icons } from 'lucide-react';
@@ -17,14 +17,6 @@ const iconHelper = (icon: string | undefined) => {
   }
   if (icon in icons) return createElement(icons[icon as keyof typeof icons]);
 };
-
-// Docs source
-export const docsSource = loader({
-  baseUrl: '/docs',
-  source: docs.toFumadocsSource(),
-  i18n,
-  icon: iconHelper,
-});
 
 // Pages source (using root path)
 export const pagesSource = loader({
@@ -51,4 +43,5 @@ export const logsSource = loader({
 });
 
 // Keep backward compatibility
-export const source = docsSource;
+export const docsSource = pagesSource;
+export const source = pagesSource;

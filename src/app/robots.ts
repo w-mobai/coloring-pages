@@ -5,22 +5,26 @@ import { locales } from '@/config/locale';
 
 export default function robots(): MetadataRoute.Robots {
   const appUrl = envConfigs.app_url;
-  const disallowBasePaths = [
+  const disallowPathGroups = [
     '/sign-in',
     '/sign-up',
     '/verify-email',
+    '/settings',
     '/settings/*',
+    '/activity',
     '/activity/*',
+    '/history',
     '/history/*',
+    '/admin',
     '/admin/*',
     '/api/*',
   ];
   const disallow = Array.from(
     new Set([
       '/*?*q=',
-      ...disallowBasePaths,
+      ...disallowPathGroups,
       ...locales.flatMap((locale) =>
-        disallowBasePaths.map((path) => `/${locale}${path}`)
+        disallowPathGroups.map((path) => `/${locale}${path}`)
       ),
       ...locales.map((locale) => `/${locale}/*?*q=`),
     ])

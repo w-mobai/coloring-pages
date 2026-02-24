@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { envConfigs } from '@/config';
 import { defaultLocale, locales } from '@/config/locale';
 import { getThemePage } from '@/core/theme';
+import { normalizeMetadataCopy } from '@/shared/lib/seo';
 import { getLocalPage } from '@/shared/models/post';
 
 export const revalidate = 3600;
@@ -46,9 +47,13 @@ export async function generateMetadata({
   const canonical = buildCanonical(locale);
 
   if (post) {
-    return {
+    const metadata = normalizeMetadataCopy({
       title: post.title || '',
       description: post.description || '',
+    });
+    return {
+      title: metadata.title,
+      description: metadata.description,
       alternates: {
         canonical,
         languages: buildLanguageAlternates(),
@@ -57,9 +62,13 @@ export async function generateMetadata({
   }
 
   const t = await getTranslations({ locale, namespace: 'common.metadata' });
-  return {
+  const metadata = normalizeMetadataCopy({
     title: t('title'),
     description: t('description'),
+  });
+  return {
+    title: metadata.title,
+    description: metadata.description,
     alternates: {
       canonical,
       languages: buildLanguageAlternates(),

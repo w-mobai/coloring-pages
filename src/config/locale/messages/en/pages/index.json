@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "Free Coloring Pages & Printable Coloring Pages | AI Coloring Page Generator",
-    "description": "Create free printable coloring pages for kids in seconds with AI. Choose age group and aspect ratio, and download instantly."
+    "title": "AI Coloring Pages Generator | Free Printable Pages",
+    "description": "Generate free printable coloring pages from simple prompts. Choose age group and ratio, then download clean line art in seconds."
   },
   "page": {
     "title": "AI Coloring Pages",
@@ -37,6 +37,7 @@
         "title": "Coloring Pages",
         "description": "Browse and filter printable coloring pages from real prompts.",
         "limit": 48,
+        "skeleton_min_ms": 800,
         "show_view_more_card": true,
         "max_visible_items": 19,
         "view_more_path": "/coloring-pages",

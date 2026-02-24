@@ -4,6 +4,7 @@ import { redirect } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { defaultLocale } from '@/config/locale';
 import { VerifyEmailPage } from '@/shared/blocks/sign/verify-email';
+import { normalizeMetadataCopy } from '@/shared/lib/seo';
 
 export async function generateMetadata({
   params,
@@ -12,10 +13,14 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations('common');
-
-  return {
+  const metadata = normalizeMetadataCopy({
     title: `${t('sign.verify_email_page_title')} - ${t('metadata.title')}`,
     description: t('sign.verify_email_tip'),
+  });
+
+  return {
+    title: metadata.title,
+    description: metadata.description,
     alternates: {
       canonical:
         locale !== defaultLocale

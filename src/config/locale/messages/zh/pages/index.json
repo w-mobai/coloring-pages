@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "免费涂色页与可打印涂色页 | AI 涂色页生成器",
-    "description": "用 AI 在几秒内生成儿童可打印涂色页。可选择年龄段和画幅比例，并可立即下载。"
+    "title": "AI 涂色页生成器 | 免费可打印儿童涂色页",
+    "description": "输入提示词即可生成儿童可打印涂色页。支持按年龄段与画幅比例设置，几秒预览并下载清晰线稿。"
   },
   "page": {
     "title": "AI 涂色页",
@@ -37,6 +37,7 @@
         "title": "涂色页",
         "description": "浏览并筛选来自真实提示词的可打印涂色页。",
         "limit": 48,
+        "skeleton_min_ms": 800,
         "show_view_more_card": true,
         "max_visible_items": 19,
         "view_more_path": "/coloring-pages",
@@ -45,47 +46,47 @@
       "generation-finder": {
         "disabled": false,
         "id": "generation-finder",
-        "title": "Discover Your Generation",
-        "description": "Find out which generation you belong to based on your birth year. Our AI analyzes multiple authoritative sources to give you a clear, trustworthy classification.",
-        "yearLabel": "Birth Year",
-        "yearPlaceholder": "Select your birth year",
-        "monthLabel": "Birth Month",
-        "monthPlaceholder": "Select month (optional)",
-        "analyzeButton": "Analyze with AI",
-        "analyzing": "Analyzing...",
-        "errorTitle": "Analysis Error",
-        "retryButton": "Retry",
+        "title": "识别你的世代",
+        "description": "根据出生年份判断你所属的世代。系统会综合多个来源，给出清晰、可参考的结果。",
+        "yearLabel": "出生年份",
+        "yearPlaceholder": "请选择出生年份",
+        "monthLabel": "出生月份",
+        "monthPlaceholder": "请选择月份（可选）",
+        "analyzeButton": "AI 分析",
+        "analyzing": "分析中...",
+        "errorTitle": "分析失败",
+        "retryButton": "重试",
         "className": "bg-muted"
       },
       "logos": {
         "disabled": false,
         "id": "logos",
-        "title": "All Generation Names and Years",
-        "description": "Discover all the generation names by year. From Baby Boomers to Gen Z, explore different generation names and their defining years. Understanding generation names and ages helps you identify which generation you belong to.",
+        "title": "各世代名称与年份范围",
+        "description": "按年份查看各世代名称与区间。从婴儿潮一代到 Z 世代，快速了解不同世代的划分标准。",
         "generations": {
           "Greatest Generation": {
-            "description": "Those who lived through the Great Depression and World War II, known for their resilience, sense of duty, and sacrifice. They built the foundation of the modern world."
+            "description": "经历经济大萧条与二战的一代，以坚韧、责任感和奉献精神著称，为现代社会奠定了重要基础。"
           },
           "Silent Generation": {
-            "description": "Growing up in the post-war era, they witnessed the Civil Rights Movement and the Cold War. Known for hard work, traditional values, and respect for authority."
+            "description": "在战后时期成长，见证民权运动与冷战，通常重视勤奋、秩序与传统价值。"
           },
           "Baby Boomers": {
-            "description": "The post-war baby boom generation experienced economic prosperity, cultural revolution, and technological advancement. They reshaped social norms and pursued personal freedom."
+            "description": "战后婴儿潮时期成长，经历经济繁荣、文化变革与技术进步，对社会观念产生深远影响。"
           },
           "Gen X": {
-            "description": "Coming of age during the end of the Cold War and the rise of the internet, this generation is independent and adaptable, bridging the analog and digital worlds."
+            "description": "在冷战尾声与互联网兴起阶段成年，兼具独立性与适应力，是连接传统与数字时代的桥梁。"
           },
           "Millennials": {
-            "description": "Growing up with the internet and globalization, Millennials value work-life balance, social justice, and technological innovation. They pioneered the digital native lifestyle."
+            "description": "伴随互联网与全球化成长，重视工作生活平衡、社会议题与创新，是数字生活方式的重要推动者。"
           },
           "Gen Z": {
-            "description": "True digital natives who grew up with smartphones and social media. This generation champions diversity, mental health awareness, and social change through technology."
+            "description": "典型数字原住民，成长于智能手机与社交媒体时代，关注多元、心理健康与技术驱动的社会变化。"
           },
           "Gen Alpha": {
-            "description": "Growing up in an AI and smart device environment, they will be the most tech-literate generation. Their education and upbringing are experiencing unprecedented digital transformation."
+            "description": "成长于 AI 与智能设备环境中，技术熟悉度更高，教育与成长过程正在经历更深层的数字化转型。"
           },
           "Gen Beta": {
-            "description": "The upcoming generation that will grow up in an even more intelligent and connected world. They will face global challenges like climate change and AI ubiquity while shaping the future."
+            "description": "即将到来的一代，将在更智能、更互联的世界中成长，同时面对气候与 AI 普及等全球性挑战。"
           }
         },
         "items": [
@@ -130,32 +131,32 @@
         "disabled": true,
         "block": "features-list",
         "id": "introduce",
-        "title": "What Is ColorFun?",
-        "label": "Introduce",
-        "description": "ColorFun is an AI-powered generation finder that helps you identify your generation by birth year and understand generational traits.",
+        "title": "什么是 ColorFun？",
+        "label": "产品介绍",
+        "description": "ColorFun 是一个 AI 世代识别工具，可根据出生年份判断世代并帮助你理解各世代特征。",
         "image": {
           "src": "/imgs/features/3.webp",
-          "alt": "Generation finder product overview illustration"
+          "alt": "世代识别产品概览图"
         },
         "items": [
           {
-            "title": "Comprehensive Year Ranges",
-            "description": "Explore clear generation year ranges from Silent Generation to Gen Alpha in one place.",
+            "title": "完整年份范围",
+            "description": "在一个页面中查看从沉默一代到 Alpha 一代的世代年份范围。",
             "icon": "RiNextjsFill"
           },
           {
-            "title": "Boundary-Year Clarity",
-            "description": "Understand tricky cusp years with contextual hints and transparent reasoning.",
+            "title": "边界年份更清晰",
+            "description": "对临界年份给出上下文说明和清晰依据，减少判断歧义。",
             "icon": "RiDatabase2Line"
           },
           {
-            "title": "Fast AI Analysis",
-            "description": "Get an instant generation result with concise, readable explanations.",
+            "title": "快速 AI 分析",
+            "description": "输入后可快速获得世代结果，并附带简洁易懂的解释。",
             "icon": "RiCloudyFill"
           },
           {
-            "title": "Insightful Context",
-            "description": "Learn what your generation means through practical characteristics and examples.",
+            "title": "更有用的背景信息",
+            "description": "通过特征说明与示例，帮助你理解所属世代在现实中的含义。",
             "icon": "RiRobot2Line"
           }
         ],

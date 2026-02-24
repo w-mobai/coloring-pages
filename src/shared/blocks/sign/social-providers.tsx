@@ -26,7 +26,37 @@ export function SocialProviders({
   const t = useTranslations('common.sign');
   const router = useRouter();
 
-  const { setIsShowSignModal } = useAppContext();
+  const { setIsShowSignModal, setUser, fetchUserInfo } = useAppContext();
+
+  const syncSessionAfterAuth = async () => {
+    const delays = [0, 300, 700, 1200, 1800, 2600];
+    for (const delay of delays) {
+      if (delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+
+      try {
+        const res = await fetch('/api/auth/get-session', {
+          method: 'GET',
+          cache: 'no-store',
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          continue;
+        }
+
+        const data: any = await res.json();
+        const u = data?.user ?? data?.data?.user;
+        if (u?.id) {
+          setUser(u);
+          void fetchUserInfo();
+          return;
+        }
+      } catch {
+        // ignore and retry
+      }
+    }
+  };
 
   if (callbackUrl) {
     const locale = useLocale();
@@ -52,9 +82,11 @@ export function SocialProviders({
         onResponse: (ctx) => {
           // Do NOT reset loading here; navigation may not have completed yet.
         },
-        onSuccess: (ctx) => {
+        onSuccess: async (ctx) => {
           // Close modal if any; navigation will proceed.
           setIsShowSignModal(false);
+          await syncSessionAfterAuth();
+          setLoading(false);
         },
         onError: (e: any) => {
           toast.error(e?.error?.message || 'sign in failed');

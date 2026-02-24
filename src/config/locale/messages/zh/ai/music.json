@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "AI 音乐生成器 | ColorFun",
-    "description": "输入提示词或歌词，快速生成原创音乐。"
+    "description": "输入提示词或歌词，快速生成原创音乐并下载可用音频。"
   },
   "page": {
     "title": "AI 音乐生成器",

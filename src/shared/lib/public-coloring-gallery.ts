@@ -20,7 +20,7 @@ import {
   normalizeR2UrlToPrimaryPrefix,
 } from '@/shared/lib/r2-url-filter';
 import { getAITasks } from '@/shared/models/ai_task';
-import { getAllConfigs } from '@/shared/models/config';
+import { CACHE_TAG_CONFIGS, getAllConfigs } from '@/shared/models/config';
 
 export type PublicColoringGalleryItem = {
   id: string;
@@ -46,7 +46,7 @@ type GalleryTaskItem = {
 export const DEFAULT_GALLERY_LIMIT = 24;
 const MAX_GALLERY_LIMIT = 600;
 const MAX_SCAN_LIMIT = 2400;
-const PUBLIC_COLORING_GALLERY_CACHE_TAG = 'public-coloring-gallery';
+export const PUBLIC_COLORING_GALLERY_CACHE_TAG = 'public-coloring-gallery';
 
 async function fetchPublicColoringGalleryItems(
   normalizedLimit: number
@@ -180,7 +180,7 @@ const getPublicColoringGalleryItemsCached = unstable_cache(
   ['public-coloring-gallery-items-v2'],
   {
     revalidate: 120,
-    tags: [PUBLIC_COLORING_GALLERY_CACHE_TAG],
+    tags: [PUBLIC_COLORING_GALLERY_CACHE_TAG, CACHE_TAG_CONFIGS],
   }
 );
 

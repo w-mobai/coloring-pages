@@ -21,6 +21,8 @@ import { ShowcasesFlow } from './showcases-flow';
 
 const DEFAULT_LIMIT = 24;
 const MAX_LIMIT = 120;
+const DEFAULT_MIN_SKELETON_MS = 0;
+const MAX_MIN_SKELETON_MS = 3000;
 
 function normalizeFilterText(value?: string | null): string {
   return (value || '').toLowerCase().trim();
@@ -96,6 +98,23 @@ function formatDate(value: string | null, locale?: string): string {
     month: 'short',
     day: 'numeric',
   }).format(date);
+}
+
+function normalizeMinSkeletonMs(section: Section): number {
+  const raw = Number((section as any).skeleton_min_ms ?? DEFAULT_MIN_SKELETON_MS);
+  if (!Number.isFinite(raw)) {
+    return DEFAULT_MIN_SKELETON_MS;
+  }
+
+  return Math.min(Math.max(Math.floor(raw), 0), MAX_MIN_SKELETON_MS);
+}
+
+async function waitMs(ms: number): Promise<void> {
+  if (ms <= 0) {
+    return;
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function GeneratedGallery({
@@ -194,12 +213,15 @@ async function GeneratedGalleryContent({
   const limit = Number.isFinite(rawLimit)
     ? Math.min(Math.max(Math.floor(rawLimit), 1), MAX_LIMIT)
     : DEFAULT_LIMIT;
+  const minSkeletonMs = normalizeMinSkeletonMs(section);
 
   let images: PublicColoringGalleryItem[] = [];
   let hasError = false;
 
   try {
-    images = await getPublicColoringGalleryItems({ limit });
+    const fetchPromise = getPublicColoringGalleryItems({ limit });
+    await waitMs(minSkeletonMs);
+    images = await fetchPromise;
   } catch (error) {
     console.error('fetch gallery failed:', error);
     hasError = true;

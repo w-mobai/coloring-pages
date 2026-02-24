@@ -22,6 +22,26 @@ function extractSessionUser(data: any): UserType | null {
   return u && typeof u === 'object' ? (u as UserType) : null;
 }
 
+async function syncSessionAfterAuth(): Promise<UserType | null> {
+  const delays = [0, 300, 700, 1200, 1800, 2600, 3600, 4800];
+  for (const delay of delays) {
+    if (delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
+    try {
+      const res: any = await authClient.getSession();
+      const fresh = extractSessionUser(res?.data ?? res);
+      if (fresh?.id) {
+        return fresh;
+      }
+    } catch {
+      // ignore and retry
+    }
+  }
+  return null;
+}
+
 export function SignUpForm({
   callbackUrl = '/',
   className,
@@ -94,7 +114,12 @@ export function SignUpForm({
             ? `/${locale}`
             : `/${locale}${normalizedPath}`
           : normalizedPath;
-      window.location.assign(localizedPath);
+      const currentPath = window.location.pathname;
+      if (currentPath === localizedPath) {
+        window.location.reload();
+      } else {
+        window.location.assign(localizedPath);
+      }
       return;
     }
 
@@ -145,15 +170,10 @@ export function SignUpForm({
               return;
             }
 
-            try {
-              const res: any = await authClient.getSession();
-              const fresh = extractSessionUser(res?.data ?? res);
-              if (fresh?.id) {
-                setUser(fresh);
-                void fetchUserInfo();
-              }
-            } catch {
-              // ignore and continue
+            const fresh = await syncSessionAfterAuth();
+            if (fresh?.id) {
+              setUser(fresh);
+              void fetchUserInfo();
             }
 
             setIsShowSignModal(false);
