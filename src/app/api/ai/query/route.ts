@@ -186,7 +186,13 @@ export async function POST(req: Request) {
       taskResult: result.taskResult ? JSON.stringify(result.taskResult) : null,
       creditId: task.creditId, // credit consumption record id
     };
-    if (updateAITask.taskInfo !== task.taskInfo) {
+    const hasStatusChanged = updateAITask.status !== task.status;
+    const hasTaskInfoChanged = updateAITask.taskInfo !== task.taskInfo;
+    const hasTaskResultChanged = updateAITask.taskResult !== task.taskResult;
+    const shouldPersistTaskUpdate =
+      hasStatusChanged || hasTaskInfoChanged || hasTaskResultChanged;
+
+    if (shouldPersistTaskUpdate) {
       await updateAITaskById(task.id, updateAITask);
       if (updateAITask.status === AITaskStatus.SUCCESS) {
         revalidateTag(PUBLIC_COLORING_GALLERY_CACHE_TAG, 'max');

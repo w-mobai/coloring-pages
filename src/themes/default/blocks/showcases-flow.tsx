@@ -132,6 +132,24 @@ export function ShowcasesFlow({
     viewMoreTitle,
   ]);
 
+  const desktopMasonryColumns = useMemo(() => {
+    if (!useSidebarGroups) {
+      return [];
+    }
+
+    const columnCount = 4;
+    const columns: Array<Array<{ item: any; index: number }>> = Array.from(
+      { length: columnCount },
+      () => []
+    );
+
+    filteredItems.forEach((item, index) => {
+      columns[index % columnCount].push({ item, index });
+    });
+
+    return columns;
+  }, [filteredItems, useSidebarGroups]);
+
   const handlePrevious = useCallback(() => {
     setSelectedIndex((prev) =>
       prev !== null
@@ -376,54 +394,61 @@ export function ShowcasesFlow({
     );
   };
 
+  const renderGalleryCard = (item: any, index: number) => {
+    const cardKey = item?.isViewMoreCard
+      ? `view-more-${selectedGroup || 'all'}`
+      : item?.detailUrl || item?.image?.src || item?.title || `gallery-item-${index}`;
+    const cardClassName = cn(
+      'group relative rounded-xl',
+      !isGeneratedGallerySection &&
+        '[content-visibility:auto] [contain-intrinsic-size:360px_480px]',
+      isGeneratedGallerySection ? 'cursor-pointer' : 'cursor-zoom-in overflow-hidden'
+    );
+
+    if (!shouldAnimateGallery) {
+      return (
+        <div
+          key={cardKey}
+          className={cardClassName}
+          onClick={() => handleCardClick(item, index)}
+        >
+          {renderCardBody(item, index)}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={cardKey}
+        className={cardClassName}
+        onClick={() => handleCardClick(item, index)}
+      >
+        {renderCardBody(item, index)}
+      </div>
+    );
+  };
+
   const itemsContent =
     filteredItems.length > 0 ? (
-      <div
-        className={cn(
-          useSidebarGroups
-            ? 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:block lg:[column-count:4] lg:[column-gap:1rem] lg:space-y-4'
-            : 'columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3 xl:columns-4',
-          !useSidebarGroups && 'container mx-auto'
-        )}
-      >
-        {filteredItems.map((item, index) => {
-          const cardKey = item?.isViewMoreCard
-            ? `view-more-${selectedGroup || 'all'}`
-            : item?.detailUrl ||
-              item?.image?.src ||
-              item?.title ||
-              `gallery-item-${index}`;
-          const cardClassName = cn(
-            'group relative break-inside-avoid rounded-xl',
-            !isGeneratedGallerySection &&
-              '[content-visibility:auto] [contain-intrinsic-size:360px_480px]',
-            isGeneratedGallerySection
-              ? 'cursor-pointer'
-              : 'cursor-zoom-in overflow-hidden'
-          );
-
-          if (!shouldAnimateGallery) {
-            return (
-              <div
-                key={cardKey}
-                className={cardClassName}
-                onClick={() => handleCardClick(item, index)}
-              >
-                {renderCardBody(item, index)}
-              </div>
-            );
-          }
-
-          return (
-            <div
-              key={cardKey}
-              className={cardClassName}
-              onClick={() => handleCardClick(item, index)}
-            >
-              {renderCardBody(item, index)}
+      <div className={cn(!useSidebarGroups && 'container mx-auto')}>
+        {useSidebarGroups ? (
+          <>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:hidden">
+              {filteredItems.map((item, index) => renderGalleryCard(item, index))}
             </div>
-          );
-        })}
+            <div className="hidden lg:flex lg:gap-4">
+              {desktopMasonryColumns.map((column, columnIndex) => (
+                <div key={`masonry-col-${columnIndex}`} className="flex-1 space-y-4">
+                  {column.map(({ item, index }) => renderGalleryCard(item, index))}
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredItems.map((item, index) => renderGalleryCard(item, index))}
+          </div>
+        )}
       </div>
     ) : (
       shouldAnimateGallery ? (
