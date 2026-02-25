@@ -5,10 +5,8 @@ import { RiGithubFill, RiGoogleFill } from 'react-icons/ri';
 import { toast } from 'sonner';
 
 import { signIn } from '@/core/auth/client';
-import { useRouter } from '@/core/i18n/navigation';
 import { defaultLocale } from '@/config/locale';
 import { Button } from '@/shared/components/ui/button';
-import { useAppContext } from '@/shared/contexts/app';
 import { cn } from '@/shared/lib/utils';
 import { Button as ButtonType } from '@/shared/types/blocks/common';
 
@@ -24,42 +22,9 @@ export function SocialProviders({
   setLoading: (loading: boolean) => void;
 }) {
   const t = useTranslations('common.sign');
-  const router = useRouter();
-
-  const { setIsShowSignModal, setUser, fetchUserInfo } = useAppContext();
-
-  const syncSessionAfterAuth = async () => {
-    const delays = [0, 300, 700, 1200, 1800, 2600];
-    for (const delay of delays) {
-      if (delay > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-
-      try {
-        const res = await fetch('/api/auth/get-session', {
-          method: 'GET',
-          cache: 'no-store',
-          credentials: 'include',
-        });
-        if (!res.ok) {
-          continue;
-        }
-
-        const data: any = await res.json();
-        const u = data?.user ?? data?.data?.user;
-        if (u?.id) {
-          setUser(u);
-          void fetchUserInfo();
-          return;
-        }
-      } catch {
-        // ignore and retry
-      }
-    }
-  };
+  const locale = useLocale();
 
   if (callbackUrl) {
-    const locale = useLocale();
     if (
       locale !== defaultLocale &&
       callbackUrl.startsWith('/') &&
@@ -70,30 +35,39 @@ export function SocialProviders({
   }
 
   const handleSignIn = async ({ provider }: { provider: string }) => {
-    await signIn.social(
-      {
-        provider: provider,
-        callbackURL: callbackUrl,
-      },
-      {
-        onRequest: (ctx) => {
-          setLoading(true);
+    if (loading) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await signIn.social(
+        {
+          provider: provider,
+          callbackURL: callbackUrl,
         },
-        onResponse: (ctx) => {
-          // Do NOT reset loading here; navigation may not have completed yet.
-        },
-        onSuccess: async (ctx) => {
-          // Close modal if any; navigation will proceed.
-          setIsShowSignModal(false);
-          await syncSessionAfterAuth();
-          setLoading(false);
-        },
-        onError: (e: any) => {
-          toast.error(e?.error?.message || 'sign in failed');
-          setLoading(false);
-        },
-      }
-    );
+        {
+          onRequest: () => {
+            setLoading(true);
+          },
+          onResponse: () => {
+            // Keep loading until redirect or explicit error.
+          },
+          onSuccess: () => {
+            // Do not close modal or run async work here.
+            // Let the auth client redirect immediately.
+          },
+          onError: (e: any) => {
+            toast.error(e?.error?.message || 'sign in failed');
+            setLoading(false);
+          },
+        }
+      );
+    } catch (e: any) {
+      toast.error(e?.message || 'sign in failed');
+      setLoading(false);
+    }
   };
 
   const providers: ButtonType[] = [];

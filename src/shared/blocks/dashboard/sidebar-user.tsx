@@ -3,6 +3,8 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown, Loader2, LogOut, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useTopLoader } from 'nextjs-toploader';
+import { toast } from 'sonner';
 
 import { signOut, useSession } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
@@ -39,6 +41,7 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
   const t = useTranslations('common.sign');
   const { isMobile, open } = useSidebar();
   const router = useRouter();
+  const topLoader = useTopLoader();
 
   // get session (MUST be called unconditionally to keep hook order stable)
   const { data: session, isPending } = useSession();
@@ -48,6 +51,7 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
 
   // This state will ensure rendering only happens after client hydration
   const [hasMounted, setHasMounted] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   useEffect(() => {
     setHasMounted(true);
   }, []);
@@ -66,14 +70,26 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
   } = useAppContext();
 
   const handleSignOut = async () => {
-    await signOut();
-    setUser(null);
-    const target = user.signout_callback || '/sign-in';
-    if (typeof window !== 'undefined') {
-      window.location.assign(target);
+    if (isSigningOut) {
       return;
     }
-    router.push(target);
+
+    setIsSigningOut(true);
+    topLoader.start();
+    try {
+      await signOut();
+      setUser(null);
+      const target = user.signout_callback || '/sign-in';
+      if (typeof window !== 'undefined') {
+        window.location.assign(target);
+        return;
+      }
+      router.push(target);
+    } catch {
+      topLoader.done(true);
+      toast.error('sign out failed');
+      setIsSigningOut(false);
+    }
   };
 
   useEffect(() => {
@@ -206,9 +222,14 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
                 ))}
                 <DropdownMenuItem
                   className="cursor-pointer"
+                  disabled={isSigningOut}
                   onClick={handleSignOut}
                 >
-                  <LogOut />
+                  {isSigningOut ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut />
+                  )}
                   {t('sign_out_title')}
                 </DropdownMenuItem>
               </DropdownMenuGroup>

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 import { Coins, LayoutDashboard, Loader2, LogOut, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useTopLoader } from 'nextjs-toploader';
+import { toast } from 'sonner';
 
 import { authClient, signOut, useSession } from '@/core/auth/client';
 import { Link, usePathname, useRouter } from '@/core/i18n/navigation';
@@ -45,6 +47,7 @@ export function SignUser({
   const t = useTranslations('common.sign');
   const router = useRouter();
   const pathname = usePathname();
+  const topLoader = useTopLoader();
 
   const [mounted, setMounted] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -68,7 +71,7 @@ export function SignUser({
   // get session
   const { data: session, isPending } = useSession();
   const sessionUser = extractSessionUser(session);
-  const displayUser = isSigningOut ? null : (user as UserType | null) ?? sessionUser;
+  const displayUser = (user as UserType | null) ?? sessionUser;
 
   // Avoid parallel fallback sync attempts when session hydration is lagging.
   const fallbackSyncInProgressRef = useRef(false);
@@ -170,7 +173,13 @@ export function SignUser({
   }, [isPending, isSigningOut, sessionUser?.id, user?.id]);
 
   const handleSignOut = async () => {
+    if (isSigningOut) {
+      return;
+    }
+
     setIsSigningOut(true);
+    topLoader.start();
+
     try {
       await signOut();
       setUser(null);
@@ -179,12 +188,15 @@ export function SignUser({
         window.location.assign('/');
       }
     } catch {
+      topLoader.done(true);
+      toast.error('sign out failed');
       setIsSigningOut(false);
     }
   };
 
   return (
     <>
+      <SignModal callbackUrl={pathname || '/'} />
       {isCheckSign || !mounted ? (
         <div>
           <Loader2 className="size-4 animate-spin" />
@@ -271,9 +283,14 @@ export function SignUser({
             {userNav?.show_sign_out && (
               <DropdownMenuItem
                 className="w-full cursor-pointer"
+                disabled={isSigningOut}
                 onClick={() => void handleSignOut()}
               >
-                <LogOut />
+                {isSigningOut ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <LogOut />
+                )}
                 <span>{t('sign_out_title')}</span>
               </DropdownMenuItem>
             )}
@@ -292,7 +309,6 @@ export function SignUser({
           >
             <span>{t('sign_in_title')}</span>
           </Button>
-          <SignModal callbackUrl={pathname || '/'} />
         </div>
       )}
     </>
