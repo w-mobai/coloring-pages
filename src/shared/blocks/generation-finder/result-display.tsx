@@ -16,7 +16,7 @@ interface ResultDisplayProps {
 
 export function ResultDisplay({ result, locale }: ResultDisplayProps) {
   const xUrl = 'https://x.com/HL19930219';
-  const feedbackEmail = 'whl774148248@gmail.com';
+  const feedbackEmail = 'admin@coloring-pages.shop';
 
   return (
     <div data-result-container className="space-y-6">
