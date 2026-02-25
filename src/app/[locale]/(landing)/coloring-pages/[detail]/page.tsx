@@ -465,7 +465,7 @@ async function getColoringPageDetail(
 
   if (taskId.startsWith('guest_')) {
     task =
-      findGuestAITaskById(taskId) ||
+      (await findGuestAITaskById(taskId)) ||
       (await findPersistedGuestColoringTaskById(taskId));
   } else {
     try {
@@ -479,7 +479,7 @@ async function getColoringPageDetail(
   if (!task) {
     for (const guestTaskId of fallbackGuestTaskIds) {
       task =
-        findGuestAITaskById(guestTaskId) ||
+        (await findGuestAITaskById(guestTaskId)) ||
         (await findPersistedGuestColoringTaskById(guestTaskId));
       if (task) {
         break;

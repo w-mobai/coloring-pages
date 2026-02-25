@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     }
 
     if (!user && isGuestTask) {
-      const guestTask = findGuestAITaskById(taskId);
+      const guestTask = await findGuestAITaskById(taskId);
       if (!guestTask) {
         return respErr('task not found');
       }

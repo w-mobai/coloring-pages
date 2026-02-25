@@ -68,7 +68,7 @@ async function fetchPublicColoringGalleryItems(
     page: 1,
     limit: scanLimit,
   });
-  const guestTasks = listGuestAITasks()
+  const guestTasks = (await listGuestAITasks())
     .filter(
       (task) =>
         task.mediaType === AIMediaType.IMAGE &&

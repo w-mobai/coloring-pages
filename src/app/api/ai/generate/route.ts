@@ -138,7 +138,7 @@ export async function POST(request: Request) {
       const taskResult = result.taskResult
         ? JSON.stringify(result.taskResult)
         : null;
-      saveGuestAITask({
+      await saveGuestAITask({
         id: guestTaskId,
         ownerKey: getGuestOwnerKey(request),
         providerTaskId: result.taskId,
