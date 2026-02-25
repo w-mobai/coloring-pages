@@ -5,7 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Download, X } from 'lucide-react
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
-import { Link, useRouter } from '@/core/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/core/i18n/navigation';
 import { LazyImage } from '@/shared/blocks/common';
 import { SmartIcon } from '@/shared/blocks/common/smart-icon';
 import { Button } from '@/shared/components/ui/button';
@@ -22,6 +22,7 @@ export function ShowcasesFlow({
   const isGeneratedGallerySection = section.id === 'generated-gallery';
   const shouldAnimateGallery = !isGeneratedGallerySection;
   const router = useRouter();
+  const pathname = usePathname();
   const groups = (section as any).groups || [];
   const useSidebarGroups =
     isGeneratedGallerySection && (section as any).group_layout === 'sidebar-left';
@@ -61,14 +62,32 @@ export function ShowcasesFlow({
     }
 
     const filter = searchParams.get('filter');
-    if (!filter) {
+    if (filter && groupNameSet.has(filter)) {
+      setSelectedGroup(filter);
       return;
     }
 
-    if (groupNameSet.has(filter)) {
-      setSelectedGroup(filter);
+    const nextDefaultGroup = groups[0]?.name;
+    if (nextDefaultGroup) {
+      setSelectedGroup(nextDefaultGroup);
     }
-  }, [groupNameSet, groups.length, isGeneratedGallerySection, searchParams]);
+  }, [
+    groupNameSet,
+    groups,
+    groups.length,
+    isGeneratedGallerySection,
+    pathname,
+    searchParams,
+  ]);
+
+  useEffect(() => {
+    if (!isGeneratedGallerySection) {
+      return;
+    }
+
+    // Reset modal index on route changes to avoid stale index references.
+    setSelectedIndex(null);
+  }, [isGeneratedGallerySection, pathname]);
 
   const filteredItems = useMemo(() => {
     if (!section.items) return [];
@@ -368,6 +387,12 @@ export function ShowcasesFlow({
         )}
       >
         {filteredItems.map((item, index) => {
+          const cardKey = item?.isViewMoreCard
+            ? `view-more-${selectedGroup || 'all'}`
+            : item?.detailUrl ||
+              item?.image?.src ||
+              item?.title ||
+              `gallery-item-${index}`;
           const cardClassName = cn(
             'group relative break-inside-avoid rounded-xl',
             !isGeneratedGallerySection &&
@@ -380,7 +405,7 @@ export function ShowcasesFlow({
           if (!shouldAnimateGallery) {
             return (
               <div
-                key={index}
+                key={cardKey}
                 className={cardClassName}
                 onClick={() => handleCardClick(item, index)}
               >
@@ -391,7 +416,7 @@ export function ShowcasesFlow({
 
           return (
             <div
-              key={index}
+              key={cardKey}
               className={cardClassName}
               onClick={() => handleCardClick(item, index)}
             >
