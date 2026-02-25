@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 
+import { defaultLocale, locales } from '@/config/locale';
 import { AITaskStatus } from '@/extensions/ai';
 import { extractImageUrls } from '@/shared/lib/ai-image-history';
 import { isLikelyHttpUrl } from '@/shared/lib/coloring-gallery';
@@ -22,6 +23,25 @@ import {
 } from '@/shared/models/ai_task';
 import { getUserInfo } from '@/shared/models/user';
 import { getAIService } from '@/shared/services/ai';
+
+function revalidatePublicGalleryPages() {
+  const paths = new Set<string>(['/', '/coloring-pages']);
+
+  // localePrefix is "as-needed": default locale uses unprefixed paths,
+  // non-default locales use /{locale}/... paths.
+  for (const locale of locales) {
+    if (locale === defaultLocale) {
+      continue;
+    }
+
+    paths.add(`/${locale}`);
+    paths.add(`/${locale}/coloring-pages`);
+  }
+
+  for (const path of paths) {
+    revalidatePath(path);
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -93,6 +113,7 @@ export async function POST(req: Request) {
       if (result.taskStatus === AITaskStatus.SUCCESS) {
         revalidateTag(PUBLIC_COLORING_GALLERY_CACHE_TAG, 'max');
         revalidatePath('/sitemap.xml');
+        revalidatePublicGalleryPages();
         const imageUrl = [
           ...extractImageUrls(result.taskInfo),
           ...extractImageUrls(result.taskResult),
@@ -119,7 +140,7 @@ export async function POST(req: Request) {
         }
       }
 
-      updateGuestAITaskById(guestTask.id, {
+      await updateGuestAITaskById(guestTask.id, {
         status: result.taskStatus,
         taskInfo,
         taskResult,
@@ -197,6 +218,7 @@ export async function POST(req: Request) {
       if (updateAITask.status === AITaskStatus.SUCCESS) {
         revalidateTag(PUBLIC_COLORING_GALLERY_CACHE_TAG, 'max');
         revalidatePath('/sitemap.xml');
+        revalidatePublicGalleryPages();
       }
     }
 
