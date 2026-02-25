@@ -1,4 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
+import { headers } from 'next/headers';
 
 import {
   defaultLocale,
@@ -7,6 +8,61 @@ import {
 } from '@/config/locale';
 
 import { routing } from './config';
+
+const adminMessagePaths = localeMessagesPaths.filter((path) =>
+  path.startsWith('admin/')
+);
+const settingsMessagePaths = localeMessagesPaths.filter((path) =>
+  path.startsWith('settings/')
+);
+const activityMessagePaths = localeMessagesPaths.filter((path) =>
+  path.startsWith('activity/')
+);
+const alwaysLoadedMessagePaths = localeMessagesPaths.filter(
+  (path) =>
+    !path.startsWith('admin/') &&
+    !path.startsWith('settings/') &&
+    !path.startsWith('activity/')
+);
+
+function stripLocalePrefix(pathname: string) {
+  if (!pathname) {
+    return '/';
+  }
+
+  for (const locale of routing.locales) {
+    if (pathname === `/${locale}`) {
+      return '/';
+    }
+    if (pathname.startsWith(`/${locale}/`)) {
+      return pathname.slice(locale.length + 1) || '/';
+    }
+  }
+
+  return pathname;
+}
+
+function getMessagePathsForPathname(pathname: string) {
+  const normalizedPathname = stripLocalePrefix(pathname);
+  const scopedPaths = new Set<string>(alwaysLoadedMessagePaths);
+
+  if (normalizedPathname.startsWith('/admin')) {
+    adminMessagePaths.forEach((path) => scopedPaths.add(path));
+  }
+
+  if (normalizedPathname.startsWith('/settings')) {
+    settingsMessagePaths.forEach((path) => scopedPaths.add(path));
+  }
+
+  if (
+    normalizedPathname.startsWith('/activity') ||
+    normalizedPathname.startsWith('/history')
+  ) {
+    activityMessagePaths.forEach((path) => scopedPaths.add(path));
+  }
+
+  return Array.from(scopedPaths);
+}
 
 export async function loadMessages(
   path: string,
@@ -42,16 +98,22 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale = 'zh';
   }
 
+  const requestHeaders = await headers();
+  const requestPathname = requestHeaders.get('x-pathname');
+  const messagePaths = requestPathname
+    ? getMessagePathsForPathname(requestPathname)
+    : localeMessagesPaths;
+
   try {
     // load all local messages
     const allMessages = await Promise.all(
-      localeMessagesPaths.map((path) => loadMessages(path, locale))
+      messagePaths.map((path) => loadMessages(path, locale))
     );
 
     // merge all local messages
     const messages: any = {};
 
-    localeMessagesPaths.forEach((path, index) => {
+    messagePaths.forEach((path, index) => {
       const localMessages = allMessages[index];
 
       const keys = path.split('/');

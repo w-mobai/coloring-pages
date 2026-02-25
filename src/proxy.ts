@@ -7,10 +7,17 @@ import { routing } from '@/core/i18n/config';
 const intlMiddleware = createIntlMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
+  const requestWithPathname = new NextRequest(request.url, {
+    headers: requestHeaders,
+    method: request.method,
+  });
+
+  const { pathname } = requestWithPathname.nextUrl;
 
   // Handle internationalization first
-  const intlResponse = intlMiddleware(request);
+  const intlResponse = intlMiddleware(requestWithPathname);
 
   // Extract locale from pathname
   const locale = pathname.split('/')[1];
@@ -26,16 +33,16 @@ export async function proxy(request: NextRequest) {
     pathWithoutLocale.startsWith('/history')
   ) {
     // Check if session cookie exists
-    const sessionCookie = getSessionCookie(request);
+    const sessionCookie = getSessionCookie(requestWithPathname);
 
     // If no session token found, redirect to sign-in
     if (!sessionCookie) {
       const signInUrl = new URL(
         isValidLocale ? `/${locale}/sign-in` : '/sign-in',
-        request.url
+        requestWithPathname.url
       );
       // Add the current path (including search params) as callback - use relative path for multi-language support
-      const callbackPath = pathWithoutLocale + request.nextUrl.search;
+      const callbackPath = pathWithoutLocale + requestWithPathname.nextUrl.search;
       signInUrl.searchParams.set('callbackUrl', callbackPath);
       return NextResponse.redirect(signInUrl);
     }
@@ -47,8 +54,8 @@ export async function proxy(request: NextRequest) {
     // will be done in the layout or individual pages using requirePermission()
   }
 
-  intlResponse.headers.set('x-pathname', request.nextUrl.pathname);
-  intlResponse.headers.set('x-url', request.url);
+  intlResponse.headers.set('x-pathname', requestWithPathname.nextUrl.pathname);
+  intlResponse.headers.set('x-url', requestWithPathname.url);
 
   // Remove Set-Cookie from public pages to allow caching
   // We exclude admin, settings, activity, and auth pages from this behavior
