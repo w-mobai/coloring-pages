@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -47,6 +47,8 @@ export function ShowcasesFlow({
     | string
     | undefined;
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
+  const galleryRefreshKeyRef = useRef<string>('');
   const [selectedGroup, setSelectedGroup] = useState<string>(
     groups.length > 0 ? groups[0].name : ''
   );
@@ -88,6 +90,27 @@ export function ShowcasesFlow({
     // Reset modal index on route changes to avoid stale index references.
     setSelectedIndex(null);
   }, [isGeneratedGallerySection, pathname]);
+
+  useEffect(() => {
+    if (!isGeneratedGallerySection) {
+      return;
+    }
+
+    // Work around client router cache staleness between Home <-> Coloring Pages.
+    // Refresh each unique route once so newly generated images appear immediately.
+    const refreshKey = `${pathname}?${searchParamsString}`;
+    if (galleryRefreshKeyRef.current === refreshKey) {
+      return;
+    }
+
+    galleryRefreshKeyRef.current = refreshKey;
+    router.refresh();
+  }, [
+    isGeneratedGallerySection,
+    pathname,
+    router,
+    searchParamsString,
+  ]);
 
   const filteredItems = useMemo(() => {
     if (!section.items) return [];
