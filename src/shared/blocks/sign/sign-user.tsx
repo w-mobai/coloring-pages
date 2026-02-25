@@ -47,6 +47,7 @@ export function SignUser({
   const pathname = usePathname();
 
   const [mounted, setMounted] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -67,7 +68,7 @@ export function SignUser({
   // get session
   const { data: session, isPending } = useSession();
   const sessionUser = extractSessionUser(session);
-  const displayUser = (user as UserType | null) ?? sessionUser;
+  const displayUser = isSigningOut ? null : (user as UserType | null) ?? sessionUser;
 
   // Avoid parallel fallback sync attempts when session hydration is lagging.
   const fallbackSyncInProgressRef = useRef(false);
@@ -116,6 +117,7 @@ export function SignUser({
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (isPending) return;
+    if (isSigningOut) return;
 
     // Session is already available, stop fallback loop.
     if (sessionUser || user) {
@@ -165,7 +167,21 @@ export function SignUser({
       fallbackSyncInProgressRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPending, sessionUser?.id, user?.id]);
+  }, [isPending, isSigningOut, sessionUser?.id, user?.id]);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      setUser(null);
+      router.refresh();
+      if (typeof window !== 'undefined') {
+        window.location.assign('/');
+      }
+    } catch {
+      setIsSigningOut(false);
+    }
+  };
 
   return (
     <>
@@ -255,16 +271,7 @@ export function SignUser({
             {userNav?.show_sign_out && (
               <DropdownMenuItem
                 className="w-full cursor-pointer"
-                onClick={() =>
-                  signOut({
-                    fetchOptions: {
-                      onSuccess: () => {
-                        setUser(null);
-                        router.push('/');
-                      },
-                    },
-                  })
-                }
+                onClick={() => void handleSignOut()}
               >
                 <LogOut />
                 <span>{t('sign_out_title')}</span>

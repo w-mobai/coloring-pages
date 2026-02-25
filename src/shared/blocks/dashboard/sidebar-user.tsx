@@ -68,7 +68,12 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
   const handleSignOut = async () => {
     await signOut();
     setUser(null);
-    router.push(user.signout_callback || '/sign-in');
+    const target = user.signout_callback || '/sign-in';
+    if (typeof window !== 'undefined') {
+      window.location.assign(target);
+      return;
+    }
+    router.push(target);
   };
 
   useEffect(() => {
