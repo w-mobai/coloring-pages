@@ -61,9 +61,15 @@ export async function generateMetadata({
   // static page slug
   const staticPageSlug =
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
+  const firstSegment = staticPageSlug.split('/')[0] || '';
 
   // filter invalid slug
   if (staticPageSlug.includes('.')) {
+    return;
+  }
+
+  // Guard against accidentally double-localized paths like /zh/zh/...
+  if (locales.includes(firstSegment)) {
     return;
   }
 
@@ -161,9 +167,16 @@ export default async function DynamicPage({
   // static page slug
   const staticPageSlug =
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
+  const firstSegment = staticPageSlug.split('/')[0] || '';
 
   // filter invalid slug
   if (staticPageSlug.includes('.')) {
+    return notFound();
+  }
+
+  // Guard against accidentally double-localized paths like /zh/zh/...
+  // Those should not be treated as translatable dynamic page namespaces.
+  if (locales.includes(firstSegment)) {
     return notFound();
   }
 

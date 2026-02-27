@@ -398,7 +398,6 @@ async function getSimilarColoringPagesUncached({
       createdAt: item.createdAt,
       categoryKey: item.categoryKey,
       detailPath: buildColoringPageDetailPath({
-        locale,
         taskId: item.taskId,
         prompt: item.prompt,
       }),

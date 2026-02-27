@@ -298,7 +298,6 @@ async function GeneratedGalleryContent({
               : `${uiText.promptLabel}${uiText.noPrompt}`;
             const dateText = formatDate(item.createdAt, locale);
             const detailPath = buildColoringPageDetailPath({
-              locale,
               taskId: item.taskId,
               prompt: item.prompt,
             });

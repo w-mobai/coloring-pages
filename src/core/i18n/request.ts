@@ -100,8 +100,15 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const requestHeaders = await headers();
   const requestPathname = requestHeaders.get('x-pathname');
+  // Always load the full locale message set.
+  // Rationale: NextIntlClientProvider is mounted in the top [locale] layout.
+  // During client-side route transitions, a scoped initial payload can miss
+  // namespaces needed by later pages (e.g. history/activity), causing
+  // MISSING_MESSAGE runtime errors.
   const messagePaths = requestPathname
-    ? getMessagePathsForPathname(requestPathname)
+    ? Array.from(
+        new Set([...localeMessagesPaths, ...getMessagePathsForPathname(requestPathname)])
+      )
     : localeMessagesPaths;
 
   try {
