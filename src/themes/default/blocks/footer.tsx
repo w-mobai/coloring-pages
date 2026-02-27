@@ -122,6 +122,22 @@ export function Footer({ footer }: { footer: FooterType }) {
                   className="h-6 w-auto"
                 />
               </a>
+
+              {/* AIBestTop Badge */}
+              <a
+                href="https://aibesttop.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-105"
+              >
+                <img
+                  src="https://aibesttop.com/badges/light.svg"
+                  alt="Listed on AIBestTop"
+                  width={120}
+                  height={40}
+                  className="h-6 w-auto"
+                />
+              </a>
             </div>
           ) : null}
 
