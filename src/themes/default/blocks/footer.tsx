@@ -103,7 +103,23 @@ export function Footer({ footer }: { footer: FooterType }) {
                   src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=featured&theme=light" 
                   width={120} 
                   alt="Featured on Fazier"
-                  className="h-5"
+                  className="h-6 w-auto"
+                />
+              </a>
+
+              {/* Dang.ai Badge */}
+              <a
+                href="https://dang.ai/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-105"
+              >
+                <img
+                  src="https://cdn.prod.website-files.com/63d8afd87da01fb58ea3fbcb/6487e2868c6c8f93b4828827_dang-badge.png"
+                  width={150}
+                  height={54}
+                  alt="Dang.ai"
+                  className="h-6 w-auto"
                 />
               </a>
             </div>
