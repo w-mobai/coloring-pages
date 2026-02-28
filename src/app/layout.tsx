@@ -122,6 +122,7 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href={envConfigs.app_favicon} />
         <link rel="alternate icon" href="/favicon.ico" />
+        <meta name="_foundr" content="6a1bf7b50f975c20a977dffa2ce92e60" />
 
         {/* inject ads meta tags */}
         {adsMetaTags}
