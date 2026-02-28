@@ -91,6 +91,16 @@ export function Footer({ footer }: { footer: FooterType }) {
                   {item.title || ''}
                 </Link>
               ))}
+
+              <a
+                href="https://navs.site"
+                title="AI Sites | 2026"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary block text-xs break-words underline duration-150"
+              >
+                AI Nav Site
+              </a>
               
               {/* Fazier Badge */}
               <a 
